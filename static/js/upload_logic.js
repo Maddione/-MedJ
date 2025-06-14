@@ -1,134 +1,110 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const uploadContainer = document.getElementById('upload-container');
+document.addEventListener('DOMContentLoaded', function () {
+    // Елементи
+    const uploadStateDiv = document.getElementById('upload-state');
+    const reviewStateDiv = document.getElementById('review-state');
     const categorySelect = document.getElementById('category');
     const specialistSelect = document.getElementById('specialist');
     const fileInput = document.getElementById('file_input');
     const uploadOcrButton = document.getElementById('upload-ocr-button');
-    const analyzeButton = document.getElementById('analyze-button');
-    const ocrTextArea = document.getElementById('ocr_text_area');
-
-    const step2UploadDiv = document.getElementById('step2-upload');
-    const step3ReviewDiv = document.getElementById('step3-review');
-
-    const resultsSection = document.getElementById('results-section');
-    const resultSummary = document.getElementById('result-summary');
-    const resultHtmlTable = document.getElementById('result-html-table');
-
     const imagePreview = document.getElementById('image-preview');
-    const pdfPreview = document.getElementById('pdf-preview');
-
+    const rawOcrOutput = document.getElementById('raw-ocr-output');
+    const ocrTextArea = document.getElementById('ocr_text_area');
+    const analyzeButton = document.getElementById('analyze-button');
+    const categoryReview = document.getElementById('category-review');
+    const specialistReview = document.getElementById('specialist-review');
+    const errorMessageDiv = document.getElementById('error-message');
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    let currentFileHash = null;
 
-    function checkStep1() {
-        if (categorySelect.value && specialistSelect.value) {
-            step2UploadDiv.style.display = 'flex';
-        } else {
-            step2UploadDiv.style.display = 'none';
-        }
+    // Проверка дали всички основни елементи са намерени
+    if (!uploadOcrButton || !analyzeButton || !categorySelect || !specialistSelect || !fileInput || !csrfToken) {
+        console.error("Един или повече HTML елементи не са намерени. Проверете 'id'-тата в upload.html.");
+        return;
     }
 
-    function handleFileSelection() {
-        if (fileInput.files.length > 0) {
-            uploadOcrButton.disabled = false;
-            const file = fileInput.files[0];
-            const reader = new FileReader();
-
-            reader.onload = function(e) {
-                if (file.type === "application/pdf") {
-                    pdfPreview.src = e.target.result;
-                    pdfPreview.style.display = 'block';
-                    imagePreview.style.display = 'none';
-                } else {
-                    imagePreview.src = e.target.result;
-                    imagePreview.style.display = 'block';
-                    pdfPreview.style.display = 'none';
-                }
-            };
-            reader.readAsDataURL(file);
-        } else {
-            uploadOcrButton.disabled = true;
-        }
+    function showError(message) {
+        errorMessageDiv.textContent = message;
+        errorMessageDiv.style.display = 'block';
     }
 
-    categorySelect.addEventListener('change', checkStep1);
-    specialistSelect.addEventListener('change', checkStep1);
-    fileInput.addEventListener('change', handleFileSelection);
+    function hideError() {
+        errorMessageDiv.style.display = 'none';
+    }
 
-    uploadOcrButton.addEventListener('click', function() {
-        uploadOcrButton.disabled = true;
-        uploadOcrButton.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Обработка...`;
+    uploadOcrButton.addEventListener('click', function () {
+        if (!fileInput.files.length || !categorySelect.value || !specialistSelect.value) {
+            showError('Моля, изберете вид документ, специалист и файл.');
+            return;
+        }
+        hideError();
+        this.disabled = true;
+        this.innerHTML = `Обработка...`;
 
         const formData = new FormData();
         formData.append('document', fileInput.files[0]);
 
-        fetch('/perform-ocr/', {
+        fetch('/api/perform-ocr/', {
             method: 'POST',
             headers: { 'X-CSRFToken': csrfToken },
             body: formData
         })
-        .then(response => {
-            if (!response.ok) { throw new Error('Network response was not ok.'); }
-            return response.json();
-        })
-        .then(data => {
-            if (data.status === 'success') {
-                ocrTextArea.value = data.ocr_text;
-                step3ReviewDiv.style.display = 'block';
-                document.getElementById('step1-selection').style.display = 'none';
-                document.getElementById('step2-upload').style.display = 'none';
+        .then(response => response.json().then(data => ({ ok: response.ok, data })))
+        .then(({ ok, data }) => {
+            if (!ok) throw new Error(data.message);
+
+            uploadStateDiv.style.display = 'none';
+            reviewStateDiv.style.display = 'block';
+
+            ocrTextArea.value = data.ocr_text;
+            rawOcrOutput.textContent = data.ocr_text;
+            currentFileHash = data.file_hash;
+
+            categoryReview.value = categorySelect.options[categorySelect.selectedIndex].text;
+            specialistReview.value = specialistSelect.options[specialistSelect.selectedIndex].text;
+
+            if (fileInput.files[0] && fileInput.files[0].type.startsWith('image/')) {
+                imagePreview.style.display = 'block';
+                const reader = new FileReader();
+                reader.onload = e => { imagePreview.src = e.target.result; };
+                reader.readAsDataURL(fileInput.files[0]);
             } else {
-                alert('Грешка при OCR: ' + data.message);
+                imagePreview.style.display = 'none';
             }
         })
-        .catch(error => {
-            console.error('OCR Error:', error);
-            alert('Критична грешка при OCR обработката.');
-        })
-        .finally(() => {
-            uploadOcrButton.disabled = false;
-            uploadOcrButton.textContent = 'Качи за OCR';
+        .catch(err => {
+            showError(err.message);
+            this.disabled = false;
+            this.innerHTML = `Качи`;
         });
     });
 
-    analyzeButton.addEventListener('click', function() {
-        analyzeButton.disabled = true;
-        analyzeButton.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Анализ с AI...`;
+    analyzeButton.addEventListener('click', function () {
+        hideError();
+        this.disabled = true;
+        this.innerHTML = `Анализ с AI...`;
 
         const dataToSend = {
             edited_text: ocrTextArea.value,
             category: categorySelect.value,
             specialist: specialistSelect.value,
+            file_hash: currentFileHash
         };
 
-        fetch('/analyze-document/', {
+        fetch('/api/analyze-document/', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken
-            },
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
             body: JSON.stringify(dataToSend)
         })
-        .then(response => {
-            if (!response.ok) { throw new Error('Network response was not ok.'); }
-            return response.json();
+        .then(response => response.json().then(data => ({ ok: response.ok, data })))
+        .then(({ ok, data }) => {
+            if (!ok) throw new Error(data.message);
+          //  window.location.href = `/document/${data.new_document_id}/`;
+            console.log(data)
         })
-        .then(data => {
-            if (data.status === 'success') {
-                resultSummary.innerHTML = `<p class="mb-0">${data.summary}</p>`;
-                resultHtmlTable.innerHTML = data.html_table;
-                resultsSection.style.display = 'block';
-                uploadContainer.style.display = 'none';
-            } else {
-                alert('Грешка при анализ: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Analyze Error:', error);
-            alert('Критична грешка при финалния анализ.');
-        })
-        .finally(() => {
-            analyzeButton.disabled = false;
-            analyzeButton.textContent = 'Одобри и анализирай с AI';
+        .catch(err => {
+            showError(err.message);
+            this.disabled = false;
+            this.innerHTML = `Одобри и анализирай...`;
         });
     });
 });

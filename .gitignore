@@ -8,5 +8,6 @@ media/
 *.json
 TODO.txt
 node_modules/
-medj-ocr-key.json
 ocr-key-vison.json
+staticfiles/
+media/

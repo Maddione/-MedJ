@@ -60,6 +60,8 @@ class MedicalDocument(models.Model):
     extracted_text = models.TextField(blank=True)
     summary = models.TextField(blank=True)
     tags = models.ManyToManyField(Tag, blank=True)
+    html_content = models.TextField(blank=True, null=True, verbose_name="HTML съдържание")
+    json_content = models.JSONField(blank=True, null=True, verbose_name="JSON данни")
 
     # --- НОВО ПОЛЕ ЗА ЗАСИЧАНЕ НА ДУБЛИКАТИ ---
     file_hash = models.CharField(

@@ -1,75 +1,117 @@
-from __future__ import annotations
-import re
+import os
 import json
+import openai
 from django.conf import settings
-from openai import OpenAI
-from django.utils.translation import gettext as _
 
-client = OpenAI(api_key=settings.OPENAI_API_KEY)
+# --- Инициализация на OpenAI клиента ---
+# Взимаме ключа от настройките на Django, които го зареждат от .env файла
+try:
+    client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
+except Exception as e:
+    print(f"Грешка при инициализация на OpenAI: {e}")
+    client = None
 
 
-def call_gpt_for_document(raw_text: str, doc_kind: str, extracted_fields: dict) -> dict:
+def extract_medical_fields_from_text(text: str) -> dict:
     """
-    Calls OpenAI GPT with a specific prompt and safely parses the response.
+    Тази функция може в бъдеще да прави втори, по-прост API call или да използва
+    регулярни изрази, за да извлече специфични полета преди основния анализ.
+
+    За момента, за да работи системата, тя просто връща празен речник.
     """
-    prompt = (
-        f"Ти си експертен медицински асистент. Анализирай следния текст от медицински документ, който е тип '{doc_kind}'.\n"
-        f"Извлечен текст:\n\"\"\"{raw_text}\"\"\"\n\n"
-        "Моля направи следното:\n"
-        "1) Върни JSON обект с ключове и стойности. Дата да е низ в DD-MM-YYYY формат.\n"
-        "2) Върни HTML таблица със заглавия на български: Показател, Стойност, Ед., Статус, Реф. граници.\n"
-        "3) Върни анализен параграф, който за всеки показател извън референтните граници указва дали е повишен или понижен.\n"
-        "Форматирай отговора стриктно така, с разделители:\n"
-        "===JSON===\n"
-        "{\n"
-        '  "date": "11-06-2025",\n'
-        '  "TSH": {"value": 5.1, "unit": "mU/l", "status": "high", "reference": "0.4-4.2"}\n'
-        "}\n"
-        "===HTML===\n"
-        "<table class='table table-bordered'>...</table>\n"
-        "===SUMMARY===\n"
-        "Параграф с анализ на резултатите.\n"
-    )
+    print("DEBUG: extract_medical_fields_from_text беше извикана, но е празна.")
+    return {}
+
+
+def call_gpt_for_document(text: str, category: str, extracted_fields: dict) -> dict:
+    """
+    Изпраща обработения текст към GPT за анализ и структуриране.
+    """
+    if not client:
+        raise ConnectionError("OpenAI клиентът не е инициализиран правилно. Проверете API ключа.")
+
+    system_prompt = f"""
+Ти си експертен асистент за обработка на медицински документи. Твоята задача е да анализираш предоставения текст от медицински документ, който е от категория '{category}', и да върнеш информацията в стриктен JSON формат.
+
+JSON отговорът трябва да съдържа следните три ключа на най-горно ниво:
+1.  "summary": Кратко обобщение на документа от 1-2 изречения на български език.
+2.  "html_table": HTML таблица (<table>...</table>) с два основни стълба: "Показател" и "Стойност/Резултат". Включи най-важните медицински показатели от документа.
+3.  "json_data": JSON обект, съдържащ структурирани данни. Задължително включи поле "date" (във формат YYYY-MM-DD), ако има дата на документа. Включи и други релевантни полета според документа. Всички имена на хора трябва да бъдат анонимизирани до "Пациент" или "Лекар".
+"""
 
     try:
-        resp = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+        completion = client.chat.completions.create(
+            model="gpt-4o",
+            response_format={"type": "json_object"},
             messages=[
-                {"role": "system", "content": "You are a helpful medical assistant."},
-                {"role": "user", "content": prompt},
-            ],
-            temperature=0.1,
-            max_tokens=3000,
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"Ето текста за анализ:\n\n{text}"}
+            ]
         )
-        # Безопасно взимаме съдържанието
-        content = resp.choices[0].message.content if resp.choices else ""
 
+        response_content = completion.choices[0].message.content
+        return json.loads(response_content)
+
+    except openai.APIError as e:
+        print(f"OpenAI API Error: {e}")
+        raise ConnectionError(f"Грешка при комуникация с OpenAI: {e}")
+    except json.JSONDecodeError:
+        raise ValueError("Грешка: Отговорът от AI не е в очаквания JSON формат.")
     except Exception as e:
-        # Прихващаме грешки от самия API извикване (напр. грешен ключ)
-        print(f"OpenAI API call failed: {e}")
-        content = ""  # Връщаме празно съдържание, за да продължи надолу
+        raise Exception(f"Неочаквана грешка в gpt_client: {e}")
 
-    # ---- ТУК ДОБАВЯМЕ PRINT ЗА ДЕБЪГВАНЕ ----
-    print("----------- СУРОВ ОТГОВОР ОТ GPT -----------")
-    print(content)
-    print("------------------------------------------")
-    # ---------------------------------------------
 
-    # --- НОВА, ПО-СИГУРНА ЛОГИКА ЗА ПАРСВАНЕ с REGEX ---
-    json_match = re.search(r"===JSON===(.*?)===HTML===", content, re.DOTALL)
-    html_match = re.search(r"===HTML===(.*?)===SUMMARY===", content, re.DOTALL)
-    summary_match = re.search(r"===SUMMARY===(.*)", content, re.DOTALL)
+def call_gpt_for_document(text: str, category: str, extracted_fields: dict) -> dict:
+    """
+    Изпраща обработения текст към GPT за анализ и структуриране.
 
-    # Безопасно извличаме частите. Ако не се намери съвпадение, връщаме празна стойност.
-    json_part = json_match.group(1).strip() if json_match else "{}"
-    html_part = html_match.group(1).strip() if html_match else ""
-    summary_part = summary_match.group(1).strip() if summary_match else _("Не може да се генерира обобщение.")
+    :param text: Анонимизираният текст от документа.
+    :param category: Категорията на документа (напр. 'blood_test').
+    :param`  extracted_fields: Предварително извлечени полета (в момента празен речник).
+    :return: Речник с обобщение, HTML таблица и JSON данни.
+    """
+    if not client:
+        raise ConnectionError("OpenAI клиентът не е инициализиран правилно. Проверете API ключа.")
+
+    # --- Дефиниране на System Prompt ---
+    # Това е инструкцията, която казва на AI как да се държи и какъв да е форматът на отговора.
+    system_prompt = f"""
+Ти си експертен асистент за обработка на медицински документи. Твоята задача е да анализираш предоставения текст от медицински документ, който е от категория '{category}', и да върнеш информацията в стриктен JSON формат.
+
+JSON отговорът трябва да съдържа следните три ключа на най-горно ниво:
+1.  "summary": Кратко обобщение на документа от 1-2 изречения на български език.
+2.  "html_table": HTML таблица (<table>...</table>) с два основни стълба: "Показател" и "Стойност/Резултат". Включи най-важните медицински показатели от документа.
+3.  "json_data": JSON обект, съдържащ структурирани данни. Задължително включи поле "date" (във формат YYYY-MM-DD), ако има дата на документа. Включи и други релевантни полета според документа (напр. "doctor_name", "patient_name", специфични кръвни показатели като "hemoglobin", "glucose" и т.н.). Всички имена на хора трябва да бъдат анонимизирани до "Пациент" или "Лекар".
+
+Пример за структура на "json_data" за кръвно изследване:
+{{
+  "date": "2024-05-15",
+  "laboratory": "Цибалаб",
+  "hemoglobin": "145 g/L",
+  "leukocytes": "7.5 G/L"
+}}
+"""
 
     try:
-        json_data = json.loads(json_part)
-    except json.JSONDecodeError:
-        # Ако GPT върне невалиден JSON, използваме това като резервен вариант
-        json_data = extracted_fields
-        html_part = f"<p>{_('GPT върна невалиден формат на данните.')}</p>"
+        completion = client.chat.completions.create(
+            model="gpt-4o",  # Използваме мощен и модерен модел
+            response_format={"type": "json_object"},  # Изискваме отговорът да е валиден JSON
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"Ето текста за анализ:\n\n{text}"}
+            ]
+        )
 
-    return {"json_data": json_data, "html_table": html_part, "summary": summary_part}
+        response_content = completion.choices[0].message.content
+        return json.loads(response_content)
+
+    except openai.APIError as e:
+        # Специфична грешка от OpenAI (напр. невалиден ключ, претоварен сървър)
+        print(f"OpenAI API Error: {e}")
+        raise ConnectionError(f"Грешка при комуникация с OpenAI: {e}")
+    except json.JSONDecodeError:
+        # Грешка, ако AI върне нещо, което не е валиден JSON
+        raise ValueError("Грешка: Отговорът от AI не е в очаквания JSON формат.")
+    except Exception as e:
+        # Всички други неочаквани грешки
+        raise Exception(f"Неочаквана грешка в gpt_client: {e}")

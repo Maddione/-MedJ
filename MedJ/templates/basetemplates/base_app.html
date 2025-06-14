@@ -5,46 +5,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}МедДневник{% endblock %}</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
-    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+    {% block head_extra %}{% endblock %}
 </head>
+<body class="bg-gray-50">
 
-<body class="{% block page_class %}{% endblock %}">
-
-    <header class="container">
+    <header class="container mx-auto p-4">
         <nav class="main-navbar">
-            <a href="#" class="navbar-brand">
-                <img src="{% static 'images/languageicon.png' %}" alt="Language" style="width:30px; height:30px;">
-            </a>
-
+            <a href="#" class="navbar-brand"><img src="{% static 'images/languageicon.png' %}" alt="Language" style="width:30px; height:30px;"></a>
             <ul class="main-nav-tabs">
                 <li><a href="{% url 'medj:dashboard' %}" class="folder-tab {% if request.resolver_match.view_name == 'medj:dashboard' %}active{% endif %}">ТАБЛО</a></li>
                 <li><a href="{% url 'medj:casefiles' %}" class="folder-tab {% if request.resolver_match.view_name == 'medj:casefiles' %}active{% endif %}">ДОСИЕ</a></li>
                 <li><a href="{% url 'medj:personalcard' %}" class="folder-tab {% if request.resolver_match.view_name == 'medj:personalcard' %}active{% endif %}">Л.КАРТОН</a></li>
-                <li><a href="{% url 'medj:upload' %}" class="folder-tab {% if request.resolver_match.view_name == 'medj:uploadpage' %}active{% endif %}">ДОКУМЕНТИ</a></li>
+                <li><a href="{% url 'medj:upload' %}" class="folder-tab {% if request.resolver_match.view_name == 'medj:upload' %}active{% endif %}">ДОКУМЕНТИ</a></li>
             </ul>
-
-            <div class="user-menu">
-                <details class="dropdown">
-                    <summary role="button" class="secondary outline">
-                        {{ user.username }}
-                        <img src="{% static 'images/profileicon.png' %}" alt="Профил" style="width:24px; height:24px; margin-left: 5px;">
-                    </summary>
-                    <ul dir="rtl">
-                        <li><a href="{% url 'medj:profile' %}">Профил</a></li>
-                        <li><a href="{% url 'medj:history' %}">История на качване</a></li>
-                        <li><hr></li>
-                        <li><a href="{% url 'medj:logout' %}">Изход</a></li>
-                    </ul>
-                </details>
-            </div>
+            <div class="user-menu"></div>
         </nav>
     </header>
 
-    <main class="container content-wrapper">
-        {% block content %}
-        {% endblock %}
+    <main class="container mx-auto p-4">
+        {% block content %}{% endblock %}
     </main>
 
+    {% block scripts %}{% endblock %}
 </body>
 </html>
