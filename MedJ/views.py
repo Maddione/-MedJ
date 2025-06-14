@@ -1,5 +1,3 @@
-# MedJ/views.py - ПЪЛНА И КОРЕКТНА ВЕРСИЯ
-
 import os
 import json
 import hashlib
@@ -165,7 +163,7 @@ def analyze_document(request):
         specialist_tag, _ = Tag.objects.get_or_create(name=specialist)
         new_document.tags.add(category_tag, specialist_tag)
 
-        return JsonResponse({'status': 'success', 'new_document_id': new_document.id})
+        return JsonResponse({'status': 'success', 'new_document_id': gpt_result})
 
     except json.JSONDecodeError:
         return JsonResponse({'status': 'error', 'message': 'Невалиден JSON формат на заявката.'}, status=400)

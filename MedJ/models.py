@@ -55,6 +55,7 @@ class MedicalEvent(models.Model):
 # Качен файл – изображение или PDF
 class MedicalDocument(models.Model):
     event = models.ForeignKey(MedicalEvent, on_delete=models.CASCADE, related_name='documents')
+
     file = models.FileField(upload_to='documents/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
     extracted_text = models.TextField(blank=True)

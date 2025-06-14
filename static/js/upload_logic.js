@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const categoryReview = document.getElementById('category-review');
     const specialistReview = document.getElementById('specialist-review');
     const errorMessageDiv = document.getElementById('error-message');
+    const summaryMessageDiv = document.getElementById('summary-message');
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     let currentFileHash = null;
 
@@ -98,8 +99,10 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(response => response.json().then(data => ({ ok: response.ok, data })))
         .then(({ ok, data }) => {
             if (!ok) throw new Error(data.message);
-          //  window.location.href = `/document/${data.new_document_id}/`;
+           //window.location.href = `/document/${data.new_document_id}/`;
             console.log(data)
+            summaryMessageDiv.style.display = 'block';
+            summaryMessageDiv.innerHTML = data.new_document_id.summary;
         })
         .catch(err => {
             showError(err.message);
