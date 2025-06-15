@@ -1,16 +1,2 @@
-{% extends "basetemplates/base_app.html" %}
-{% load i18n %}
-{% block title %}{% trans 'Профил' %} • MedJ{% endblock %}
-{% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-8 p-4 rounded" style="background-color: #fdfee9;">
-    <h3 class="mb-4" style="color: #0a4e75;">{% trans 'Вашият профил' %}</h3>
-    <ul class="list-group">
-       <li class="list-group-item">{% trans 'Потребител' %}: <strong>{{ user.username }}</strong></li>
-      <li class="list-group-item">{% trans 'Имейл' %}: <strong>{{ user.email }}</strong></li>
-      <li class="list-group-item">{% trans 'Дата на регистрация' %}: <strong>{{ user.date_joined }}</strong></li>
-    </ul>
-     <a href="{% url 'dashboard' %}" class="btn mt-3" style="background-color: #0a4e75; color: white;">{% trans 'Назад към таблото' %}</a>
-  </div>
-</div>
-{% endblock %}
+{% extends 'basetemplates/base_app.html' %}
+{% block content %}<h1>Потребителски профил</h1>{% endblock %}

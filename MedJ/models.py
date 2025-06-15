@@ -1,113 +1,118 @@
-from django.contrib.auth.models import User
+# MedJ/models.py
 from django.db import models
+from django.contrib.auth.models import User
 
 
-# Общ таг – за категоризиране на събития, документи, лекари и др.
-class Tag(models.Model):
-    name = models.CharField(max_length=50, unique=True)
+# --- ОСНОВНИ МОДЕЛИ ---
 
-    def __str__(self):
-        return self.name
-
-
-# Профил на пациента – разширение на User
 class PatientProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    age = models.PositiveIntegerField(null=True, blank=True)
-    gender = models.CharField(max_length=10, choices=[('male', 'Мъж'), ('female', 'Жена')], blank=True)
-    height_cm = models.PositiveIntegerField(null=True, blank=True)
-    weight_kg = models.PositiveIntegerField(null=True, blank=True)
-    blood_group = models.CharField(max_length=5, blank=True)
-    phone = models.CharField(max_length=20, blank=True)
-    address = models.CharField(max_length=200, blank=True)
-    insurance_region = models.CharField(max_length=100, blank=True)
-    personal_doctor = models.ForeignKey('Doctor', null=True, blank=True, on_delete=models.SET_NULL)
+    date_of_birth = models.DateField(null=True, blank=True)
 
     def __str__(self):
-        return f"Профил на {self.user.username}"
+        return f"Profile of {self.user.username}"
 
 
-# Лекар, без потребителски акаунт
-class Doctor(models.Model):
-    name = models.CharField(max_length=100)
-    specialty = models.CharField(max_length=100)
-    phone = models.CharField(max_length=20, blank=True)
-    address = models.CharField(max_length=200, blank=True)
-    tags = models.ManyToManyField(Tag, blank=True)
-
-    def __str__(self):
-        return f"{self.name} ({self.specialty})"
-
-
-# Медицинско събитие – преглед, ваксинация, изследване и др.
-class MedicalEvent(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    date = models.DateField()
-    title = models.CharField(max_length=200)
-    category = models.ForeignKey(Tag, on_delete=models.SET_NULL, null=True, related_name='events')
-    doctor = models.ForeignKey(Doctor, on_delete=models.SET_NULL, null=True, blank=True)
-    description = models.TextField(blank=True)
-
-    def __str__(self):
-        return f"{self.title} на {self.date.strftime('%d.%m.%Y')}"
-
-
-# Качен файл – изображение или PDF
-class MedicalDocument(models.Model):
-    event = models.ForeignKey(MedicalEvent, on_delete=models.CASCADE, related_name='documents')
-
-    file = models.FileField(upload_to='documents/')
+class Document(models.Model):
+    patient = models.ForeignKey(PatientProfile, on_delete=models.CASCADE, related_name='documents')
+    file = models.FileField(upload_to='medical_documents/')
+    file_hash = models.CharField(max_length=64, unique=True, null=True, blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
-    extracted_text = models.TextField(blank=True)
+    processing_error_message = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Document {self.id} for {self.patient.user.username}"
+
+
+# --- ТАГОВЕ И КЛАСИФИКАТОРИ ---
+
+class MedicalCategory(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self): return self.name
+
+
+class MedicalSpecialty(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self): return self.name
+
+
+class DocumentTag(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self): return self.name
+
+
+# --- НОВ МОДЕЛ ЗА ЛЕКАРИ ---
+class Practitioner(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    title = models.CharField(max_length=50, blank=True)  # Д-р, проф., доц.
+    specialty = models.ForeignKey(MedicalSpecialty, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self): return f"{self.title} {self.name}"
+
+
+# --- ОСНОВНИЯТ МОДЕЛ: "МЕДИЦИНСКИЯТ КАРТОН" ---
+
+class MedicalEvent(models.Model):
+    class EventType(models.TextChoices):
+        MEDICAL_COMMISSION = 'MC', 'Мед. Комисия'
+        CHECKUP = 'CHK', 'Преглед'
+        CONSULTATION = 'CON', 'Консултация'
+        INTERVENTION = 'INT', 'Интервенция'
+        SESSION = 'SES', 'Сесия'
+        OPERATION = 'OPR', 'Операция'
+        TREATMENT = 'TRM', 'Лечение'
+        SCREENING = 'SCR', 'Скрининг'
+        CERTIFICATE_ISSUE = 'CERI', 'Издаване на удостоверение'
+        HOSPITALIZATION = 'HOS', 'Хоспитализация'
+        REFERRAL = 'REF', 'Направление'
+        CONCLUSION = 'CONC', 'Заключение/Становище'
+        CERTIFICATE = 'CERT', 'Сертификат'
+        DOCUMENT = 'DOC', 'Документ'
+        OTHER = 'OTH', 'Друго'
+
+    patient = models.ForeignKey(PatientProfile, on_delete=models.CASCADE, related_name='medical_events')
+    source_document = models.OneToOneField(Document, on_delete=models.SET_NULL, null=True, blank=True,
+                                           related_name='medical_event')
+
+    event_type_title = models.CharField(max_length=4, choices=EventType.choices, default=EventType.OTHER)
+    category = models.ForeignKey(MedicalCategory, on_delete=models.SET_NULL, null=True, blank=True)
+
+    event_date = models.DateField(null=True, blank=True)
     summary = models.TextField(blank=True)
-    tags = models.ManyToManyField(Tag, blank=True)
-    html_content = models.TextField(blank=True, null=True, verbose_name="HTML съдържание")
-    json_content = models.JSONField(blank=True, null=True, verbose_name="JSON данни")
 
-    # --- НОВО ПОЛЕ ЗА ЗАСИЧАНЕ НА ДУБЛИКАТИ ---
-    file_hash = models.CharField(
-        max_length=64,
-        blank=True,
-        null=True,
-        db_index=True,
-        help_text="SHA-256 hash of the file content"
-    )
+    tags = models.ManyToManyField(DocumentTag, related_name='events', blank=True)
+    # --- НОВА ВРЪЗКА КЪМ ЛЕКАРИ ---
+    practitioners = models.ManyToManyField(Practitioner, related_name='medical_events', blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Документ за {self.event.title}"
+        return f"{self.get_event_type_title_display()} for {self.patient.user.username} on {self.event_date}"
 
 
-# Кръвна стойност от изследване
+# --- МОДЕЛИ ЗА СТРУКТУРИРАНИ РЕЗУЛТАТИ ---
+
 class BloodTestResult(models.Model):
-    document = models.ForeignKey(MedicalDocument, on_delete=models.CASCADE, related_name='blood_results')
-    parameter = models.CharField(max_length=100)
-    value = models.FloatField()
-    unit = models.CharField(max_length=20, blank=True)
+    medical_event = models.ForeignKey(MedicalEvent, on_delete=models.CASCADE, related_name='blood_test_results')
+    indicator_name = models.CharField(max_length=200)
+    value = models.CharField(max_length=100)
+    unit = models.CharField(max_length=50)
     reference_range = models.CharField(max_length=100, blank=True)
-    measured_at = models.DateField()
 
-    def __str__(self):
-        return f"{self.parameter} = {self.value} {self.unit}"
+    class Meta:
+        unique_together = ('medical_event', 'indicator_name', 'unit')
 
-
-# Предстоящо назначение (видимо в Табло)
-class UpcomingAppointment(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    doctor = models.ForeignKey(Doctor, on_delete=models.SET_NULL, null=True, blank=True)
-    date = models.DateField()
-    notes = models.CharField(max_length=200, blank=True)
-
-    def __str__(self):
-        return f"Преглед при {self.doctor} на {self.date}"
+    def __str__(self): return f"{self.indicator_name}: {self.value} {self.unit}"
 
 
-# Рецепта с лекарство и срок
-class Prescription(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    medicine_name = models.CharField(max_length=100)
-    dose = models.CharField(max_length=100)
-    start_date = models.DateField()
-    end_date = models.DateField()
+# --- НОВ МОДЕЛ ЗА ТЕКСТОВИ СЕКЦИИ ---
+class NarrativeSectionResult(models.Model):
+    medical_event = models.ForeignKey(MedicalEvent, on_delete=models.CASCADE, related_name='narrative_sections')
+    title = models.CharField(max_length=255)
+    content = models.TextField()
 
-    def __str__(self):
-        return f"{self.medicine_name} ({self.dose})"
+    def __str__(self): return self.title

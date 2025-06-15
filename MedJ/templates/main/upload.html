@@ -1,76 +1,145 @@
-{% extends "basetemplates/base_app.html" %}
-{% load i18n static %}
+{% extends 'basetemplates/base_app.html' %}
+{% load static %}
+{% load i18n %}
 
 {% block content %}
-<div class="container mx-auto mt-8 max-w-4xl px-4">
+<main class="p-4 md:p-8" style="background-color: #EAEBDA;">
+    <div class="max-w-7xl mx-auto p-6 md:p-8 rounded-2xl" style="background-color: #FDFEE9;">
+        <form id="full-upload-form" action="{% url 'medj:upload_page' %}" method="post" enctype="multipart/form-data" class="space-y-8">
+            {% csrf_token %}
 
-    <form id="uploadForm" novalidate>
-        {% csrf_token %}
-
-        <div id="upload-state">
-            <div class="bg-teal-50 rounded-full flex items-center justify-center p-3 mb-6 shadow-sm">
-                <select id="category" name="category" class="bg-white border-none rounded-full py-2 px-5 text-gray-700 font-semibold focus:ring-2 focus:ring-teal-400">
-                    <option value="" selected disabled>{% trans "Вид документ..." %}</option>
-                    <option value="blood_test">{% trans "Кръвни изследвания" %}</option>
-                    <option value="epicrisis">{% trans "Епикриза" %}</option>
-                    <option value="ambulatory_sheet">{% trans "Амбулаторен лист" %}</option>
-                    <option value="prescription">{% trans "Рецепта" %}</option>
-                </select>
-                <span class="mx-4 text-gray-400 font-semibold">{% trans "назначено от" %}</span>
-                <select id="specialist" name="specialist" class="bg-white border-none rounded-full py-2 px-5 text-gray-700 font-semibold focus:ring-2 focus:ring-teal-400">
-                    <option value="" selected disabled>{% trans "Специалист..." %}</option>
-                    <option value="gp">{% trans "Личен лекар" %}</option>
-                    <option value="cardiologist">{% trans "Кардиолог" %}</option>
-                    <option value="endocrinologist">{% trans "Ендокринолог" %}</option>
-                    <option value="laboratory">{% trans "Лаборатория" %}</option>
-                </select>
-            </div>
-
-            <div class="bg-white rounded-2xl p-6 shadow-md">
-                <input type="file" id="file_input" name="document" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 mb-4" accept="image/*,application/pdf">
-                <div class="d-grid">
-                    <button type="button" id="upload-ocr-button" class="w-full bg-teal-400 hover:bg-teal-500 text-white font-bold py-3 px-4 rounded-full transition duration-300">
-                        {% trans "Качи" %}
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div id="review-state" style="display: none;">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white rounded-2xl shadow-md overflow-hidden">
-                    <img id="image-preview" src="#" alt="Preview" class="w-full h-auto object-cover" style="display: none;">
-                    <div class="p-4">
-                         <h5 class="text-lg font-bold text-gray-800 mb-2">Оригинален текст</h5>
-                        <pre id="raw-ocr-output" class="bg-gray-100 p-3 rounded-lg text-sm text-gray-700 max-h-96 overflow-y-auto whitespace-pre-wrap break-words"></pre>
+            <div class="p-6 rounded-2xl" style="background-color: #43B8CF;">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label for="event-type-select" class="block mb-2 text-sm font-bold" style="color: #0A4E75;">{% trans "Тип на събитието" %}</label>
+                        <select id="event-type-select" name="event_type" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm">
+                            <option value="" disabled selected>{% trans "Изберете..." %}</option>
+                            {% for value, label in event_types %}
+                                <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
-                </div>
-                <div>
-                    <div class="bg-teal-50 rounded-full flex items-center justify-center p-3 mb-4 shadow-sm">
-                        <input type="text" id="category-review" class="bg-white border-none rounded-full py-2 px-5 text-gray-700 font-semibold w-full text-center" disabled>
-                        <span class="mx-4 text-gray-400 font-semibold">{% trans "от" %}</span>
-                        <input type="text" id="specialist-review" class="bg-white border-none rounded-full py-2 px-5 text-gray-700 font-semibold w-full text-center" disabled>
+                    <div>
+                        <label for="category-select" class="block mb-2 text-sm font-bold" style="color: #0A4E75;">{% trans "Медицинска категория" %}</label>
+                        <select id="category-select" name="category_id" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm">
+                            <option value="" disabled selected>{% trans "Изберете..." %}</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
-                    <textarea id="ocr_text_area" class="w-full p-4 border border-gray-300 rounded-2xl h-80 focus:ring-2 focus:ring-teal-400 focus:border-transparent"></textarea>
-                    <div class="bg-red-100 border border-red-300 text-red-700 px-4 py-2 rounded-full text-center mt-4 text-sm">
-                        <p>{% trans "Моля внимателно проверявайте текста преди одобрение" %}</p>
-                    </div>
-                    <div class="d-grid mt-4">
-                        <button type="button" id="analyze-button" class="w-full bg-teal-400 hover:bg-teal-500 text-white font-bold py-4 px-4 rounded-full transition duration-300 text-lg">
-                            {% trans "Одобри и анализирай..." %}
-                        </button>
+                    <div>
+                        <label for="specialty-select" class="block mb-2 text-sm font-bold" style="color: #0A4E75;">{% trans "Специалност/Изследване" %}</label>
+                        <select id="specialty-select" name="specialty_id" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm">
+                            <option value="" disabled selected>{% trans "Първо изберете категория" %}</option>
+                        </select>
                     </div>
                 </div>
             </div>
-        </div>
-    </form>
 
-    <div id="summary-message" style="display: none"></div>
+            <div class="p-6 rounded-2xl border-2 border-dashed border-gray-300 text-center">
+                <input type="file" name="document" id="document-input" class="hidden" required>
+                <label for="document-input" class="cursor-pointer inline-block px-6 py-3 font-bold text-white rounded-lg transition-colors duration-300" style="background-color: #0A4E75;">
+                    {% trans "Избери файл от компютъра" %}
+                </label>
+                <p id="file-name-display" class="mt-4 text-gray-600">{% trans "Все още не е избран файл" %}</p>
 
-    <div id="error-message" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mt-6" style="display: none;"></div>
-</div>
+                <div class="mt-6 max-w-xs mx-auto">
+                    <label for="file-type-select" class="sr-only">{% trans "Тип на файла" %}</label>
+                    <select id="file-type-select" name="file_type" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm">
+                        <option value="" disabled selected>{% trans "Посочете тип на файла..." %}</option>
+                        <option value="image">{% trans "Изображение (JPG, PNG)" %}</option>
+                        <option value="pdf">{% trans "PDF Документ" %}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="text-center pt-4">
+                <button type="submit" id="main-upload-button"
+                        class="w-full max-w-md px-6 py-4 font-bold text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                        style="background-color: #15BC11;"
+                        onmouseover="this.disabled || (this.style.backgroundColor='#0A4E75')"
+                        onmouseout="this.disabled || (this.style.backgroundColor='#15BC11')">
+                    {% trans "Качи и анализирай документа" %}
+                </button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const eventSelect = document.getElementById('event-type-select');
+    const categorySelect = document.getElementById('category-select');
+    const specialtySelect = document.getElementById('specialty-select');
+    const fileInput = document.getElementById('document-input');
+    const fileTypeSelect = document.getElementById('file-type-select');
+    const mainButton = document.getElementById('main-upload-button');
+
+    const fileNameDisplay = document.getElementById('file-name-display');
+    const specialtiesUrl = "{% url 'medj:ajax_get_specialties' %}";
+
+    const inputsToValidate = [eventSelect, categorySelect, specialtySelect, fileInput, fileTypeSelect];
+
+    function checkFormValidity() {
+        const allValid = inputsToValidate.every(input => {
+            if (input.type === 'file') {
+                return input.files.length > 0;
+            }
+            return input.value.trim() !== '';
+        });
+        mainButton.disabled = !allValid;
+    }
+
+    categorySelect.addEventListener('change', function () {
+        const categoryId = this.value;
+        specialtySelect.innerHTML = '<option value="" disabled selected>Зареждане...</option>';
+        specialtySelect.disabled = true;
+
+        if (categoryId) {
+            fetch(`${specialtiesUrl}?category_id=${categoryId}`)
+                .then(response => response.json())
+                .then(data => {
+                    specialtySelect.innerHTML = '<option value="" disabled selected>Изберете...</option>';
+                    if (data.specialties.length === 0) {
+                        specialtySelect.innerHTML = '<option value="" disabled selected>Няма специалности</option>';
+                    } else {
+                        data.specialties.forEach(function (spec) {
+                            const option = new Option(spec.name, spec.id);
+                            specialtySelect.add(option);
+                        });
+                    }
+                    specialtySelect.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Грешка при зареждане:', error);
+                    specialtySelect.innerHTML = '<option value="">Грешка</option>';
+                })
+                .finally(() => {
+                    checkFormValidity();
+                });
+        } else {
+            specialtySelect.innerHTML = '<option value="" disabled selected>Първо изберете категория</option>';
+            checkFormValidity();
+        }
+    });
+
+    fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            fileNameDisplay.textContent = `Избран файл: ${this.files[0].name}`;
+            fileNameDisplay.style.color = '#15BC11';
+        } else {
+            fileNameDisplay.textContent = 'Все още не е избран файл';
+            fileNameDisplay.style.color = '#6B7280';
+        }
+    });
+
+    inputsToValidate.forEach(input => {
+        input.addEventListener('change', checkFormValidity);
+    });
+
+    checkFormValidity();
+});
+</script>
+
 {% endblock %}
-
- {% block scripts %}
-    <script src="{% static 'js/upload_logic.js' %}"></script>
- {% endblock %}

@@ -1,57 +1,45 @@
 {% extends "basetemplates/base_app.html" %}
 {% load i18n %}
-{% load static %}
 
 {% block content %}
-<div class="row justify-content-center mt-4">
-    <div class="col-md-10 bg-light p-4 rounded shadow-sm">
-        <h4 class="mb-4 text-center">{% trans 'История на качените документи' %}</h4>
+<div class="bg-white p-6 rounded-lg shadow-lg">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">{% trans 'История на качените документи' %}</h2>
 
-        {% if documents %}
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead>
-                    <tr>
-                        <th scope="col">{% trans 'Дата на качване' %}</th>
-                        <th scope="col">{% trans 'Вид документ' %}</th>
-                        <th scope="col">{% trans 'Обобщение' %}</th>
-                        <th scope="col">{% trans 'Тагове' %}</th>
-                        <th scope="col">{% trans 'Действия' %}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for doc in documents %}
-                    <tr>
-                        <td>{{ doc.uploaded_at|date:"d.m.Y H:i" }}</td>
-                        <td>
-                            {% for tag in doc.tags.all %}
-                                {% if tag.name == doc.event.category.name %}
-                                    {{ tag.name }}
-                                {% endif %}
-                            {% endfor %}
-                        </td>
-                        <td>{{ doc.summary|truncatechars:100 }}</td> {# Показваме част от обобщението #}
-                        <td>
-                            {% for tag in doc.tags.all %}
-                                <span class="badge bg-secondary">{{ tag.name }}</span>
-                            {% endfor %}
-                        </td>
-                        <td>
-                            <a href="#" class="btn btn-sm btn-info">{% trans 'Преглед' %}</a>
-
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <div class="alert alert-info text-center" role="alert">
-            {% trans 'Все още нямате качени документи. Моля, отидете на страница "Качване", за да добавите първия си документ.' %}
-            <a href="{% url 'medj:upload' %}" class="alert-link">{% trans 'Качване' %}</a>
-        </div>
-        {% endif %}
-
+    {% if documents %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left text-gray-600">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                <tr>
+                    <th scope="col" class="py-3 px-6">{% trans 'Дата' %}</th>
+                    <th scope="col" class="py-3 px-6">{% trans 'Обобщение' %}</th>
+                    <th scope="col" class="py-3 px-6">{% trans 'Тагове' %}</th>
+                    <th scope="col" class="py-3 px-6">{% trans 'Действия' %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for doc in documents %}
+                <tr class="bg-white border-b hover:bg-gray-50">
+                    <td class="py-4 px-6 font-medium text-gray-900">{{ doc.uploaded_at|date:"d.m.Y H:i" }}</td>
+                    <td class="py-4 px-6">{{ doc.summary|truncatechars:120 }}</td>
+                    <td class="py-4 px-6">
+                        {% for tag in doc.tags.all %}
+                            <span class="bg-teal-100 text-teal-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full">{{ tag.name }}</span>
+                        {% endfor %}
+                    </td>
+                    <td class="py-4 px-6">
+                        <a href="{% url 'medj:document_detail' doc.id %}" class="font-medium text-teal-600 hover:underline">{% trans 'Преглед' %}</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+    {% else %}
+    <div class="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg text-center" role="alert">
+        <p>{% trans 'Все още нямате качени документи.' %}
+            <a href="{% url 'medj:upload' %}" class="font-bold hover:underline">{% trans 'Качете първия си документ от тук' %}</a>.
+        </p>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

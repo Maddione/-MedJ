@@ -1,32 +1,81 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="bg">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}МедДневник{% endblock %}</title>
+    <title>MedJ</title>
+    {% load i18n %}
     <link rel="stylesheet" href="{% static 'css/output.css' %}">
-    {% block head_extra %}{% endblock %}
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <link rel="stylesheet" href="{% static 'fontawesome/css/all.min.css' %}">
 </head>
-<body class="bg-gray-50">
+<body class="bg-site-background text-gray-800 font-sans min-h-screen flex flex-col">
 
-    <header class="container mx-auto p-4">
-        <nav class="main-navbar">
-            <a href="#" class="navbar-brand"><img src="{% static 'images/languageicon.png' %}" alt="Language" style="width:30px; height:30px;"></a>
-            <ul class="main-nav-tabs">
-                <li><a href="{% url 'medj:dashboard' %}" class="folder-tab {% if request.resolver_match.view_name == 'medj:dashboard' %}active{% endif %}">ТАБЛО</a></li>
-                <li><a href="{% url 'medj:casefiles' %}" class="folder-tab {% if request.resolver_match.view_name == 'medj:casefiles' %}active{% endif %}">ДОСИЕ</a></li>
-                <li><a href="{% url 'medj:personalcard' %}" class="folder-tab {% if request.resolver_match.view_name == 'medj:personalcard' %}active{% endif %}">Л.КАРТОН</a></li>
-                <li><a href="{% url 'medj:upload' %}" class="folder-tab {% if request.resolver_match.view_name == 'medj:upload' %}active{% endif %}">ДОКУМЕНТИ</a></li>
-            </ul>
-            <div class="user-menu"></div>
-        </nav>
-    </header>
+    <nav class="bg-button-blue p-4 shadow-md flex-shrink-0">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <i class="fa-solid fa-earth-americas text-white text-xl"></i>
+                <a href="{% url 'medj:dashboard' %}" class="flex items-center space-x-2 text-white text-2xl font-bold">
+                    <span>MedJ</span>
+                </a>
 
-    <main class="container mx-auto p-4">
-        {% block content %}{% endblock %}
+                {# Навигационни връзки #}
+                <a href="{% url 'medj:dashboard' %}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md font-medium">{% trans 'ТАБЛО' %}</a>
+                <a href="{% url 'medj:casefiles' %}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md font-medium">{% trans 'ДОСИЕ' %}</a>
+                <a href="{% url 'medj:personalcard' %}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md font-medium">{% trans 'Л.КАРТОН' %}</a>
+                <a href="{% url 'medj:upload_page' %}" class="bg-navbar-button-blue text-white px-3 py-2 rounded-md font-medium shadow-sm">{% trans 'ДОКУМЕНТИ' %}</a>
+            </div>
+
+            {# Профил и падащо меню #}
+            <div class="relative inline-block text-left" id="profile-dropdown-wrapper">
+                <div>
+                    <button type="button" class="inline-flex justify-center items-center w-full rounded-md px-4 py-2 text-sm font-medium text-white hover:bg-navbar-button-blue focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-navbar-button-blue" id="profile-menu-button" aria-expanded="true" aria-haspopup="true">
+                        <i class="fa-solid fa-chevron-down mr-2"></i>
+                        <span class="mr-2">{{ user.username }}</span>
+                        <i class="fa-solid fa-folder-open text-white text-xl"></i>
+                    </button>
+                </div>
+
+                <div class="dropdown-menu origin-top-right right-0 mt-2 w-56 shadow-lg bg-block-background ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="profile-menu-button" tabindex="-1">
+                    <div class="py-1" role="none">
+                        <a href="{% url 'medj:profile' %}" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem" tabindex="-1" id="menu-item-0">{% trans 'Профил' %}</a>
+                        <a href="{% url 'medj:history' %}" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem" tabindex="-1" id="menu-item-1">{% trans 'История на качване' %}</a>
+                        <a href="{% url 'medj:logout' %}" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" role="menuitem" tabindex="-1" id="menu-item-2">{% trans 'Изход' %}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow py-6">
+        {% block content %}
+        {# Съдържанието на конкретната страница ще се вмъкне тук #}
+        {% endblock content %}
     </main>
 
-    {% block scripts %}{% endblock %}
+    <footer class="bg-navbar-button-blue p-4 text-white text-center mt-8 flex-shrink-0">
+        <p>&copy; 2025 MedJ. {% trans 'Всички права запазени.' %}</p>
+    </footer>
+
+    <script>
+        // JavaScript за падащото меню
+        document.addEventListener('DOMContentLoaded', function() {
+            const profileMenuButton = document.getElementById('profile-menu-button');
+            const dropdownWrapper = document.getElementById('profile-dropdown-wrapper');
+
+            if (profileMenuButton && dropdownWrapper) {
+                profileMenuButton.addEventListener('click', function() {
+                    dropdownWrapper.classList.toggle('dropdown-show');
+                });
+
+                document.addEventListener('click', function(event) {
+                    if (!dropdownWrapper.contains(event.target)) {
+                        dropdownWrapper.classList.remove('dropdown-show');
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

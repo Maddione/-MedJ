@@ -3,60 +3,38 @@ import json
 import openai
 from django.conf import settings
 
-# --- Инициализация на OpenAI клиента ---
-# Взимаме ключа от настройките на Django, които го зареждат от .env файла
 try:
     client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
 except Exception as e:
     print(f"Грешка при инициализация на OpenAI: {e}")
     client = None
 
-
 def extract_medical_fields_from_text(text: str) -> dict:
-    """
-    Тази функция може в бъдеще да прави втори, по-прост API call или да използва
-    регулярни изрази, за да извлече специфични полета преди основния анализ.
-
-    За момента, за да работи системата, тя просто връща празен речник.
-    """
     print("DEBUG: extract_medical_fields_from_text беше извикана, но е празна.")
     return {}
 
-
 def call_gpt_for_document(text: str, category: str, extracted_fields: dict) -> dict:
-    """
-    Изпраща обработения текст към GPT за анализ и структуриране.
-    """
     if not client:
         raise ConnectionError("OpenAI клиентът не е инициализиран правилно. Проверете API ключа.")
-
     system_prompt = f"""
 Ти си експертен асистент за обработка на медицински документи. Твоята задача е да анализираш предоставения текст от медицински документ, който е от категория '{category}', и да върнеш информацията в стриктен JSON формат.
-
 JSON отговорът трябва да съдържа следните три ключа на най-горно ниво:
-1.  "summary": Кратко обобщение на документа от 1-2 изречения на български език.
-2.  "html_table": HTML таблица (<table>...</table>) с два основни стълба: "Показател" и "Стойност/Резултат". Включи най-важните медицински показатели от документа.
-3.  "json_data": JSON обект, съдържащ структурирани данни. Задължително включи поле "date" (във формат YYYY-MM-DD), ако има дата на документа. Включи и други релевантни полета според документа. Всички имена на хора трябва да бъдат анонимизирани до "Пациент" или "Лекар".
+1. "summary": Кратко обобщение на документа от 1-2 изречения на български език.
+2. "html_table": HTML таблица (<table>...</table>) с два основни стълба: "Показател" и "Стойност/Резултат". Включи най-важните медицински показатели от документа.
+3. "json_data": JSON обект, съдържащ структурирани данни. Задължително включи поле "date" (във формат YYYY-MM-DD). Всички имена на хора трябва да бъдат анонимизирани.
 """
-
     try:
         completion = client.chat.completions.create(
             model="gpt-4o",
             response_format={"type": "json_object"},
+            max_tokens=3000,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": f"Ето текста за анализ:\n\n{text}"}
             ]
         )
-
         response_content = completion.choices[0].message.content
         return json.loads(response_content)
-
-    except openai.APIError as e:
-        print(f"OpenAI API Error: {e}")
-        raise ConnectionError(f"Грешка при комуникация с OpenAI: {e}")
-    except json.JSONDecodeError:
-        raise ValueError("Грешка: Отговорът от AI не е в очаквания JSON формат.")
     except Exception as e:
         raise Exception(f"Неочаквана грешка в gpt_client: {e}")
 
@@ -94,8 +72,9 @@ JSON отговорът трябва да съдържа следните три
 
     try:
         completion = client.chat.completions.create(
-            model="gpt-4o",  # Използваме мощен и модерен модел
-            response_format={"type": "json_object"},  # Изискваме отговорът да е валиден JSON
+            model="gpt-4o",
+            response_format={"type": "json_object"},
+            max_tokens=3000,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": f"Ето текста за анализ:\n\n{text}"}

@@ -1,64 +1,68 @@
+# MedJ/admin.py
 from django.contrib import admin
-
 from .models import (
-    Tag,
-    Doctor,
     PatientProfile,
+    Document,
+    MedicalCategory,
+    MedicalSpecialty,
+    Practitioner,
     MedicalEvent,
-    MedicalDocument,
     BloodTestResult,
-    UpcomingAppointment,
-    Prescription
+    NarrativeSectionResult,
+    DocumentTag
 )
 
 
-@admin.register(Tag)
-class TagAdmin(admin.ModelAdmin):
-    list_display = ['name']
-    search_fields = ['name']
+# Инлайн администратори, за да виждаме резултатите в страницата на събитието
+class BloodTestResultInline(admin.TabularInline):
+    model = BloodTestResult
+    extra = 1  # Показва 1 празен ред за добавяне
 
 
-@admin.register(Doctor)
-class DoctorAdmin(admin.ModelAdmin):
-    list_display = ['name', 'specialty', 'phone']
-    search_fields = ['name', 'specialty']
-
-
-@admin.register(PatientProfile)
-class PatientProfileAdmin(admin.ModelAdmin):
-    list_display = ['user', 'age', 'gender', 'blood_group', 'personal_doctor']
-    search_fields = ['user__username', 'blood_group']
+class NarrativeSectionResultInline(admin.TabularInline):
+    model = NarrativeSectionResult
+    extra = 1
 
 
 @admin.register(MedicalEvent)
 class MedicalEventAdmin(admin.ModelAdmin):
-    list_display = ['user', 'title', 'date', 'category', 'doctor']
-    list_filter = ['category', 'date']
-    search_fields = ['title', 'description']
+    # Коригиран list_display: премахнахме 'specialty' и добавихме 'category'
+    list_display = ('event_date', 'patient', 'get_event_type_title_display', 'category', 'created_at')
+
+    # Коригиран list_filter: премахнахме 'specialty' и добавихме 'category'
+    list_filter = ('event_type_title', 'category', 'event_date')
+
+    search_fields = ('summary', 'patient__user__username')
+    date_hierarchy = 'event_date'
+
+    # Добавяме инлайн формите за свързаните резултати
+    inlines = [BloodTestResultInline, NarrativeSectionResultInline]
+
+    # Позволява лесно добавяне на тагове и лекари
+    filter_horizontal = ('tags', 'practitioners')
+
+    # Помощна функция за показване на пълното име на типа събитие
+    def get_event_type_title_display(self, obj):
+        return obj.get_event_type_title_display()
+
+    get_event_type_title_display.short_description = 'Тип на събитието'
 
 
-@admin.register(MedicalDocument)
-class MedicalDocumentAdmin(admin.ModelAdmin):
-    list_display = ['event', 'uploaded_at']
-    search_fields = ['extracted_text', 'summary']
-    filter_horizontal = ['tags']
+# Регистрираме и останалите модели, за да са достъпни в админ панела
+@admin.register(Practitioner)
+class PractitionerAdmin(admin.ModelAdmin):
+    list_display = ('name', 'title', 'specialty')
+    search_fields = ('name',)
 
 
-@admin.register(BloodTestResult)
-class BloodTestResultAdmin(admin.ModelAdmin):
-    list_display = ['parameter', 'value', 'unit', 'measured_at']
-    list_filter = ['measured_at']
-    search_fields = ['parameter']
+@admin.register(Document)
+class DocumentAdmin(admin.ModelAdmin):
+    list_display = ('id', 'patient', 'uploaded_at')
+    search_fields = ('patient__user__username',)
 
 
-@admin.register(UpcomingAppointment)
-class UpcomingAppointmentAdmin(admin.ModelAdmin):
-    list_display = ['user', 'doctor', 'date']
-    search_fields = ['doctor__name', 'user__username']
-
-
-@admin.register(Prescription)
-class PrescriptionAdmin(admin.ModelAdmin):
-    list_display = ['user', 'medicine_name', 'dose', 'start_date', 'end_date']
-    list_filter = ['start_date', 'end_date']
-    search_fields = ['medicine_name']
+# Проста регистрация за останалите модели
+admin.site.register(PatientProfile)
+admin.site.register(MedicalCategory)
+admin.site.register(MedicalSpecialty)
+admin.site.register(DocumentTag)
