@@ -1,9 +1,5 @@
-# MedJ/models.py
 from django.db import models
 from django.contrib.auth.models import User
-
-
-# --- ОСНОВНИ МОДЕЛИ ---
 
 class PatientProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -11,7 +7,6 @@ class PatientProfile(models.Model):
 
     def __str__(self):
         return f"Profile of {self.user.username}"
-
 
 class Document(models.Model):
     patient = models.ForeignKey(PatientProfile, on_delete=models.CASCADE, related_name='documents')
@@ -23,37 +18,16 @@ class Document(models.Model):
     def __str__(self):
         return f"Document {self.id} for {self.patient.user.username}"
 
-
-# --- ТАГОВЕ И КЛАСИФИКАТОРИ ---
-
 class MedicalCategory(models.Model):
     name = models.CharField(max_length=100, unique=True)
-
-    def __str__(self): return self.name
-
+    def __str__(self):
+        return self.name
 
 class MedicalSpecialty(models.Model):
     name = models.CharField(max_length=100, unique=True)
-
-    def __str__(self): return self.name
-
-
-class DocumentTag(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-
-    def __str__(self): return self.name
-
-
-# --- НОВ МОДЕЛ ЗА ЛЕКАРИ ---
-class Practitioner(models.Model):
-    name = models.CharField(max_length=255, unique=True)
-    title = models.CharField(max_length=50, blank=True)  # Д-р, проф., доц.
-    specialty = models.ForeignKey(MedicalSpecialty, on_delete=models.SET_NULL, null=True, blank=True)
-
-    def __str__(self): return f"{self.title} {self.name}"
-
-
-# --- ОСНОВНИЯТ МОДЕЛ: "МЕДИЦИНСКИЯТ КАРТОН" ---
+    # По ваше изискване, MedicalCategory и MedicalSpecialty НЕ СА пряко свързани.
+    def __str__(self):
+        return self.name
 
 class MedicalEvent(models.Model):
     class EventType(models.TextChoices):
@@ -74,27 +48,27 @@ class MedicalEvent(models.Model):
         OTHER = 'OTH', 'Друго'
 
     patient = models.ForeignKey(PatientProfile, on_delete=models.CASCADE, related_name='medical_events')
-    source_document = models.OneToOneField(Document, on_delete=models.SET_NULL, null=True, blank=True,
-                                           related_name='medical_event')
-
+    source_document = models.OneToOneField(Document, on_delete=models.SET_NULL, null=True, blank=True, related_name='medical_event')
     event_type_title = models.CharField(max_length=4, choices=EventType.choices, default=EventType.OTHER)
     category = models.ForeignKey(MedicalCategory, on_delete=models.SET_NULL, null=True, blank=True)
-
+    specialty = models.ForeignKey(MedicalSpecialty, on_delete=models.SET_NULL, null=True, blank=True)
     event_date = models.DateField(null=True, blank=True)
     summary = models.TextField(blank=True)
-
-    tags = models.ManyToManyField(DocumentTag, related_name='events', blank=True)
-    # --- НОВА ВРЪЗКА КЪМ ЛЕКАРИ ---
-    practitioners = models.ManyToManyField(Practitioner, related_name='medical_events', blank=True)
-
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    # Коригирани related_name, за да не се конфликтват
+    tags = models.ManyToManyField('DocumentTag', related_name='medical_events_with_tag', blank=True)
+    practitioners = models.ManyToManyField('Practitioner', related_name='medical_events_as_primary_practitioner', blank=True)
 
     def __str__(self):
         return f"{self.get_event_type_title_display()} for {self.patient.user.username} on {self.event_date}"
 
-
-# --- МОДЕЛИ ЗА СТРУКТУРИРАНИ РЕЗУЛТАТИ ---
+class DocumentTag(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    # Премахнато: events = models.ManyToManyField(MedicalEvent, related_name='tags', blank=True)
+    # Връзката ManyToManyField е дефинирана еднопосочно в MedicalEvent за tags
+    def __str__(self):
+        return self.name
 
 class BloodTestResult(models.Model):
     medical_event = models.ForeignKey(MedicalEvent, on_delete=models.CASCADE, related_name='blood_test_results')
@@ -106,13 +80,23 @@ class BloodTestResult(models.Model):
     class Meta:
         unique_together = ('medical_event', 'indicator_name', 'unit')
 
-    def __str__(self): return f"{self.indicator_name}: {self.value} {self.unit}"
+    def __str__(self):
+        return f"{self.indicator_name}: {self.value} {self.unit}"
 
+class Practitioner(models.Model):
+    name = models.CharField(max_length=200)
+    title = models.CharField(max_length=50, blank=True, default='Д-р')
+    specialty = models.ForeignKey('MedicalSpecialty', on_delete=models.SET_NULL, null=True, blank=True)
+    # Коригиран related_name, за да не се конфликтва с MedicalEvent.practitioners
+    medical_events = models.ManyToManyField('MedicalEvent', related_name='practitioners_for_event', blank=True)
 
-# --- НОВ МОДЕЛ ЗА ТЕКСТОВИ СЕКЦИИ ---
+    def __str__(self):
+        return f"{self.title} {self.name}"
+
 class NarrativeSectionResult(models.Model):
-    medical_event = models.ForeignKey(MedicalEvent, on_delete=models.CASCADE, related_name='narrative_sections')
-    title = models.CharField(max_length=255)
+    medical_event = models.ForeignKey(MedicalEvent, on_delete=models.CASCADE, related_name='narrative_section_results')
+    title = models.CharField(max_length=200)
     content = models.TextField()
 
-    def __str__(self): return self.title
+    def __str__(self):
+        return f"Section: {self.title} for Event {self.medical_event.id}"

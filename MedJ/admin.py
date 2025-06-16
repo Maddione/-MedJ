@@ -1,68 +1,65 @@
-# MedJ/admin.py
 from django.contrib import admin
 from .models import (
     PatientProfile,
     Document,
     MedicalCategory,
     MedicalSpecialty,
-    Practitioner,
     MedicalEvent,
+    DocumentTag,
     BloodTestResult,
-    NarrativeSectionResult,
-    DocumentTag
+    Practitioner,
+    NarrativeSectionResult
 )
 
-
-# Инлайн администратори, за да виждаме резултатите в страницата на събитието
-class BloodTestResultInline(admin.TabularInline):
-    model = BloodTestResult
-    extra = 1  # Показва 1 празен ред за добавяне
-
-
-class NarrativeSectionResultInline(admin.TabularInline):
-    model = NarrativeSectionResult
-    extra = 1
-
-
-@admin.register(MedicalEvent)
-class MedicalEventAdmin(admin.ModelAdmin):
-    # Коригиран list_display: премахнахме 'specialty' и добавихме 'category'
-    list_display = ('event_date', 'patient', 'get_event_type_title_display', 'category', 'created_at')
-
-    # Коригиран list_filter: премахнахме 'specialty' и добавихме 'category'
-    list_filter = ('event_type_title', 'category', 'event_date')
-
-    search_fields = ('summary', 'patient__user__username')
-    date_hierarchy = 'event_date'
-
-    # Добавяме инлайн формите за свързаните резултати
-    inlines = [BloodTestResultInline, NarrativeSectionResultInline]
-
-    # Позволява лесно добавяне на тагове и лекари
-    filter_horizontal = ('tags', 'practitioners')
-
-    # Помощна функция за показване на пълното име на типа събитие
-    def get_event_type_title_display(self, obj):
-        return obj.get_event_type_title_display()
-
-    get_event_type_title_display.short_description = 'Тип на събитието'
-
-
-# Регистрираме и останалите модели, за да са достъпни в админ панела
-@admin.register(Practitioner)
-class PractitionerAdmin(admin.ModelAdmin):
-    list_display = ('name', 'title', 'specialty')
-    search_fields = ('name',)
-
+@admin.register(PatientProfile)
+class PatientProfileAdmin(admin.ModelAdmin):
+    list_display = ['user', 'date_of_birth']
+    search_fields = ['user__username']
 
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'patient', 'uploaded_at')
-    search_fields = ('patient__user__username',)
+    list_display = ['id', 'patient', 'file', 'uploaded_at']
+    list_filter = ['uploaded_at']
+    search_fields = ['patient__user__username']
 
+@admin.register(MedicalCategory)
+class MedicalCategoryAdmin(admin.ModelAdmin):
+    list_display = ['name']
+    search_fields = ['name']
 
-# Проста регистрация за останалите модели
-admin.site.register(PatientProfile)
-admin.site.register(MedicalCategory)
-admin.site.register(MedicalSpecialty)
-admin.site.register(DocumentTag)
+@admin.register(MedicalSpecialty)
+class MedicalSpecialtyAdmin(admin.ModelAdmin):
+    list_display = ['name']
+    search_fields = ['name']
+
+@admin.register(MedicalEvent)
+class MedicalEventAdmin(admin.ModelAdmin):
+    list_display = ['id', 'patient', 'get_event_type_title_display', 'category', 'specialty', 'event_date']
+    list_filter = ['category', 'specialty', 'event_date']
+    search_fields = ['patient__user__username', 'summary']
+    # 'tags' и 'practitioners' вече са ManyToManyField в MedicalEvent, така че filter_horizontal работи
+    filter_horizontal = ['tags', 'practitioners']
+
+@admin.register(DocumentTag)
+class DocumentTagAdmin(admin.ModelAdmin):
+    list_display = ['name']
+    search_fields = ['name']
+
+@admin.register(BloodTestResult)
+class BloodTestResultAdmin(admin.ModelAdmin):
+    list_display = ['medical_event', 'indicator_name', 'value', 'unit']
+    list_filter = [('medical_event__event_date', admin.DateFieldListFilter)]
+    search_fields = ['indicator_name', 'medical_event__summary']
+
+@admin.register(Practitioner)
+class PractitionerAdmin(admin.ModelAdmin):
+    list_display = ['name', 'title', 'specialty']
+    search_fields = ['name', 'specialty__name']
+    list_filter = ['specialty']
+    # Ако искате да управлявате свързаните MedicalEvent от Practitioner Admin
+    filter_horizontal = ['medical_events'] # Ако искате да го добавите тук
+
+@admin.register(NarrativeSectionResult)
+class NarrativeSectionResultAdmin(admin.ModelAdmin):
+    list_display = ['medical_event', 'title']
+    search_fields = ['title', 'content', 'medical_event__summary']

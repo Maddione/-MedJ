@@ -1,0 +1,71 @@
+{% extends 'basetemplates/base_app.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<main class="p-4 md:p-8" style="background-color: #EAEBDA;">
+    <div class="max-w-7xl mx-auto p-6 md:p-8 rounded-2xl" style="background-color: #FDFEE9;">
+        <h2 class="text-2xl font-bold mb-6 text-center" style="color: #0A4E75;">{% trans "Преглед и одобрение на разчетен текст" %}</h2>
+
+        {% if error_message %}
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <strong class="font-bold">{% trans "Грешка!" %}</strong>
+                <span class="block sm:inline">{{ error_message }}</span>
+            </div>
+        {% endif %}
+
+        <div class="mb-6 p-4 rounded-lg" style="background-color: #E0F2F7; border: 1px solid #B2EBF2;">
+            <p class="text-sm font-semibold mb-2" style="color: #0A4E75;">{% trans "Избрани параметри:" %}</p>
+            <ul class="list-disc list-inside text-gray-700">
+                <li><strong>{% trans "Тип събитие" %}:</strong> {{ selected_event_type }}</li>
+                <li><strong>{% trans "Категория" %}:</strong> {{ selected_category }}</li>
+                <li><strong>{% trans "Специалност/Изследване" %}:</strong> {{ selected_specialty }}</li>
+            </ul>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {# Лява секция: Визуализация на качените файлове #}
+            <div class="bg-gray-100 p-4 rounded-lg shadow-inner flex flex-col items-center justify-center min-h-[500px]">
+                <h3 class="text-xl font-bold mb-4" style="color: #0A4E75;">{% trans "Визуализация на документа" %}</h3>
+                {% if temp_file_url %}
+                    {% if file_type == 'image' %}
+                        <img src="{{ temp_file_url }}" alt="{% trans 'Изображение на документ' %}" class="max-w-full h-auto rounded-lg shadow-md border border-gray-300">
+                    {% elif file_type == 'pdf' %}
+                        <iframe src="{{ temp_file_url }}#toolbar=0&navpanes=0&scrollbar=0" width="100%" height="500px" class="rounded-lg shadow-md border border-gray-300"></iframe>
+                        <p class="text-sm text-gray-500 mt-2">{% trans "Забележка: PDF визуализацията може да изглежда различно в зависимост от браузъра." %}</p>
+                    {% else %}
+                        <p class="text-gray-500">{% trans "Няма визуализация за този тип файл." %}</p>
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500">{% trans "Няма наличен файл за визуализация." %}</p>
+                {% endif %}
+            </div>
+
+            {# Дясна секция: Текстово поле за редакция #}
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <form method="post" action="{% url 'medj:upload_review_page' %}" class="space-y-6 h-full flex flex-col">
+                    {% csrf_token %}
+                    <div class="flex-grow mb-4">
+                        <label for="edited_ocr_text" class="block text-lg font-bold mb-2" style="color: #0A4E75;">{% trans "Разчетен текст (можете да редактирате):" %}</label>
+                        <textarea id="edited_ocr_text" name="edited_ocr_text" rows="20" class="w-full p-4 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 h-full resize-y" style="background-color: #FFFFFF;">{{ ocr_text }}</textarea>
+                    </div>
+
+                    <div class="text-center pt-4">
+                        <button type="submit"
+                                class="px-8 py-4 font-bold text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-300"
+                                style="background-color: #15BC11;"
+                                onmouseover="this.style.backgroundColor='#0A4E75'"
+                                onmouseout="this.style.backgroundColor='#15BC11'">
+                            {% trans "Одобри и анализирай с AI" %}
+                        </button>
+                        <a href="{% url 'medj:upload_page' %}"
+                           class="ml-4 px-8 py-4 font-bold text-gray-700 bg-gray-200 rounded-lg transition-colors duration-300 hover:bg-gray-300">
+                            {% trans "Отказ" %}
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

@@ -5,6 +5,15 @@
 {% block content %}
 <main class="p-4 md:p-8" style="background-color: #EAEBDA;">
     <div class="max-w-7xl mx-auto p-6 md:p-8 rounded-2xl" style="background-color: #FDFEE9;">
+        <h2 class="text-2xl font-bold mb-6 text-center" style="color: #0A4E75;">{% trans "Качване на нов медицински документ" %}</h2>
+
+        {% if error_message %}
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <strong class="font-bold">{% trans "Грешка!" %}</strong>
+                <span class="block sm:inline">{{ error_message }}</span>
+            </div>
+        {% endif %}
+
         <form id="full-upload-form" action="{% url 'medj:upload_page' %}" method="post" enctype="multipart/form-data" class="space-y-8">
             {% csrf_token %}
 
@@ -21,8 +30,8 @@
                     </div>
                     <div>
                         <label for="category-select" class="block mb-2 text-sm font-bold" style="color: #0A4E75;">{% trans "Медицинска категория" %}</label>
-                        <select id="category-select" name="category_id" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm">
-                            <option value="" disabled selected>{% trans "Изберете..." %}</option>
+                        <select id="category-select" name="category_id" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm" disabled>
+                            <option value="" disabled selected>{% trans "Първо изберете тип събитие" %}</option>
                             {% for cat in categories %}
                                 <option value="{{ cat.id }}">{{ cat.name }}</option>
                             {% endfor %}
@@ -30,8 +39,11 @@
                     </div>
                     <div>
                         <label for="specialty-select" class="block mb-2 text-sm font-bold" style="color: #0A4E75;">{% trans "Специалност/Изследване" %}</label>
-                        <select id="specialty-select" name="specialty_id" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm">
+                        <select id="specialty-select" name="specialty_id" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm" disabled>
                             <option value="" disabled selected>{% trans "Първо изберете категория" %}</option>
+                            {% for spec in specialties %}
+                                <option value="{{ spec.id }}">{{ spec.name }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                 </div>
@@ -77,7 +89,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const mainButton = document.getElementById('main-upload-button');
 
     const fileNameDisplay = document.getElementById('file-name-display');
-    const specialtiesUrl = "{% url 'medj:ajax_get_specialties' %}";
 
     const inputsToValidate = [eventSelect, categorySelect, specialtySelect, fileInput, fileTypeSelect];
 
@@ -89,57 +100,65 @@ document.addEventListener('DOMContentLoaded', function() {
             return input.value.trim() !== '';
         });
         mainButton.disabled = !allValid;
+        if (!allValid) {
+            mainButton.classList.add('opacity-40', 'cursor-not-allowed');
+        } else {
+            mainButton.classList.remove('opacity-40', 'cursor-not-allowed');
+        }
     }
 
-    categorySelect.addEventListener('change', function () {
-        const categoryId = this.value;
-        specialtySelect.innerHTML = '<option value="" disabled selected>Зареждане...</option>';
-        specialtySelect.disabled = true;
-
-        if (categoryId) {
-            fetch(`${specialtiesUrl}?category_id=${categoryId}`)
-                .then(response => response.json())
-                .then(data => {
-                    specialtySelect.innerHTML = '<option value="" disabled selected>Изберете...</option>';
-                    if (data.specialties.length === 0) {
-                        specialtySelect.innerHTML = '<option value="" disabled selected>Няма специалности</option>';
-                    } else {
-                        data.specialties.forEach(function (spec) {
-                            const option = new Option(spec.name, spec.id);
-                            specialtySelect.add(option);
-                        });
-                    }
-                    specialtySelect.disabled = false;
-                })
-                .catch(error => {
-                    console.error('Грешка при зареждане:', error);
-                    specialtySelect.innerHTML = '<option value="">Грешка</option>';
-                })
-                .finally(() => {
-                    checkFormValidity();
-                });
+    eventSelect.addEventListener('change', function() {
+        if (this.value) {
+            categorySelect.disabled = false;
+            categorySelect.value = ""; // Изчиства избора
+            specialtySelect.disabled = true;
+            specialtySelect.value = ""; // Изчиства избора
+            categorySelect.querySelector('option[disabled]').textContent = "{% trans 'Изберете...' %}";
         } else {
-            specialtySelect.innerHTML = '<option value="" disabled selected>Първо изберете категория</option>';
-            checkFormValidity();
+            categorySelect.disabled = true;
+            categorySelect.value = "";
+            specialtySelect.disabled = true;
+            specialtySelect.value = "";
+            categorySelect.querySelector('option[disabled]').textContent = "{% trans 'Първо изберете тип събитие' %}";
         }
+        checkFormValidity();
+    });
+
+    categorySelect.addEventListener('change', function() {
+        if (this.value) {
+            specialtySelect.disabled = false;
+            specialtySelect.value = ""; // Изчиства избора
+            specialtySelect.querySelector('option[disabled]').textContent = "{% trans 'Изберете...' %}";
+        } else {
+            specialtySelect.disabled = true;
+            specialtySelect.value = "";
+            specialtySelect.querySelector('option[disabled]').textContent = "{% trans 'Първо изберете категория' %}";
+        }
+        checkFormValidity();
     });
 
     fileInput.addEventListener('change', function() {
         if (this.files.length > 0) {
-            fileNameDisplay.textContent = `Избран файл: ${this.files[0].name}`;
+            fileNameDisplay.textContent = `{% trans "Избран файл" %}: ${this.files[0].name}`;
             fileNameDisplay.style.color = '#15BC11';
         } else {
-            fileNameDisplay.textContent = 'Все още не е избран файл';
+            fileNameDisplay.textContent = '{% trans "Все още не е избран файл" %}';
             fileNameDisplay.style.color = '#6B7280';
         }
+        checkFormValidity();
     });
+
+    fileTypeSelect.addEventListener('change', checkFormValidity);
+
+    categorySelect.disabled = true;
+    specialtySelect.disabled = true;
+    checkFormValidity();
 
     inputsToValidate.forEach(input => {
-        input.addEventListener('change', checkFormValidity);
+        if (input !== fileInput && input !== fileTypeSelect) {
+            input.addEventListener('change', checkFormValidity);
+        }
     });
-
-    checkFormValidity();
 });
 </script>
-
 {% endblock %}
