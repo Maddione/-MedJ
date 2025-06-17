@@ -9,8 +9,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const documentId = deleteButton ? deleteButton.dataset.documentId : null;
 
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const languagePrefix = '/' + document.documentElement.lang;
 
-    // --- Save Details Button Logic ---
+
+    // --- Save Details Button Logic --
+
+
     if (saveDetailsButton) {
         saveDetailsButton.addEventListener('click', function() {
             if (!eventId) {
@@ -27,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 tags: tagsInput ? tagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0) : [],
             };
 
-            fetch(`/api/update-event-details/${eventId}/`, {
+            fetch(`${languagePrefix}/api/update-event-details/${eventId}/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -77,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
             deleteButton.disabled = true;
             deleteButton.innerHTML = `<span class="spinner-border spinner-border-sm"></span> ${MESSAGES.deleting_event_text || 'Изтрива се...'}`;
 
-            fetch(`/api/delete-document/${documentId}/`, {
+            fetch(`${languagePrefix}/api/delete-document/${documentId}/`, {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': csrfToken,

@@ -1,4 +1,3 @@
-"""Django’s command-line utility for administrative tasks."""
 from __future__ import annotations
 
 import os
@@ -9,7 +8,7 @@ def main() -> None:
     """Entrypoint for manage.py commands."""
     os.environ.setdefault(
         "DJANGO_SETTINGS_MODULE",
-        os.getenv("DJANGO_SETTINGS_MODULE", "settings.dev"),
+        os.getenv("DJANGO_SETTINGS_MODULE", "settings"),
     )
 
     try:

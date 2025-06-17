@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const previewPlaceholder = document.getElementById('preview-placeholder');
 
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const languagePrefix = '/' + document.documentElement.lang;
     let currentFileHash = null;
 
     const customFileText = document.querySelector('.custom-file-text');
@@ -172,7 +173,7 @@ document.addEventListener('DOMContentLoaded', function() {
             checkOcrButtonState();
 
             if (this.value) {
-                fetch(`/ajax/get-specialties/`)
+                fetch(`${languagePrefix}/ajax/get-specialties/`)
                     .then(response => response.json())
                     .then(data => {
                         if (specialtySelect) {
@@ -272,7 +273,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log(pair[0] + ', ' + pair[1]);
             }
 
-            fetch('/api/perform-ocr/', {
+            fetch(`${languagePrefix}/api/perform-ocr/`, {
                 method: 'POST',
                 // *** CRITICAL FIX: DO NOT set Content-Type header manually for FormData ***
                 // The browser will automatically set 'multipart/form-data' with the correct boundary.
@@ -347,7 +348,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 file_hash: currentFileHash
             };
 
-            fetch('/api/analyze-document/', {
+            fetch(`${languagePrefix}/api/analyze-document/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
