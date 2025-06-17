@@ -1,37 +1,65 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="bg">
+ {% load static %}
+ {% load i18n %}
+ <!DOCTYPE html>
+ <html lang="{{ LANGUAGE_CODE }}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Добре дошли в МедДневник{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
-    <style>
-        body {
-            background-color: var(--bg-site);
-        }
-    </style>
-</head>
-<body>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>MedJ - {% trans "Вашият Здравен Дневник" %}</title>
+     <link rel="stylesheet" href="{% static 'css/output.css' %}">
+     <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+     <link rel="stylesheet" href="{% static 'fontawesome/css/all.min.css' %}">
+ </head>
+ <body class="bg-site-background text-gray-800 font-sans min-h-screen flex flex-col">
 
-    <nav class="navbar main-navbar">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{% url 'medj:landingpage' %}">
-                <img src="{% static 'images/languageicon.png' %}" alt="Language" width="30">
-            </a>
-            <div class="d-flex">
-                <a href="{% url 'medj:login' %}" class="btn btn-outline-light me-2">Вход</a>
-                <a href="{% url 'medj:register' %}" class="btn btn-primary-custom">Регистрация</a>
-            </div>
-        </div>
-    </nav>
+     <nav class="bg-button-blue p-4 shadow-md flex-shrink-0">
+         <div class="container mx-auto flex justify-between items-center">
+             <div class="flex items-center space-x-4">
+                 <div class="relative">
+                     <i class="fa-solid fa-earth-americas text-white text-xl cursor-pointer" id="language-toggle-icon-public"></i>
+                     <form id="language-form-public" action="{% url 'set_language' %}" method="post" class="hidden">
+                         {% csrf_token %}
+                         <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                         {% get_current_language as LANGUAGE_CODE %}
+                         {% get_available_languages as LANGUAGES %}
+                         {% for lang_code, lang_name in LANGUAGES %}
+                             {% if lang_code != LANGUAGE_CODE %}
+                                 <input type="hidden" name="language" value="{{ lang_code }}">
+                             {% endif %}
+                         {% endfor %}
+                     </form>
+                 </div>
+                 <a href="{% url 'medj:landingpage' %}" class="flex items-center space-x-2 text-white text-2xl font-bold">
+                     <span>MedJ</span>#                 </a>
+             </div>
+             <div class="space-x-4">
+                 <a href="{% url 'medj:login' %}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md font-medium">{% trans 'Вход' %}</a>
+                 <a href="{% url 'medj:register' %}" class="bg-navbar-button-blue text-white px-3 py-2 rounded-md font-medium shadow-sm">{% trans 'Регистрация' %}</a>
+             </div>
+         </div>
+     </nav>
 
-    <main class="container">
-        {% block content %}
-        {% endblock %}
-    </main>
+     <main class="flex-grow py-6">
+         {% block content %}
+         {% endblock content %}
+     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+
+     <footer class="bg-navbar-button-blue p-4 text-white text-center mt-8 flex-shrink-0">
+         <p>&copy; 2025 MedJ. {% trans 'Всички права запазени.' %}</p>
+     </footer>
+
+     <script>
+         document.addEventListener('DOMContentLoaded', function() {
+             const languageToggleIconPublic = document.getElementById('language-toggle-icon-public');
+             const languageFormPublic = document.getElementById('language-form-public');
+
+             if (languageToggleIconPublic && languageFormPublic) {
+                 languageToggleIconPublic.addEventListener('click', function() {
+                     languageFormPublic.submit();
+                 });
+             }
+         });
+     </script>
+ </body>
+ </html>

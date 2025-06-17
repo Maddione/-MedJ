@@ -1,11 +1,21 @@
-{% extends "basetemplates/base_public.html" %}
-{% load static %}
+ {% extends 'basetemplates/base_public.html' %}
+ {% load static %}
+ {% load i18n %}
 
-{% block title %}Добре дошли в MedJ{% endblock %}
+ {% block content %}
+ <div class="container mx-auto p-8 flex flex-col md:flex-row items-center justify-center min-h-[calc(100vh-160px)]"> {# Adjust min-height based on nav/footer sizes #}
+     <div class="md:w-1/2 text-center md:text-left mb-8 md:mb-0 md:mr-12">
+         <h1 class="text-4xl md:text-5xl font-bold mb-4" style="color: #0A4E75;">{% trans "Вашият Персонален Здравен Дневник" %}</h1>
+         <p class="text-lg md:text-xl text-gray-700 mb-6">
+             {% trans "Качвайте, анализирайте и управлявайте медицинските си документи лесно и сигурно с MedJ." %}
+         </p>
+         <a href="{% url 'medj:register' %}" class="bg-checkmark-green hover:bg-green-700 text-white text-lg font-bold py-3 px-8 rounded-lg shadow-lg transition-colors duration-300">
+             {% trans "Започнете сега!" %}
+         </a>
+     </div>
 
-{% block content %}
-<div class="text-center" style="margin-top: 25vh;">
-  <h1 class="display-4">Добре дошли в MedJ</h1>
-  <p class="lead">Организирайте и анализирайте медицинските си документи на едно място.</p>
-</div>
-{% endblock %}
+     <div class="md:w-1/2 flex justify-center">
+         <img src="{% static 'images/landingpage.png' %}" alt="{% trans 'Медицински документи' %}" class="max-w-full h-auto rounded-lg shadow-xl">#     </div>
+     </div>
+ </div>
+ {% endblock content %}

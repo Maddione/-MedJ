@@ -1,45 +1,91 @@
-{% extends "basetemplates/base_app.html" %}
+{% extends 'basetemplates/base_app.html' %}
 {% load i18n %}
 
 {% block content %}
-<div class="bg-white p-6 rounded-lg shadow-lg">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6">{% trans 'История на качените документи' %}</h2>
+    <div class="container mx-auto p-4">
+        <h2 class="text-2xl font-bold mb-4">{% trans "История на медицинските събития" %}</h2>
 
-    {% if documents %}
-    <div class="overflow-x-auto">
-        <table class="w-full text-sm text-left text-gray-600">
-            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
-                <tr>
-                    <th scope="col" class="py-3 px-6">{% trans 'Дата' %}</th>
-                    <th scope="col" class="py-3 px-6">{% trans 'Обобщение' %}</th>
-                    <th scope="col" class="py-3 px-6">{% trans 'Тагове' %}</th>
-                    <th scope="col" class="py-3 px-6">{% trans 'Действия' %}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for doc in documents %}
-                <tr class="bg-white border-b hover:bg-gray-50">
-                    <td class="py-4 px-6 font-medium text-gray-900">{{ doc.uploaded_at|date:"d.m.Y H:i" }}</td>
-                    <td class="py-4 px-6">{{ doc.summary|truncatechars:120 }}</td>
-                    <td class="py-4 px-6">
-                        {% for tag in doc.tags.all %}
-                            <span class="bg-teal-100 text-teal-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full">{{ tag.name }}</span>
-                        {% endfor %}
-                    </td>
-                    <td class="py-4 px-6">
-                        <a href="{% url 'medj:document_detail' doc.id %}" class="font-medium text-teal-600 hover:underline">{% trans 'Преглед' %}</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        {# Бутон за експорт #}
+        <div class="mb-4 text-right">
+            <a href="{% url 'medj:export_medical_events_excel' %}"
+               class="bg-checkmark-green hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                {% trans "Експортирай в Excel" %}
+            </a>
+        </div>
+
+        {% if medical_events %}
+            <div class="overflow-x-auto bg-block-background shadow-md rounded-lg">
+                <table class="min-w-full leading-normal">
+                    <thead>
+                    <tr>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            {% trans "Дата на Събитието" %}
+                        </th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            {% trans "Тип" %}
+                        </th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            {% trans "Категория" %}
+                        </th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            {% trans "Специалност" %}
+                        </th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            {% trans "Обобщение" %}
+                        </th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            {% trans "Документ" %}
+                        </th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100"></th>
+                        {# За бутон Детайли #}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for event in medical_events %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                {{ event.event_date|default:_("Няма дата") }}
+                            </td>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                {{ event.get_event_type_title_display }}
+                            </td>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                {{ event.category.name|default:_("Няма") }}
+                            </td>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                {{ event.specialty.name|default:_("Няма") }}
+                            </td>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                {{ event.summary|truncatechars:100|default:_("Няма обобщение") }}
+                            </td>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                {% if event.source_document %}
+                                    <a href="{{ event.source_document.file.url }}" target="_blank"
+                                       class="text-button-blue hover:underline">
+                                        {% trans "Преглед" %}
+                                    </a>
+                                {% else %}
+                                    {% trans "Няма" %}
+                                {% endif %}
+                            </td>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-right">
+                                <a href="{% url 'medj:document_detail' event.id %}"
+                                   class="text-button-blue hover:underline font-semibold">
+                                    {% trans "Детайли" %}
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg text-center" role="alert">
+                <p>{% trans 'Все още нямате качени документи.' %}
+                    <a href="{% url 'medj:upload_page' %}"
+                       class="font-bold hover:underline">{% trans 'Качете първия си документ от тук' %}</a>.
+                </p>
+            </div>
+        {% endif %}
     </div>
-    {% else %}
-    <div class="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg text-center" role="alert">
-        <p>{% trans 'Все още нямате качени документи.' %}
-            <a href="{% url 'medj:upload' %}" class="font-bold hover:underline">{% trans 'Качете първия си документ от тук' %}</a>.
-        </p>
-    </div>
-    {% endif %}
-</div>
-{% endblock %}
+{% endblock content %}

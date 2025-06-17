@@ -1,0 +1,120 @@
+{% extends 'basetemplates/base_app.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<main class="p-4 md:p-8" style="background-color: #EAEBDA;">
+    <div class="max-w-7xl mx-auto p-6 md:p-8 rounded-2xl" style="background-color: #FDFEE9;">
+        <h2 class="text-2xl font-bold mb-6 text-center" style="color: #0A4E75;">{% trans "История на Качване" %}</h2>
+
+        {% if documents %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for document in documents %}
+            <div class="bg-block-background rounded-lg shadow-md overflow-hidden flex flex-col">
+                <div class="p-4 flex-grow">
+                    <h3 class="text-lg font-bold mb-2" style="color: #0A4E75;">
+                        {% trans "Документ" %} ID: {{ document.id }}
+                    </h3>
+                    <p class="text-gray-700 text-sm mb-1">
+                        <strong class="font-semibold">{% trans "Име на файл:" %}</strong> {{ document.file.name|split:"/"|last }}
+                    </p>
+                    <p class="text-gray-700 text-sm mb-1">
+                        <strong class="font-semibold">{% trans "Качен на:" %}</strong> {{ document.uploaded_at|date:"d M Y, H:i" }}
+                    </p>
+                    {% if document.medical_event %}
+                    <p class="text-gray-700 text-sm mb-1">
+                        <strong class="font-semibold">{% trans "Свързано събитие:" %}</strong>
+                        <a href="{% url 'medj:event_detail' document.medical_event.id %}" class="text-button-blue hover:underline">
+                            {{ document.medical_event.get_event_type_title_display }} ({{ document.medical_event.event_date|default:_("Няма дата") }})
+                        </a>
+                    </p>
+                    {% else %}
+                    <p class="text-gray-700 text-sm mb-1">
+                        <strong class="font-semibold">{% trans "Свързано събитие:" %}</strong> {% trans "Няма" %}
+                    </p>
+                    {% endif %}
+                    {% if document.processing_error_message %}
+                    <p class="text-red-600 text-sm mt-2">
+                        <strong class="font-semibold">{% trans "Грешка при обработка:" %}</strong> {{ document.processing_error_message }}
+                    </p>
+                    {% endif %}
+                </div>
+                <div class="p-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                    {% if document.file %}
+                    <a href="{{ document.file.url }}" target="_blank" class="text-button-blue hover:underline font-medium text-sm">
+                        {% trans "Преглед / Изтегляне" %}
+                    </a>
+                    {% else %}
+                    <span class="text-gray-500 text-sm">{% trans "Няма файл" %}</span>
+                    {% endif %}
+                    <button type="button"
+                            class="delete-document-button bg-error-red hover:bg-dark-red-text text-white text-xs font-bold py-1 px-3 rounded transition-colors duration-300"
+                            data-document-id="{{ document.id }}"
+                            data-confirm-message="{% trans 'Сигурни ли сте, че искате да изтриете този документ?' %}">
+                        {% trans "Изтрий" %}
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg text-center" role="alert">
+            <p>{% trans 'Все още нямате качени документи.' %}
+                <a href="{% url 'medj:upload_page' %}" class="font-bold hover:underline">{% trans 'Качете първия си документ от тук' %}</a>.
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const deleteButtons = document.querySelectorAll('.delete-document-button');
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const documentId = this.dataset.documentId;
+                const confirmMessage = this.dataset.confirmMessage;
+
+                if (confirm(confirmMessage)) {
+                    this.disabled = true;
+                    this.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Изтрива се...`; // Basic loading
+
+                    fetch(`/api/delete-document/${documentId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrfToken,
+                            'Content-Type': 'application/json'
+                        },
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(errorData => {
+                                throw new Error(errorData.message || "Неизвестна сървърна грешка.");
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert(data.message);
+                            window.location.reload(); // Reload page to show deletion
+                        } else {
+                            alert(`Грешка: ${data.message}`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Delete Error:', error);
+                        alert(`Критична грешка при изтриване: ${error.message}`);
+                    })
+                    .finally(() => {
+                        this.disabled = false;
+                        this.innerHTML = 'Изтрий';
+                    });
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

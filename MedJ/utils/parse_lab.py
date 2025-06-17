@@ -1,6 +1,7 @@
 import re
 from datetime import datetime
 
+
 def parse_lab_report(text: str) -> dict:
     lines = [l.strip() for l in text.splitlines() if l.strip() and not l.startswith("Описание")]
     data = {}
@@ -24,7 +25,7 @@ def parse_lab_report(text: str) -> dict:
     if date_iso:
         data["date"] = date_iso
 
-    unit_map = {"9/1":"g/l", "G/I":"G/l", "T/I":"T/l", "L/L":"L/L"}
+    unit_map = {"9/1": "g/l", "G/I": "G/l", "T/I": "T/l", "L/L": "L/L"}
     pattern = re.compile(
         r'^[–-]?\s*(?P<name>.+?)\s+'
         r'(?P<unit>[^\d\s]+)\s+'

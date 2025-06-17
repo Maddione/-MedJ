@@ -1,0 +1,135 @@
+{% extends 'basetemplates/base_app.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<main class="p-4 md:p-8" style="background-color: #EAEBDA;">
+    <div id="event-detail-container" class="max-w-7xl mx-auto p-6 md:p-8 rounded-2xl" style="background-color: #FDFEE9;">
+        <h2 class="text-2xl font-bold mb-6 text-center" style="color: #0A4E75;">{% trans "Детайли на Медицинско Събитие" %}</h2>
+
+        {% if medical_event %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            {# Left Column: File Visualization #}
+            <div class="bg-gray-100 p-4 rounded-lg shadow-md flex flex-col items-center justify-center relative overflow-hidden" style="min-height: 600px;">
+                {% if document.file %}
+                    {% if document.file.url|lower|ends_with:'.pdf' %}
+                        <iframe src="{{ document.file.url }}" class="w-full h-full rounded-lg" style="border: none; max-width: 100%; max-height: 100%;"></iframe>
+                    {% elif document.file.url|lower|ends_with:'.jpg' or document.file.url|lower|ends_with:'.jpeg' or document.file.url|lower|ends_with:'.png' or document.file.url|lower|ends_with:'.gif' %}
+                        <img src="{{ document.file.url }}" alt="Document Image" class="max-w-full max-h-full object-contain rounded-lg">
+                    {% else %}
+                        <p class="text-gray-500">{% trans "Неподдържан формат за преглед." %}</p>
+                    {% endif %}
+                    <a href="{{ document.file.url }}" target="_blank" class="mt-4 text-button-blue hover:underline font-medium">
+                        {% trans "Преглед в цял размер" %}
+                    </a>
+                {% else %}
+                    <p class="text-gray-500">{% trans "Няма прикачен файл." %}</p>
+                {% endif %}
+            </div>
+
+            {# Right Column: Editable Summary, Tags, Date and Action Buttons #}
+            <div class="space-y-6">
+                <div class="bg-gray-100 p-4 rounded-lg shadow-md">
+                    <h3 class="text-xl font-bold mb-4 text-gray-800">{% trans "Детайли на събитието (за редакция)" %}</h3>
+
+                    <div class="mb-4">
+                        <label for="summary_textarea" class="block text-gray-700 text-sm font-bold mb-2">{% trans "Обобщение" %}:</label>
+                        <textarea id="summary_textarea" rows="10" class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm">{{ medical_event.summary }}</textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label for="event_date_input" class="block text-gray-700 text-sm font-bold mb-2">{% trans "Дата на събитието" %}:</label>
+                        <input type="date" id="event_date_input" value="{{ medical_event.event_date|date:'Y-m-d' }}" class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm">
+                    </div>
+                    <div class="mb-4">
+                        <label for="tags_input" class="block text-gray-700 text-sm font-bold mb-2">{% trans "Тагове (разделени със запетая)" %}:</label>
+                        <input type="text" id="tags_input" value="{% for tag in tags_for_event %}{{ tag.name }}{% if not forloop.last %}, {% endif %}{% endfor %}" class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm">
+                    </div>
+
+                    {# "Назначено от" section, matching mockup #}
+                    <div class="mb-4 p-4 rounded-lg" style="background-color: #EAEBDA; border: 1px solid #D1D5DB;">
+                        <p class="text-gray-700 text-sm"><strong style="color: #0A4E75;">{% trans "Назначено от:" %}</strong>
+                            {% if practitioners_for_event %}
+                                {% for practitioner in practitioners_for_event %}
+                                    {{ practitioner.name }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                {% trans "Няма информация" %}
+                            {% endif %}
+                        </p>
+                    </div>
+
+                </div>
+
+                {# Action Buttons #}
+                <div class="flex flex-col md:flex-row justify-between gap-4">
+                    <button type="button" id="save-details-button" data-event-id="{{ medical_event.id }}"
+                            class="flex-1 px-6 py-3 font-bold text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-300"
+                            style="background-color: #0A4E75;">
+                        {% trans "Запази промените" %}
+                    </button>
+                    <button type="button" id="delete-button" data-document-id="{{ document.id }}"
+                            class="flex-1 px-6 py-3 font-bold text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-300"
+                            style="background-color: #D84137;">
+                        {% trans "Изтрий събитие" %}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {# Analysis Results (from MedicalEvent) - Matches mockup's bottom section #}
+        <div class="bg-block-background p-6 rounded-lg shadow-md mb-8">
+            <h3 class="text-xl font-bold mb-4" style="color: #0A4E75;">{% trans "Резултати от анализа" %}</h3>
+
+            {# Blood Test Results Table #}
+            {% if blood_results %}
+            <h4 class="text-lg font-bold mt-4 mb-2" style="color: #0A4E75;">{% trans "Резултати от кръвни изследвания" %}</h4>
+            <div class="overflow-x-auto">
+                <table class="min-w-full leading-normal bg-white rounded-lg shadow-sm">
+                    <thead>
+                        <tr>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{% trans "Показател" %}</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{% trans "Стойност" %}</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{% trans "Мерна Единица" %}</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{% trans "Реф. Граници" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in blood_results %}
+                        <tr>
+                            <td class="px-5 py-3 border-b border-gray-200 bg-white text-sm">{{ result.indicator_name }}</td>
+                            <td class="px-5 py-3 border-b border-gray-200 bg-white text-sm">{{ result.value }}</td>
+                            <td class="px-5 py-3 border-b border-gray-200 bg-white text-sm">{{ result.unit }}</td>
+                            <td class="px-5 py-3 border-b border-gray-200 bg-white text-sm">{{ result.reference_range }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            {# Narrative Sections (Diagnosis, Treatment Plan) #}
+            {% if narrative_sections %}
+            <h4 class="text-lg font-bold mt-4 mb-2" style="color: #0A4E75;">{% trans "Допълнителни секции" %}</h4>
+                {% for section in narrative_sections %}
+                    <div class="mb-3">
+                        <strong style="color: #0A4E75;">{{ section.title }}:</strong>
+                        <p class="text-gray-700">{{ section.content }}</p>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+        </div>
+        {% else %}
+        <div class="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg text-center" role="alert">
+            <p>{% trans 'Това събитие не е свързано с анализирани данни.' %}</p>
+        </div>
+        {% endif %}
+
+    </div>
+</main>
+
+<script>
+    const MESSAGES = {{ MESSAGES|safe }};
+</script>
+<script src="{% static 'js/event_detail_logic.js' %}"></script>
+{% endblock %}
