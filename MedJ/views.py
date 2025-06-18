@@ -1,36 +1,32 @@
-import hashlib
 import json
+import logging
 import os
-import re
-from datetime import date, datetime
+from datetime import datetime
 
-from django.shortcuts import render, get_object_or_404, redirect
-from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
-from django.core.files.base import ContentFile
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
-from django.utils import timezone
-from django.utils.translation import gettext_lazy as _
 from django.views.decorators.csrf import csrf_exempt
-from django.db import IntegrityError
-from django.urls import reverse
+from django.db import transaction
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _l
 
-from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment, Border, Side
-
-from ocrapi import anonymizer
-from ocrapi.gpt_client import summarize_document, extract_entities, analyze_lab_results, get_summary_and_html_table, call_gpt_for_document
+from .forms import DocumentUploadForm, MedicalEventForm, CustomUserCreationForm
+from .models import Document, MedicalEvent, LabIndicator, BloodTestMeasurement, NarrativeSectionResult, DocumentTag, \
+    Practitioner, PatientProfile, MedicalCategory, MedicalSpecialty
 from ocrapi.vision_handler import perform_ocr_space
+from ocrapi.gpt_client import call_gpt_for_document
+from django.urls import reverse
+from django.conf import settings
+from openpyxl import Workbook
+from openpyxl.styles import Font
+import hashlib
+from ocrapi import anonymizer
 
-from .forms import CustomUserCreationForm
-from .models import MedicalCategory, MedicalSpecialty, Document, MedicalEvent, Practitioner, BloodTestResult, \
-    NarrativeSectionResult, PatientProfile, DocumentTag
+logger = logging.getLogger(__name__)
 
-# Allowed file extensions
 ALLOWED_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.tiff', '.bmp', '.webp']
 ALLOWED_PDF_EXTENSIONS = ['.pdf']
-
 
 
 # --- Public-facing pages ---
@@ -39,127 +35,21 @@ def landing_page(request):
 
 
 def register_page(request):
-    from .forms import CustomUserCreationForm
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             PatientProfile.objects.create(user=user)
-            print(
-                f"DEBUG: User '{user.username}' registered successfully with email '{user.email}'. PatientProfile created.")
             return redirect('medj:login')
-        else:
-            print(f"DEBUG: Registration form errors: {form.errors.as_json()}")
     else:
         form = CustomUserCreationForm()
-
     return render(request, 'registration/register.html', {'form': form})
 
 
 # --- Authenticated pages ---
 @login_required
-def upload_page(request):
-    categories = MedicalCategory.objects.all()
-    specialties = MedicalSpecialty.objects.all()
-    event_types = MedicalEvent.EventType.choices
-    doctors = Practitioner.objects.all()
-
-    messages_dict = {
-        'unsupported_file_format': str(_('Неподдържан файлов формат.')),
-        'no_file_chosen': str(_('Все още не е избран файл')),
-        'choose_category_specialist_file': str(_('Моля, изберете категория, специалист и прикачете файл.')),
-        'processing': str(_('Обработва се...')), 'ocr_error': str(_('Грешка при OCR:')),
-        'unknown_server_error': str(_('Неизвестна сървърна грешка.')),
-        'network_server_error': str(_('Мрежова или сървърна грешка.')),
-        'critical_ocr_error': str(_('Критична грешка при OCR:')),
-        'upload_button': str(_('Стартирай OCR')), 'analysis_ai': str(_('Анализира се с AI...')),
-        'no_text_found': str(_('Не е намерен текст в документа.')), 'analysis_error': str(_('Грешка при анализ:')),
-        'critical_analysis_error': str(_('Критична грешка при анализ:')),
-        'approve_analyze_ai': str(_('Одобри и анализирай с AI')),
-        'choose_category_first': str(_('Първо изберете тип събитие')),
-        'choose_specialty_first': str(_('Първо изберете категория')),
-        'choose_specialty_prompt': str(_('Изберете специалност...')),
-        'error_fetching_specialties': str(_('Грешка при зареждане на специалностите.')),
-        'analysis_ai_loading_message': str(_('Извършва се AI анализ, моля изчакайте...')),
-        'save_success': str(_('Промените бяха запазени успешно!')),
-        'save_error': str(_('Грешка при запазване на промените:')),
-        'confirm_delete_event': str(_('Сигурни ли сте, че искате да изтриете това медицинско събитие и свързания с него документ?')),
-        'deleting_event_text': str(_('Изтрива се...')),
-        'event_deleted_success': str(_('Събитието и документът бяха успешно изтрити!')),
-        'delete_error': str(_('Грешка при изтриване:')),
-        'critical_delete_error': str(_('Критична грешка при изтриване:')),
-        'save_details_button_text': str(_('Запази промените')),
-        'delete_button_text': str(_('Изтрий документ')),
-        'reanalyzing_text': str(_('Анализира се повторно...')),
-        'document_reanalyzed_success': str(_('Документът е анализиран повторно и запазен!')),
-    }
-
-    if request.method == 'POST':
-        try:
-            pass
-        except Exception as e:
-            print(f"Error during upload_page POST (Non-AJAX form submit if any): {e}")
-            return render(request, 'main/upload.html', {
-                'categories': categories, 'specialties': specialties,
-                'event_types': event_types, 'doctors': doctors,
-                'error_message': _('Възникна грешка при обработката на формата: ') + str(e),
-                'MESSAGES': json.dumps(messages_dict)
-            })
-
-    return render(request, 'main/upload.html', {
-        'categories': categories,
-        'specialties': specialties,
-        'event_types': event_types,
-        'doctors': doctors,
-        'MESSAGES': json.dumps(messages_dict)
-    })
-
-
-@login_required
 def dashboard_page(request):
-    patient_profile, created = PatientProfile.objects.get_or_create(user=request.user)
-    if created:
-        print(f"DEBUG: Created PatientProfile for user: {request.user.username}")
-
-    unique_indicators = BloodTestResult.objects.filter(
-        medical_event__patient=patient_profile
-    ).values_list('indicator_name', flat=True).distinct().order_by('indicator_name')
-
-    all_blood_results = BloodTestResult.objects.filter(
-        medical_event__patient=patient_profile
-    ).order_by('medical_event__event_date', 'indicator_name')
-
-    chart_data = {}
-    for result in all_blood_results:
-        indicator = result.indicator_name
-        event_date = result.medical_event.event_date.strftime("%Y-%m-%d") if result.medical_event.event_date else "N/A"
-
-        try:
-            value = float(str(result.value).replace(',', '.'))
-        except ValueError:
-            value = None
-
-        if indicator not in chart_data:
-            chart_data[indicator] = []
-
-        chart_data[indicator].append({
-            'date': event_date,
-            'value': value,
-            'unit': result.unit,
-            'reference_range': result.reference_range
-        })
-
-    context = {
-        'unique_indicators_json': json.dumps(list(unique_indicators)),
-        'all_blood_results_json': json.dumps(chart_data),
-        'MESSAGES': json.dumps({
-            'select_indicator': str(_('Изберете показател(и)')),
-            'no_data_for_indicator': str(_('Няма данни за избрания показател.')),
-            'no_blood_data': str(_('Все още няма качени данни за кръвни изследвания.')),
-            'no_blood_data_upload_link': str(_('Качете първия си документ от тук.')),
-        })
-    }
-    return render(request, 'main/dashboard.html', context)
+    return render(request, 'main/dashboard.html')
 
 
 @login_required
@@ -173,19 +63,56 @@ def personalcard_page(request):
 
 
 @login_required
-def history_page(request):
-    user_events = MedicalEvent.objects.filter(patient=request.user.patientprofile).order_by('-created_at')
-    context = {
-        'medical_events': user_events
+def upload_page(request):
+    messages = {
+        'select_file_type': _("Моля, изберете тип на файла."),
+        'select_file': _("Моля, изберете файл за качване."),
+        'file_too_large': _("Размерът на файла е твърде голям. Максимален размер: 10 MB."),
+        'invalid_file_type': _("Невалиден тип файл. Поддържани формати: JPG, JPEG, PNG, GIF, TIFF, BMP, WEBP, PDF."),
+        'uploading_file': _("Качва се файл..."),
+        'ocr_processing': _("Обработка с OCR, моля изчакайте..."),
+        'analysis_error': _("Грешка при анализ:"),
+        'critical_analysis_error': _("Критична грешка при анализ:"),
+        'ocr_success': _("OCR обработката приключи успешно."),
+        'approve_analyze_ai': _("Одобри и анализирай с AI"),
+        'analyze_loading': _("Извършва се AI анализ, моля изчакайте..."),
+        'upload_success': _("Файлът е качен успешно!"),
+        'upload_error': _("Грешка при качване:"),
+        'critical_upload_error': _("Критична грешка при качване:"),
     }
-    return render(request, 'main/history.html', context)
+
+    event_types = MedicalEvent.EventType.choices
+    categories = MedicalCategory.objects.all().order_by('name')
+    specialties = MedicalSpecialty.objects.all().order_by('name')
+    doctors = Practitioner.objects.all().order_by('name')
+
+    context = {
+        'MESSAGES': json.dumps(messages),
+        'event_types': event_types,
+        'categories': categories,
+        'specialties': specialties,
+        'doctors': doctors,
+    }
+
+    return render(request, 'main/upload.html', context)
+
+
+@login_required
+def upload_history_page(request):
+    documents = Document.objects.filter(patient=request.user.patientprofile).order_by('-uploaded_at')
+    return render(request, 'subpages/upload_history.html', {'documents': documents})
+
+
+@login_required
+def history_page(request):
+    medical_events = MedicalEvent.objects.filter(patient=request.user.patientprofile).order_by('-event_date',
+                                                                                               '-created_at')
+    return render(request, 'main/history.html', {'medical_events': medical_events})
 
 
 @login_required
 def doctors_page(request):
-    doctors_list = Practitioner.objects.all().order_by('name')
-    context = {'doctors': doctors_list}
-    return render(request, 'subpages/doctors.html', context)
+    return render(request, 'subpages/doctors.html')
 
 
 @login_required
@@ -194,688 +121,479 @@ def profile_page(request):
 
 
 @login_required
-def event_detail_page(request, event_id):
-    medical_event = get_object_or_404(MedicalEvent, id=event_id, patient__user=request.user)
-    document = medical_event.source_document
-    editable_summary_text = medical_event.summary
-
-    blood_results = medical_event.blood_test_results.all().order_by('indicator_name')
-    narrative_sections = medical_event.narrative_section_results.all().order_by('title')
-    practitioners_for_event = medical_event.practitioners.all().order_by('name')
-    tags_for_event = medical_event.tags.all().order_by('name')
-
-    messages_dict = {
-        'save_success': str(_('Промените бяха запазени успешно!')),
-        'save_error': str(_('Грешка при запазване на промените:')),
-        'confirm_delete_event': str(_('Сигурни ли сте, че искате да изтриете това медицинско събитие и свързания с него документ?')),
-        'deleting_event_text': str(_('Изтрива се...')),
-        'event_deleted_success': str(_('Събитието и документът бяха успешно изтрити!')),
-        'delete_error': str(_('Грешка при изтриване:')),
-        'critical_delete_error': str(_('Критична грешка при изтриване:')),
-        'unknown_server_error': str(_('Неизвестна сървърна грешка.')),
-        'network_server_error': str(_('Мрежова или сървърна грешка.')),
-    }
-
-    context = {
-        'medical_event': medical_event,
-        'document': document,
-        'editable_summary_text': editable_summary_text,
-        'blood_results': blood_results,
-        'narrative_sections': narrative_sections,
-        'practitioners_for_event': practitioners_for_event,
-        'tags_for_event': tags_for_event,
-        'MESSAGES': json.dumps(messages_dict),
-    }
-    return render(request, 'subpages/event_detail.html', context)
-
-
-@login_required
-def upload_history_page(request):
-    documents = Document.objects.filter(patient__user=request.user).order_by('-uploaded_at')
-    context = {
-        'documents': documents
-    }
-    return render(request, 'subpages/upload_history.html', context)
-
-
-@csrf_exempt
-@login_required
-def update_event_details(request, event_id):
-    if request.method == 'POST':
-        try:
-            medical_event = get_object_or_404(MedicalEvent, id=event_id, patient__user=request.user)
-            data = json.loads(request.body)
-
-            new_summary = data.get('summary')
-            if new_summary is not None:
-                medical_event.summary = new_summary
-
-            new_event_date_str = data.get('event_date')
-            if new_event_date_str:
-                try:
-                    medical_event.event_date = datetime.strptime(new_event_date_str, '%Y-%m-%d').date()
-                except ValueError:
-                    print(f"Warning: Could not parse new_event_date: {new_event_date_str}")
-
-            new_tags = data.get('tags')
-            if new_tags is not None:
-                medical_event.tags.clear()
-                for tag_name in new_tags:
-                    tag, created = DocumentTag.objects.get_or_create(name=tag_name)
-                    medical_event.tags.add(tag)
-
-            medical_event.updated_at = timezone.now()
-            medical_event.save()
-
-            print(f"DEBUG: MedicalEvent ID {event_id} details updated successfully.")
-            return JsonResponse({'status': 'success', 'message': _('Промените бяха запазени успешно!')})
-
-        except MedicalEvent.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': _('Медицинско събитие не е намерено.')}, status=404)
-        except Exception as e:
-            print(f"ERROR: Failed to update MedicalEvent ID {event_id} details: {e}")
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-    return JsonResponse({'status': 'error', 'message': _('Невалидна заявка.')}, status=400)
-
-
-@csrf_exempt
-@login_required
-def delete_document(request, document_id):
-    if request.method == 'POST':
-        try:
-            document = get_object_or_404(Document, id=document_id, patient__user=request.user)
-
-            if hasattr(document, 'medical_event'):
-
-                medical_event = document.medical_event
-                medical_event_id = medical_event.id
-                medical_event.delete()
-                document.delete()
-
-                print(
-                    f"DEBUG: MedicalEvent ID {medical_event_id} and Document ID {document_id} deleted successfully by user {request.user.username}.")
-            else:
-                document.delete()
-                print(
-                    f"DEBUG: Document ID {document_id} (no linked event) deleted successfully by user {request.user.username}.")
-
-            return JsonResponse({
-                'status': 'success',
-                'message': _('Документът и свързаните с него данни бяха успешно изтрити.'),
-                'redirect_url': str(reverse('medj:history'))
-            })
-        except Document.DoesNotExist:
-            print(f"ERROR: Attempted to delete non-existent or unauthorized document ID: {document_id}.")
-            return JsonResponse(
-                {'status': 'error', 'message': _('Документът не е намерен или нямате право да го изтриете.')},
-                status=404)
-        except Exception as e:
-            print(f"CRITICAL ERROR: Failed to delete document ID {document_id}: {e}")
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-    return JsonResponse({'status': 'error', 'message': _('Невалидна заявка.')}, status=400)
-
-
-@login_required
 def upload_review_page(request):
-    return render(request, 'subpages/upload_review.html')
+    ocr_text = request.session.get('ocr_text', '')
+    file_name = request.session.get('uploaded_file_name', '')
+    file_url = request.session.get('uploaded_file_url', '')
+    selected_options_json = request.session.get('selected_options_json', '{}')
+
+    event_date_missing = request.session.get('event_date_missing', False)
+
+    try:
+        selected_options = json.loads(selected_options_json)
+    except json.JSONDecodeError:
+        selected_options = {}
+
+    context = {
+        'ocr_text': ocr_text,
+        'file_name': file_name,
+        'file_url': file_url,
+        'selected_event_type': selected_options.get('event_type_title', _('Не е избран')),
+        'selected_category': selected_options.get('category_name', _('Не е избран')),
+        'selected_specialty': selected_options.get('specialty_name', _('Не е избран')),
+        'selected_doctor': selected_options.get('practitioner_name', _('Не е избран')),
+        'selected_event_date': selected_options.get('event_date', _('Не е избрана')),
+        'event_date_missing': event_date_missing,
+    }
+    return render(request, 'subpages/upload_review.html', context)
 
 
-# --- API Endpoints for AJAX calls ---
+# --- API Endpoints ---
+
 @csrf_exempt
 @login_required
 def perform_ocr(request):
-    # --- DEBUGGING START ---
-    print("\n--- DEBUGGING PERFORM OCR ---")
-    print(f"DEBUG: Request method: {request.method}")
-    print(f"DEBUG: request.FILES content: {request.FILES}")
-    print(f"DEBUG: request.FILES.get('document'): {request.FILES.get('document')}")
-    # --- DEBUGGING END ---
+    if request.method == 'POST':
+        if 'file' not in request.FILES:
+            return JsonResponse({'status': 'error', 'message': _('Не е намерен файл за качване.')}, status=400)
 
-    if request.method == 'POST' and request.FILES.get('document'):
-        uploaded_file = request.FILES['document']
+        uploaded_file = request.FILES['file']
+        file_extension = os.path.splitext(uploaded_file.name)[1].lower()
 
-        file_content = uploaded_file.read()
-        file_hash = hashlib.sha256(file_content).hexdigest()
+        if uploaded_file.size > 10 * 1024 * 1024:  # 10 MB limit
+            return JsonResponse({'status': 'error', 'message': _('Файлът е твърде голям (макс. 10MB).')}, status=400)
 
-        if Document.objects.filter(file_hash=file_hash).exists():
-            print(f"DEBUG: Duplicate file detected. Hash: {file_hash}")
-            return JsonResponse(
-                {'status': 'error', 'message': _('Този документ вече е качен. Моля, изберете друг файл.'),
-                 'file_hash': file_hash}, status=409)
+        if file_extension not in ALLOWED_IMAGE_EXTENSIONS and file_extension not in ALLOWED_PDF_EXTENSIONS:
+            return JsonResponse({'status': 'error', 'message': _('Неподдържан файлов формат.')}, status=400)
 
+        file_hash = hashlib.sha256(uploaded_file.read()).hexdigest()
         uploaded_file.seek(0)
 
-        try:
-            ocr_text = perform_ocr_space(uploaded_file)
+        existing_document = Document.objects.filter(
+            patient=request.user.patientprofile,
+            file_hash=file_hash
+        ).first()
 
-            if not ocr_text:
-                print("DEBUG: OCR returned no text.")
-                return JsonResponse({'status': 'error', 'message': _('Не е намерен текст в документа.')}, status=400)
-
-            patient_profile, created = PatientProfile.objects.get_or_create(user=request.user)
-            if created:
-                print(f"DEBUG: Created PatientProfile for user: {request.user.username} during OCR.")
-
-            document = Document.objects.create(
-                patient=patient_profile,
-                file=uploaded_file,
-                file_hash=file_hash,
-            )
-            print(f"DEBUG: Document saved to DB. ID: {document.id}, Path: {document.file.path}")
+        if existing_document:
+            medical_event_id = None
+            try:
+                medical_event_id = existing_document.medicalevent.id
+            except MedicalEvent.DoesNotExist:
+                pass
 
             return JsonResponse({
                 'status': 'success',
-                'ocr_text_for_display': ocr_text,
-                'file_hash': file_hash,
-                'document_id': document.id
+                'message': _('Този документ вече е качен и обработен.'),
+                'ocr_text': existing_document.ocr_text if existing_document.ocr_text else '',
+                'document_id': existing_document.id,
+                'medical_event_id': medical_event_id,
+                'file_name': uploaded_file.name,
+                'file_url': existing_document.file.url,
+                'already_processed': True,
             })
 
-        except Exception as e:
-            print(f"CRITICAL ERROR during perform_ocr process: {e}")
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+        document = Document(
+            patient=request.user.patientprofile,
+            file=uploaded_file,
+            file_hash=file_hash,
+        )
+        document.save()
 
-    print("DEBUG: Request method is not POST or document file is missing in request.FILES.")
-    return JsonResponse({'status': 'error', 'message': _('Невалидна заявка или липсващ файл.')}, status=400)
+        try:
+            ocr_text = perform_ocr_space(document.file)
+            if not ocr_text:
+                document.processing_error_message = _("Неуспешно извличане на текст чрез OCR.")
+                document.save()
+                return JsonResponse({'status': 'error', 'message': _('OCR обработката не успя да извлече текст.')},
+                                    status=500)
+
+            anonymized_ocr_text = anonymizer.anonymize_text(ocr_text)
+
+            request.session['ocr_text'] = anonymized_ocr_text
+            request.session['temp_document_id'] = document.id
+            request.session['uploaded_file_name'] = uploaded_file.name
+            request.session['uploaded_file_url'] = document.file.url
+
+            return JsonResponse({
+                'status': 'success',
+                'message': _('OCR обработката приключи успешно.'),
+                'ocr_text': anonymized_ocr_text,
+                'document_id': document.id,
+                'file_name': uploaded_file.name,
+                'file_url': document.file.url,
+            })
+        except Exception as e:
+            logger.error(f"Error during OCR processing: {e}", exc_info=True)
+            document.processing_error_message = f"OCR Error: {str(e)}"
+            document.save()
+            return JsonResponse({'status': 'error', 'message': _(f'Възникна грешка по време на OCR обработка: {e}')},
+                                status=500)
+    return JsonResponse({'status': 'error', 'message': _('Невалиден метод на заявка.')}, status=405)
 
 
 @csrf_exempt
 @login_required
 def analyze_document(request):
     if request.method == 'POST':
+        ocr_text_to_analyze = request.POST.get('edited_ocr_text', request.session.get('ocr_text', ''))
+        temp_document_id = request.session.get('temp_document_id')
+
+        if not ocr_text_to_analyze or not temp_document_id:
+            return JsonResponse({'status': 'error', 'message': _('Няма текст за анализ или ID на документ.')},
+                                status=400)
+
+        event_type_title = request.POST.get('event_type_title')
+        category_name = request.POST.get('category_name')
+        specialty_name = request.POST.get('specialty_name')
+        practitioner_name = request.POST.get('practitioner_name')
+
+        # event_date is now only taken from POST if manually provided on review page (after initial GPT attempt)
+        event_date_from_post = request.POST.get('event_date')
+
+        request.session['selected_options_json'] = json.dumps({
+            'event_type_title': event_type_title,
+            'category_name': category_name,
+            'specialty_name': specialty_name,
+            'practitioner_name': practitioner_name,
+            'event_date': event_date_from_post,  # Store date from POST if available for review page
+        })
+
         try:
-            data = json.loads(request.body)
-            edited_text = data.get('edited_text', '')
-            event_type_title_str = data.get('event_type')
-            category_name = data.get('category')
-            specialty_name = data.get('specialist')
-            file_hash = data.get('file_hash')
+            document = get_object_or_404(Document, pk=temp_document_id, patient=request.user.patientprofile)
+            document.ocr_text = ocr_text_to_analyze
+            document.save()
 
-            category = MedicalCategory.objects.get(name=category_name) if category_name else None
-            specialty = MedicalSpecialty.objects.get(name=specialty_name) if specialty_name else None
-
-            patient_profile = request.user.patientprofile
-            existing_document = Document.objects.filter(file_hash=file_hash).first()
-
-            if not existing_document:
-                print(f"ERROR: analyze_document: Document with hash {file_hash} not found.")
-                return JsonResponse({'status': 'error', 'message': _('Липсващ документ с посочения хеш.')}, status=400)
-
-            anonymized_text = anonymizer.anonymize_text(edited_text)
-
-            # --- DEBUGGING START ---
-            print("\n--- DEBUGGING ANALYZE DOCUMENT ---")
-            print(f"DEBUG: OPENAI_API_KEY is set: {bool(settings.OPENAI_API_KEY)}")
-            print(f"DEBUG: Length of anonymized_text: {len(anonymized_text)}")
-            print(f"DEBUG: Anonymized text snippet: '{anonymized_text[:500]}...'")
-            print(f"DEBUG: Category for GPT: {category_name}")
-
-            if not anonymized_text.strip():
-                print(
-                    "ERROR: Anonymized text is empty or contains only whitespace. GPT will not have content to analyze.")
-                return JsonResponse({'status': 'error', 'message': _(
-                    'Не е намерен съдържателен текст за анализ от AI. Моля, проверете документа.')}, status=400)
-            # --- DEBUGGING END ---
-
-            gpt_response_data = {}
-            try:
-                gpt_response_data = call_gpt_for_document(anonymized_text,
-                                                          category_name if category_name else "general", {})
-                if not isinstance(gpt_response_data, dict) or not gpt_response_data:
-                    print(f"ERROR: call_gpt_for_document returned non-dict or empty data: {gpt_response_data}")
-                    return JsonResponse({'status': 'error', 'message': _(
-                        'Анализът от AI върна празни или невалидни данни. Моля, опитайте отново или проверете API.')},
-                                        status=500)
-            except Exception as e:
-                print(f"CRITICAL ERROR: Failed to get response from GPT: {e}")
-                return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-
-            # --- DEBUGGING GPT Response Data ---
-            print("\n--- GPT Response Data (analyze_document) ---")
-            try:
-                print(json.dumps(gpt_response_data, indent=2, ensure_ascii=False))
-            except Exception as json_e:
-                print(f"ERROR: Could not pretty print GPT response: {json_e}. Raw data: {gpt_response_data}")
-            print("--- END GPT Response Data ---")
-            # --- END DEBUGGING ---
-
-            # --- DEBUGGING GPT JSON Save START ---
-            print("\n--- DEBUGGING GPT JSON Save ---")
-            if gpt_response_data:
-                try:
-                    # Generate a unique filename using document ID and a timestamp
-                    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-
-                    original_filename_base = os.path.splitext(os.path.basename(existing_document.file.name))[0]
-
-                    json_filename = f"{original_filename_base}_{existing_document.id}_{timestamp}_gpt_response.json"
-
-                    json_content = json.dumps(gpt_response_data, indent=2, ensure_ascii=False)
-
-                    print(f"DEBUG: Attempting to save JSON file. Filename: {json_filename}")
-                    print(f"DEBUG: JSON content length: {len(json_content)} bytes")
-                    print(f"DEBUG: Target directory: {os.path.join(settings.MEDIA_ROOT, 'gpt_json_responses')}")
-
-                    target_dir = os.path.join(settings.MEDIA_ROOT, 'gpt_json_responses')
-                    if not os.path.exists(target_dir):
-                        print(f"DEBUG: Creating target directory: {target_dir}")
-                        os.makedirs(target_dir, exist_ok=True)
-                    if not os.access(target_dir, os.W_OK):
-                        print(f"ERROR: Directory is not writable: {target_dir}. Check permissions!")
-                        raise Exception("Директорията за запис на JSON файлове не е достъпна за запис.")
-
-                    existing_document.gpt_json_file.save(json_filename, ContentFile(json_content))
-                    existing_document.save()
-
-                    print(f"DEBUG: Successfully saved GPT JSON to: {existing_document.gpt_json_file.path}")
-
-                except Exception as e:
-                    print(f"ERROR: Failed to save GPT JSON file: {e}")
-                    existing_document.processing_error_message = _(f"Грешка при запис на GPT JSON: {e}")
-                    existing_document.save()
-            else:
-                print("WARNING: GPT response data was empty, not saving JSON file.")
-            print("--- DEBUGGING GPT JSON Save END ---")
-
-            # Extract data from GPT's JSON response
-            final_summary = gpt_response_data.get('summary', str(_('Няма обобщение.')))
-            event_date_str = gpt_response_data.get('event_date')
-            detected_specialty_str = gpt_response_data.get('detected_specialty')
-            suggested_tags_list = gpt_response_data.get('suggested_tags', [])
-            blood_test_results_list = gpt_response_data.get('blood_test_results', [])
-            diagnosis_content = gpt_response_data.get('diagnosis')
-            treatment_plan_content = gpt_response_data.get('treatment_plan')
-            html_table = gpt_response_data.get('html_table',
-                                               '<table><tr><td>' + str(_('Няма таблица.')) + '</td></tr></table>')
-
-            # --- DEBUGGING EXTRACTED DATA START ---
-            print("\n--- DEBUGGING EXTRACTED DATA ---")
-            print(f"DEBUG: Extracted final_summary: '{final_summary[:100]}...'")
-            print(f"DEBUG: Extracted event_date_str: '{event_date_str}'")
-            print(f"DEBUG: Extracted detected_specialty_str: '{detected_specialty_str}'")
-            print(f"DEBUG: Extracted suggested_tags_list: {str(suggested_tags_list)}")
-            print(f"DEBUG: Extracted blood_test_results_list: {str(blood_test_results_list)}")
-            print(f"DEBUG: Extracted diagnosis_content: '{str(diagnosis_content)[:100]}...'")
-            print(f"DEBUG: Extracted treatment_plan_content: '{str(treatment_plan_content)[:100]}...'")
-
-
-            event_date_obj = None
-            if event_date_str:
-                try:
-                    event_date_obj = datetime.strptime(event_date_str, '%Y-%m-%d').date()
-                except ValueError:
-                    print(f"Warning: Could not parse event_date: {event_date_str}")
-
-            detected_specialty_obj = None
-            if detected_specialty_str:
-                detected_specialty_obj, created = MedicalSpecialty.objects.get_or_create(name=detected_specialty_str)
-
-            medical_event_obj, created = MedicalEvent.objects.get_or_create(
-                patient=patient_profile,
-                source_document=existing_document,
-                defaults={
-                    'event_type_title': event_type_title_str,
-                    'category': category,
-                    'specialty': specialty or detected_specialty_obj,
-                    'summary': final_summary,
-                    'event_date': event_date_obj if event_date_obj else date.today(),
-                    'created_at': timezone.now(),
-                    'updated_at': timezone.now(),
-                }
+            gpt_data = call_gpt_for_document(
+                ocr_text_to_analyze,
+                category_name if category_name else 'general',
+                {}
             )
 
-            if not created:
-                medical_event_obj.event_type_title = event_type_title_str
-                medical_event_obj.category = category
-                medical_event_obj.specialty = specialty or detected_specialty_obj
-                medical_event_obj.summary = final_summary
-                medical_event_obj.event_date = event_date_obj if event_date_obj else medical_event_obj.event_date or date.today()
-                medical_event_obj.updated_at = timezone.now()
-                medical_event_obj.save()
+            final_event_type_title = event_type_title if event_type_title else gpt_data.get('event_type_title', 'Other')
 
-            print(f"MedicalEvent created/updated with ID: {medical_event_obj.id}")
-            print(f"Attempting to process {len(blood_test_results_list)} blood test results.")
-            print(f"MedicalEvent created/updated with ID: {medical_event_obj.id}")
-            print(f"Attempting to process {len(blood_test_results_list)} blood test results.")
+            # Prioritize date from POST (manual input) over GPT's extraction
+            final_event_date_str = event_date_from_post if event_date_from_post else gpt_data.get('event_date')
 
-            for res_data in blood_test_results_list:
-                indicator_name_raw = res_data.get('indicator_name')
-                value_raw = res_data.get('value')
-                unit_raw = res_data.get('unit')
-                reference_range_raw = res_data.get('reference_range', '')
+            final_event_date = None
+            if final_event_date_str:
+                try:
+                    final_event_date = datetime.strptime(final_event_date_str, '%Y-%m-%d').date()
+                except ValueError:
+                    final_event_date = None
 
-                # Ensure all values are strings and strip whitespace
-                indicator_name = str(indicator_name_raw).strip() if indicator_name_raw else ''
-                value = str(value_raw).strip() if value_raw else ''
-                unit = str(unit_raw).strip() if unit_raw else ''
-                reference_range = str(reference_range_raw).strip() if reference_range_raw else ''
+                    # --- Логика за липсваща дата ---
+            if not final_event_date:
+                request.session['ocr_text'] = ocr_text_to_analyze
+                request.session['temp_document_id'] = document.id
+                request.session['uploaded_file_name'] = document.file.name
+                request.session['uploaded_file_url'] = document.file.url
 
-                if indicator_name and value:
+                request.session['event_date_missing'] = True
 
-                    existing_bt_result = BloodTestResult.objects.filter(
-                        medical_event=medical_event_obj,
-                        indicator_name=indicator_name,
-                        unit=unit
-                    ).first()
+                request.session['selected_options_json'] = json.dumps({
+                    'event_type_title': event_type_title,
+                    'category_name': category_name,
+                    'specialty_name': specialty_name,
+                    'practitioner_name': practitioner_name,
+                    'event_date': '',
+                })
 
-                    if existing_bt_result:
+                return JsonResponse({
+                    'status': 'redirect_to_review',
+                    'message': _('Датата на събитието не беше открита в документа. Моля, въведете я ръчно.'),
+                    'redirect_url': reverse('medj:upload_review')
+                })
+            # --- Край на логиката за липсваща дата ---
 
-                        existing_bt_result.value = value
+            summary = gpt_data.get('summary', '')
+            diagnosis = gpt_data.get('diagnosis', '')
+            treatment_plan = gpt_data.get('treatment_plan', '')
 
+            final_detected_specialty = specialty_name if specialty_name else gpt_data.get('detected_specialty', '')
+            final_category = category_name if category_name else gpt_data.get('category', '')
 
-                        if not existing_bt_result.unit and unit:
-                            existing_bt_result.unit = unit
+            suggested_tags = gpt_data.get('suggested_tags', [])
 
+            gpt_practitioner = gpt_data.get('practitioner', {})
+            final_practitioner_name = practitioner_name if practitioner_name else gpt_practitioner.get('name')
+            final_practitioner_specialty = gpt_practitioner.get('specialty')
 
-                        if not existing_bt_result.reference_range and reference_range:
-                            existing_bt_result.reference_range = reference_range
+            blood_test_results_list = gpt_data.get('blood_test_results', [])
+            narrative_sections_list = gpt_data.get('narrative_sections', [])
 
-                        existing_bt_result.save()
-                        print(
-                            f"Updated existing BloodTestResult for Event {medical_event_obj.id}: {indicator_name}: {value} {unit} (Ref: {reference_range})")
-                    else:
+            with transaction.atomic():
+                category_obj = None
+                if final_category:
+                    category_obj, _ = MedicalCategory.objects.get_or_create(name=final_category)
 
-                        BloodTestResult.objects.create(
-                            medical_event=medical_event_obj,
-                            indicator_name=indicator_name,
-                            value=value,
-                            unit=unit,
-                            reference_range=reference_range
-                        )
-                        print(
-                            f"Created new BloodTestResult for Event {medical_event_obj.id}: {indicator_name}: {value} {unit} (Ref: {reference_range})")
-                else:
-                    print(
-                        f"Skipping BloodTestResult for Event {medical_event_obj.id} due to missing indicator_name or value: {res_data}")
+                specialty_obj = None
+                if final_detected_specialty:
+                    specialty_obj, _ = MedicalSpecialty.objects.get_or_create(name=final_detected_specialty)
 
-            for tag_name in suggested_tags_list:
-                tag_name = str(tag_name).strip()
-                if tag_name:
-                    tag, created = DocumentTag.objects.get_or_create(name=tag_name)
-                    medical_event_obj.tags.add(tag)
-                    print(f"Added tag: {tag_name}")
+                medical_event_obj, created = MedicalEvent.objects.update_or_create(
+                    patient=request.user.patientprofile,
+                    source_document=document,
+                    defaults={
+                        'event_type_title': final_event_type_title,
+                        'event_date': final_event_date,
+                        'summary': summary,
+                        'diagnosis': diagnosis,
+                        'treatment_plan': treatment_plan,
+                        'specialty': specialty_obj,
+                        'category': category_obj,
+                    }
+                )
 
-            doctor_patterns = [
-                r'(д-р|доктор)\s+([А-Я][а-я]+(?:\s+[А-Я][а-я]+)*)',
-                r'\b([А-Я][а-я]+\s+[А-Я][а-я]+(?:\s+[А-Я][а-я]+)?)\b(?=\s*(?:д-р|доктор|специалист))'
-            ]
-
-            found_doctors = set()
-            for pattern in doctor_patterns:
-                matches = re.findall(pattern, edited_text, re.IGNORECASE)
-                for match in matches:
-                    if isinstance(match, tuple):
-                        name = match[-1].strip()
-                    else:
-                        name = match.strip()
-
-                    if name and len(name.split()) >= 2:
-                        found_doctors.add(name)
-
-            for doc_name in found_doctors:
-                doc_name = str(doc_name).strip()
-                if doc_name:
-                    practitioner, created = Practitioner.objects.get_or_create(name=doc_name)
+                if final_practitioner_name:
+                    practitioner, _ = Practitioner.objects.get_or_create(
+                        name=final_practitioner_name,
+                        defaults={'specialty': specialty_obj}
+                    )
                     medical_event_obj.practitioners.add(practitioner)
-                    print(f"Added practitioner: {doc_name}")
 
-            if diagnosis_content:
-                NarrativeSectionResult.objects.create(
-                    medical_event=medical_event_obj,
-                    title=_('Диагноза'),
-                    content=str(diagnosis_content)
-                )
-                print(f"Added diagnosis: {str(diagnosis_content)[:50]}...")
-            if treatment_plan_content:
-                NarrativeSectionResult.objects.create(
-                    medical_event=medical_event_obj,
-                    title=_('План за лечение'),
-                    content=str(treatment_plan_content)
-                )
-                print(f"Added treatment plan: {str(treatment_plan_content)[:50]}...")
+                medical_event_obj.tags.clear()
+                for tag_name in suggested_tags:
+                    tag, _ = DocumentTag.objects.get_or_create(name=tag_name)
+                    medical_event_obj.tags.add(tag)
 
-            return JsonResponse({
-                'status': 'success',
-                'message': _('Документът е успешно анализиран и запазен!'),
-                'new_document_id': {
-                    'summary': final_summary,
-                    'html_table': html_table,
-                    'event_id': medical_event_obj.id,
-                }
-            })
+                for res_data in blood_test_results_list:
+                    indicator_name = res_data.get('indicator_name')
+                    value = res_data.get('value')
+                    unit = res_data.get('unit', '')
+                    reference_range = res_data.get('reference_range', '')
 
-        except json.JSONDecodeError:
-            print("Error: Invalid JSON format from request body.")
-            return JsonResponse({'status': 'error', 'message': _('Невалиден JSON формат.')}, status=400)
-        except MedicalCategory.DoesNotExist:
-            print(f"Error: Selected category '{category_name}' does not exist.")
-            return JsonResponse({'status': 'error', 'message': _('Избраната категория не съществува.')}, status=400)
-        except MedicalSpecialty.DoesNotExist:
-            print(f"Error: Selected specialty '{specialty_name}' does not exist.")
-            return JsonResponse({'status': 'error', 'message': _('Избраната специалност не съществува.')}, status=400)
+                    try:
+                        value = str(value)
+                    except (ValueError, TypeError):
+                        value = ""
+
+                    if indicator_name and value:
+                        lab_indicator_obj, created_indicator = LabIndicator.objects.get_or_create(
+                            patient=request.user.patientprofile,
+                            indicator_name__iexact=indicator_name,
+                            unit__iexact=unit,
+                            defaults={
+                                'indicator_name': indicator_name,
+                                'unit': unit,
+                                'reference_range': reference_range
+                            }
+                        )
+
+                        if not created_indicator and not lab_indicator_obj.reference_range and reference_range:
+                            lab_indicator_obj.reference_range = reference_range
+                            lab_indicator_obj.save()
+
+                        BloodTestMeasurement.objects.update_or_create(
+                            medical_event=medical_event_obj,
+                            indicator=lab_indicator_obj,
+                            defaults={'value': value}
+                        )
+
+                        logger.info(
+                            f"Processed BloodTestMeasurement: {indicator_name}: {value} {unit} for MedicalEvent ID {medical_event_obj.id}")
+
+                NarrativeSectionResult.objects.filter(medical_event=medical_event_obj).delete()
+                for section_data in narrative_sections_list:
+                    section_title = section_data.get('section_title')
+                    section_text = section_data.get('section_text')
+                    if section_title and section_text:
+                        NarrativeSectionResult.objects.create(
+                            medical_event=medical_event_obj,
+                            section_title=section_title,
+                            section_text=section_text
+                        )
+                        logger.info(
+                            f"Created new NarrativeSectionResult: {section_title} for MedicalEvent ID {medical_event_obj.id}")
+
+                if 'ocr_text' in request.session:
+                    del request.session['ocr_text']
+                if 'temp_document_id' in request.session:
+                    del request.session['temp_document_id']
+                if 'uploaded_file_name' in request.session:
+                    del request.session['uploaded_file_name']
+                if 'uploaded_file_url' in request.session:
+                    del request.session['uploaded_file_url']
+                if 'selected_options_json' in request.session:
+                    del request.session['selected_options_json']
+                if 'event_date_missing' in request.session:
+                    del request.session['event_date_missing']
+
+                return JsonResponse({
+                    'status': 'success',
+                    'message': _('Документът е анализиран и медицинското събитие е създадено/актуализирано успешно!'),
+                    'redirect_url': reverse('medj:event_detail', args=[medical_event_obj.id])
+                })
+
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to decode JSON from GPT response: {e}")
+            return JsonResponse({'status': 'error', 'message': _(f'Невалиден формат на отговор от GPT: {e}')},
+                                status=400)
         except Exception as e:
-            print(f"Critical error during analyze_document: {e}")
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-    print("Error: Invalid request to analyze_document.")
-    return JsonResponse({'status': 'error', 'message': _('Невалидна заявка.')}, status=400)
+            logger.error(f"Error during document analysis: {e}", exc_info=True)
+            return JsonResponse({'status': 'error', 'message': _(f'Възникна грешка по време на анализ: {e}')},
+                                status=500)
+    return JsonResponse({'status': 'error', 'message': _('Невалиден метод на заявка.')}, status=405)
 
 
-@login_required
-def history_page(request):
-    user_events = MedicalEvent.objects.filter(patient=request.user.patientprofile).order_by('-created_at')
-    context = {
-        'medical_events': user_events
-    }
-    return render(request, 'main/history.html', context)
-
-# --- History of uploaded documents ---
-@login_required
-def upload_history_page(request): # Renamed view
-    documents = Document.objects.filter(patient__user=request.user).order_by('-uploaded_at')
-    context = {
-        'documents': documents
-    }
-    return render(request, 'subpages/upload_history.html', context)
-
-
-@login_required
-def dashboard_page(request):
-    patient_profile = request.user.patientprofile
-
-    unique_indicators = BloodTestResult.objects.filter(
-        medical_event__patient=patient_profile
-    ).values_list('indicator_name', flat=True).distinct().order_by('indicator_name')
-
-    all_blood_results = BloodTestResult.objects.filter(
-        medical_event__patient=patient_profile
-    ).order_by('medical_event__event_date', 'indicator_name')
-
-    chart_data = {}
-    for result in all_blood_results:
-        indicator = result.indicator_name
-        event_date = result.medical_event.event_date.strftime("%Y-%m-%d") if result.medical_event.event_date else "N/A"
-
-        try:
-            value = float(str(result.value).replace(',', '.'))
-        except ValueError:
-            value = None
-
-        if indicator not in chart_data:
-            chart_data[indicator] = []
-
-        chart_data[indicator].append({
-            'date': event_date,
-            'value': value,
-            'unit': result.unit,
-            'reference_range': result.reference_range
-        })
-
-    context = {
-        'unique_indicators_json': json.dumps(list(unique_indicators)),
-        'all_blood_results_json': json.dumps(chart_data),
-        'MESSAGES': json.dumps({
-            'select_indicator': str(_('Изберете показател(и)')),
-            'no_data_for_indicator': str(_('Няма данни за избрания показател.')),
-            'no_blood_data': str(_('Все още няма качени данни за кръвни изследвания.')),
-            'no_blood_data_upload_link': str(_('Качете първия си документ от тук.')),
-        })
-    }
-    return render(request, 'main/dashboard.html', context)
-
-
-@login_required
-def casefiles_page(request):
-    return render(request, 'main/casefiles.html')
-
-
-@login_required
-def doctors_page(request):
-    doctors_list = Practitioner.objects.all().order_by('name')
-    context = {'doctors': doctors_list}
-    return render(request, 'subpages/doctors.html', context)
-
-
-@login_required
-def personalcard_page(request):
-    return render(request, 'main/personalcard.html')
-
-
-@login_required
-def profile_page(request):
-    return render(request, 'subpages/profile.html')
-
-
-@login_required
-def document_detail_page(request, event_id):
-    try:
-        medical_event = MedicalEvent.objects.get(id=event_id, patient=request.user.patientprofile)
-        context = {
-            'medical_event': medical_event,
-            'blood_results': medical_event.blood_test_results.all(),
-            'narrative_sections': medical_event.narrative_section_results.all(),
-            'practitioners_for_event': medical_event.practitioners.all(),
-            'tags_for_event': medical_event.tags.all(),
-        }
-        return render(request, 'subpages/event_detail.html', context)
-    except MedicalEvent.DoesNotExist:
-        return HttpResponse(_("Медицинско събитие не е намерено."), status=404)
-
-
-@login_required
-def upload_review_page(request):
-    return render(request, 'subpages/upload_review.html')
-
-
+@csrf_exempt
 @login_required
 def get_specialties_for_category(request):
-    specialties = MedicalSpecialty.objects.all().values('id', 'name')
-    return JsonResponse(list(specialties), safe=False)
+    specialties = MedicalSpecialty.objects.all().order_by('name')
+    specialty_list = [{'id': specialty.id, 'name': specialty.name} for specialty in specialties]
+    return JsonResponse({'specialties': specialty_list})
 
 
-# --- Export View ---
 @login_required
-def export_medical_events_to_excel(request):
-    wb = Workbook()
-    ws = wb.active
-    ws.title = str(_("Медицински Събития"))
+def event_detail_page(request, event_id):
+    medical_event = get_object_or_404(MedicalEvent, pk=event_id, patient=request.user.patientprofile)
 
-    columns = [
-        str(_("ID Събитие")),
-        str(_("Тип Събитие")),
-        str(_("Категория")),
-        str(_("Специалност")),
-        str(_("Дата на Събитието")),
-        str(_("Обобщение")),
-        str(_("Дата на Качване")),
-        str(_("Хеш на Документ")),
-        str(_("Лекари")),
-        str(_("Тагове")),
-    ]
-    ws.append(columns)
+    associated_tags = medical_event.tags.all()
+    associated_practitioners = medical_event.practitioners.all()
 
-    header_font = Font(bold=True)
-    for col_idx in range(1, len(columns) + 1):
-        ws.cell(row=1, column=col_idx).font = header_font
-        ws.cell(row=1, column=col_idx).alignment = Alignment(horizontal='center', vertical='center')
-        ws.cell(row=1, column=col_idx).border = Border(bottom=Side(style='thin'))
+    blood_tests = medical_event.blood_test_measurements.select_related('indicator').order_by(
+        'indicator__indicator_name', 'indicator__unit')
+    narrative_sections = medical_event.narrative_sections.all()
 
-    print("\n--- DEBUGGING EXCEL EXPORT ---")
-    try:
-        patient_profile = request.user.patientprofile
-        print(f"DEBUG: Exporting data for patient: {patient_profile.user.username}")
-        medical_events = MedicalEvent.objects.filter(patient=patient_profile).order_by('-event_date')
-        print(f"DEBUG: Found {medical_events.count()} medical events for this patient.")
+    context = {
+        'medical_event': medical_event,
+        'associated_tags': associated_tags,
+        'associated_practitioners': associated_practitioners,
+        'blood_tests': blood_tests,
+        'narrative_sections': narrative_sections,
+        'form': MedicalEventForm(instance=medical_event),
+        'document': medical_event.source_document
+    }
+    return render(request, 'subpages/event_detail.html', context)
 
-        if not medical_events.exists():
-            print("DEBUG: No medical events found. Excel will be empty except headers.")
+
+@csrf_exempt
+@login_required
+def update_event_details(request, event_id):
+    if request.method == 'POST':
+        medical_event = get_object_or_404(MedicalEvent, pk=event_id, patient=request.user.patientprofile)
+
+        try:
+            data = json.loads(request.body)
+            summary = data.get('summary')
+            event_date_str = data.get('event_date')
+            tags = data.get('tags', [])
+
+            if summary is not None:
+                medical_event.summary = summary
+            if event_date_str:
+                medical_event.event_date = datetime.strptime(event_date_str, '%Y-%m-%d').date()
+
+            medical_event.save()
+
+            medical_event.tags.clear()
+            for tag_name in tags:
+                tag, _ = DocumentTag.objects.get_or_create(name=tag_name)
+                medical_event.tags.add(tag)
+
+            return JsonResponse({'status': 'success', 'message': _('Медицинското събитие е актуализирано успешно.')})
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': _('Невалиден JSON формат.')}, status=400)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    return JsonResponse({'status': 'error', 'message': _('Невалиден метод на заявка.')}, status=405)
+
+
+@csrf_exempt
+@login_required
+def delete_document(request, document_id):
+    if request.method == 'POST':
+        document = get_object_or_404(Document, pk=document_id, patient=request.user.patientprofile)
+
+        try:
+            medical_event = MedicalEvent.objects.get(source_document=document)
+            medical_event.delete()
+        except MedicalEvent.DoesNotExist:
             pass
 
-        for event in medical_events:
-            print(
-                f"DEBUG: Processing Event ID: {event.id}, Type: {event.event_type_title}, Summary: {event.summary[:50]}...")
+        document.delete()
+        return JsonResponse(
+            {'status': 'success', 'message': _('Документът и свързаното медицинско събитие са изтрити успешно.')})
+    return JsonResponse({'status': 'error', 'message': _('Невалиден метод на заявка.')}, status=405)
 
-            category_name = event.category.name if event.category else ""
-            specialty_name = event.specialty.name if event.specialty else ""
-            document_hash = event.source_document.file_hash if event.source_document else ""
 
-            practitioners = ", ".join([p.name for p in event.practitioners.all()])
-            tags = ", ".join([t.name for t in event.tags.all()])
+@login_required
+def export_medical_events_excel(request):
+    medical_events = MedicalEvent.objects.filter(patient=request.user.patientprofile).order_by('-event_date')
 
+    wb = Workbook()
+    ws = wb.active
+    ws.title = _("Медицински Събития")
+
+    headers = [
+        _("Дата на Събитието"), _("Тип"), _("Категория"), _("Специалност"),
+        _("Обобщение"), _("Диагноза"), _("План за Лечение"), _("Тагове"),
+        _("Практикуващи Лекари"), _("Име на Документ"), _("Създадено на"), _("Актуализирано на")
+    ]
+    ws.append(headers)
+
+    header_font = Font(bold=True)
+    for cell in ws[1]:
+        cell.font = header_font
+
+    for event in medical_events:
+        event_data = [
+            event.event_date.strftime('%Y-%m-%d') if event.event_date else '',
+            event.get_event_type_title_display(),
+            event.category.name if event.category else '',
+            event.specialty.name if event.specialty else '',
+            event.summary,
+            event.diagnosis,
+            event.treatment_plan,
+            ', '.join([tag.name for tag in event.tags.all()]),
+            ', '.join([p.name for p in event.practitioners.all()]),
+            event.source_document.file.name.split('/')[
+                -1] if event.source_document and event.source_document.file else '',
+            event.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            event.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
+        ]
+        ws.append(event_data)
+
+        blood_measurements = event.blood_test_measurements.select_related('indicator').order_by(
+            'indicator__indicator_name')
+        for bm in blood_measurements:
             ws.append([
-                event.id,
-                event.get_event_type_title_display(),
-                category_name,
-                specialty_name,
-                event.event_date.strftime("%Y-%m-%d") if event.event_date else "",
-                event.summary,
-                event.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                document_hash,
-                practitioners,
-                tags,
+                '', '', '', '', '',
+                _("Кръвен Тест:"),
+                bm.indicator.indicator_name,
+                f"{bm.value} {bm.indicator.unit}",
+                _("Референции:"),
+                bm.indicator.reference_range
             ])
-            print(f"DEBUG: Added event row for ID {event.id}.")
 
-            blood_results = event.blood_test_results.all()
-            print(f"DEBUG: Event ID {event.id} has {blood_results.count()} blood test results.")
-            if blood_results:
-                ws.append([str(_("Кръвни резултати:")), "", "", "", "", "", "", "", "", ""])
-                ws.append(
-                    [str(_("Показател")), str(_("Стойност")), str(_("Мерна Единица")), str(_("Реф. Граници")), "", "",
-                     "", "", "", ""])
-                for br in blood_results:
-                    ws.append([
-                        str(br.indicator_name),
-                        str(br.value),
-                        str(br.unit),
-                        str(br.reference_range),
-                        "", "", "", "", "", ""
-                    ])
-                    print(f"DEBUG: Added BloodTestResult: {br.indicator_name}: {br.value} {br.unit}")
+        narrative_sections = event.narrative_sections.all().order_by('section_title')
+        for ns in narrative_sections:
+            ws.append([
+                '', '', '', '', '',
+                _("Секция:"),
+                ns.section_title,
+                ns.section_text
+            ])
 
-    except Exception as e:
-        print(f"CRITICAL ERROR during Excel export loop: {e}")
-        raise e
-    print("--- END DEBUGGING EXCEL EXPORT ---")
-
-    for col in ws.columns:
+    for column in ws.columns:
         max_length = 0
-        column = col[0].column_letter
-        for cell in col:
+        column_letter = column[0].column_letter
+        for cell in column:
             try:
-                if cell.value is not None:  # Ensure value is not None before checking length
-                    if len(str(cell.value)) > max_length:
-                        max_length = len(str(cell.value))
-            except TypeError:  # Handle cases where cell.value might not be directly convertible to str
+                if cell.value is not None and len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
                 pass
         adjusted_width = (max_length + 2)
-        if adjusted_width > 100:
-            adjusted_width = 100
-        ws.column_dimensions[column].width = adjusted_width
+        if adjusted_width > 50:
+            adjusted_width = 50
+        ws.column_dimensions[column_letter].width = adjusted_width
 
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = 'attachment; filename="медицински_събития.xlsx"'
     wb.save(response)
 
     return response
+
 
 def test_upload_view(request):
     if request.method == 'POST':
@@ -886,7 +604,6 @@ def test_upload_view(request):
 
         if 'test_file' in request.FILES:
             uploaded_file = request.FILES['test_file']
-            # Save the file to media/test_uploads
             save_path = os.path.join(settings.MEDIA_ROOT, 'test_uploads', uploaded_file.name)
             os.makedirs(os.path.dirname(save_path), exist_ok=True)
             with open(save_path, 'wb+') as destination:
@@ -895,6 +612,6 @@ def test_upload_view(request):
             print(f"DEBUG: Test file saved to: {save_path}")
             return HttpResponse("File uploaded successfully to test_uploads!", status=200)
         else:
-            print("DEBUG: Test file NOT found in request.FILES.")
-            return HttpResponse("File upload FAILED: No file found.", status=400)
+            print("DEBUG: No 'test_file' found in request.FILES")
+            return HttpResponse("No file uploaded for test.", status=400)
     return render(request, 'temp_test_upload.html')

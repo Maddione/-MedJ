@@ -4,9 +4,26 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c000d4c4-fa58-48c8-ad0b-ada18b75ea4a" name="Changes" comment="- testing">
-      <change beforePath="$PROJECT_DIR$/settings/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/settings/base.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/settings/dev.py" beforeDir="false" afterPath="$PROJECT_DIR$/settings/dev.py" afterDir="false" />
+    <list default="true" id="c000d4c4-fa58-48c8-ad0b-ada18b75ea4a" name="Changes" comment="- repair">
+      <change afterPath="$PROJECT_DIR$/static/css/tailwind_base.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/MedJ/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/MedJ/forms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/MedJ/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/templates/basetemplates/base_app.html" beforeDir="false" afterPath="$PROJECT_DIR$/MedJ/templates/basetemplates/base_app.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/templates/basetemplates/base_public.html" beforeDir="false" afterPath="$PROJECT_DIR$/MedJ/templates/basetemplates/base_public.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/templates/main/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/MedJ/templates/main/dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/templates/main/upload.html" beforeDir="false" afterPath="$PROJECT_DIR$/MedJ/templates/main/upload.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/templates/registration/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/MedJ/templates/registration/login.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/templates/registration/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/MedJ/templates/registration/register.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/templates/subpages/upload_review.html" beforeDir="false" afterPath="$PROJECT_DIR$/MedJ/templates/subpages/upload_review.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/templates/temp_test_upload.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/MedJ/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/MedJ/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/css/custom.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/custom.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/css/output.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/output.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/js/upload_logic.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/upload_logic.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tailwind.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/tailwind.config.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,32 +76,32 @@
     <option name="sortByType" value="true" />
     <option name="sortKey" value="BY_TYPE" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
-    "DefaultHtmlFileTemplate": "HTML File",
-    "Django Server.MedJ server.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.bootstrap.executor": "Run",
-    "Python.manage.executor": "Run",
-    "RunOnceActivity.OpenDjangoStructureViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.pycharm.django.structure.promotion.once.per.project": "true",
-    "django.template.preview.state": "SHOW_EDITOR",
-    "git-widget-placeholder": "main",
-    "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/Users/onlin/PycharmProjects/MedJ2.0",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
-    "ts.external.directory.path": "C:\\Program Files\\JetBrains\\PyCharm 2025.1.1.1\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
+    &quot;Django Server.MedJ server.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.bootstrap.executor&quot;: &quot;Run&quot;,
+    &quot;Python.manage.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenDjangoStructureViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.pycharm.django.structure.promotion.once.per.project&quot;: &quot;true&quot;,
+    &quot;django.template.preview.state&quot;: &quot;SHOW_EDITOR&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/onlin/PycharmProjects/MedJ2.0&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;C:\\Program Files\\JetBrains\\PyCharm 2025.1.1.1\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\onlin\PycharmProjects\MedJ2.0\staticfiles\img" />
@@ -209,7 +226,8 @@
       <workItem from="1749850442400" duration="10185000" />
       <workItem from="1749860969568" duration="99228000" />
       <workItem from="1750120764410" duration="19974000" />
-      <workItem from="1750144172032" duration="10843000" />
+      <workItem from="1750144172032" duration="26346000" />
+      <workItem from="1750173682834" duration="1685000" />
     </task>
     <task id="LOCAL-00001" summary="updated html files">
       <option name="closed" value="true" />
@@ -435,7 +453,15 @@
       <option name="project" value="LOCAL" />
       <updated>1750154907216</updated>
     </task>
-    <option name="localTasksCounter" value="29" />
+    <task id="LOCAL-00029" summary="- repair">
+      <option name="closed" value="true" />
+      <created>1750156441784</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1750156441784</updated>
+    </task>
+    <option name="localTasksCounter" value="30" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -475,7 +501,8 @@
     <MESSAGE value="- database update + AJAX for Vision API call" />
     <MESSAGE value="- settings/ added to github" />
     <MESSAGE value="- testing" />
-    <option name="LAST_COMMIT_MESSAGE" value="- testing" />
+    <MESSAGE value="- repair" />
+    <option name="LAST_COMMIT_MESSAGE" value="- repair" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -483,7 +510,6 @@
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/static/js/event_detail_logic.js</url>
           <line>30</line>
-          <properties lambdaOrdinal="-1" />
           <option name="timeStamp" value="5" />
         </line-breakpoint>
       </breakpoints>

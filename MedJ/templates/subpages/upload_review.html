@@ -3,77 +3,78 @@
 {% load i18n %}
 
 {% block content %}
-    <main class="p-4 md:p-8" style="background-color: #EAEBDA;">
-        <div class="max-w-7xl mx-auto p-6 md:p-8 rounded-2xl" style="background-color: #FDFEE9;">
-            <h2 class="text-2xl font-bold mb-6 text-center"
-                style="color: #0A4E75;">{% trans "Преглед и одобрение на разчетен текст" %}</h2>
+<main class="p-4 md:p-8" style="background-color: #EAEBDA;">
+    <div class="max-w-7xl mx-auto p-6 md:p-8 rounded-3xl" style="background-color: #FDFEE9;"> {# Changed rounded-2xl to rounded-3xl #}
+        <h2 class="text-2xl font-bold mb-6 text-center"
+            style="color: #0A4E75;">{% trans "Преглед и одобрение на разчетен текст" %}</h2>
 
-            {% if error_message %}
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                    <strong class="font-bold">{% trans "Грешка!" %}</strong>
-                    <span class="block sm:inline">{{ error_message }}</span>
-                </div>
-            {% endif %}
-
-            <div class="mb-6 p-4 rounded-lg" style="background-color: #E0F2F7; border: 1px solid #B2EBF2;">
-                <p class="text-sm font-semibold mb-2" style="color: #0A4E75;">{% trans "Избрани параметри:" %}</p>
-                <ul class="list-disc list-inside text-gray-700">
-                    <li><strong>{% trans "Тип събитие" %}:</strong> {{ selected_event_type }}</li>
-                    <li><strong>{% trans "Категория" %}:</strong> {{ selected_category }}</li>
-                    <li><strong>{% trans "Специалност/Изследване" %}:</strong> {{ selected_specialty }}</li>
-                </ul>
+        {% if error_message %}
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-2xl relative mb-4" role="alert"> {# Changed rounded to rounded-2xl #}
+                <strong class="font-bold">{% trans "Грешка!" %}</strong>
+                <span class="block sm:inline">{{ error_message }}</span>
             </div>
+        {% endif %}
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {# Лява секция: Визуализация на качените файлове #}
-                <div class="bg-gray-100 p-4 rounded-lg shadow-inner flex flex-col items-center justify-center min-h-[500px]">
-                    <h3 class="text-xl font-bold mb-4"
-                        style="color: #0A4E75;">{% trans "Визуализация на документа" %}</h3>
-                    {% if temp_file_url %}
-                        {% if file_type == 'image' %}
-                            <img src="{{ temp_file_url }}" alt="{% trans 'Изображение на документ' %}"
-                                 class="max-w-full h-auto rounded-lg shadow-md border border-gray-300">
-                            {% elif file_type == 'pdf' %}
-                            <iframe src="{{ temp_file_url }}#toolbar=0&navpanes=0&scrollbar=0" width="100%"
-                                    height="500px" class="rounded-lg shadow-md border border-gray-300"></iframe>
-                            <p class="text-sm text-gray-500 mt-2">{% trans "Забележка: PDF визуализацията може да изглежда различно в зависимост от браузъра." %}</p>
-                        {% else %}
-                            <p class="text-gray-500">{% trans "Няма визуализация за този тип файл." %}</p>
-                        {% endif %}
-                    {% else %}
-                        <p class="text-gray-500">{% trans "Няма наличен файл за визуализация." %}</p>
-                    {% endif %}
+        <div class="mb-6 p-4 rounded-2xl" style="background-color: #E0F2F7; border: 1px solid #B2EBF2;"> {# Changed rounded-lg to rounded-2xl #}
+            <p class="text-sm font-semibold mb-2" style="color: #0A4E75;">{% trans "Избрани параметри:" %}</p>
+            <ul class="list-disc list-inside text-gray-700">
+                <li><strong>{% trans "Тип събитие" %}:</strong> <span id="display_event_type_title">{{ selected_event_type }}</span></li>
+                <li><strong>{% trans "Категория" %}:</strong> <span id="display_category_name">{{ selected_category }}</span></li>
+                <li><strong>{% trans "Специалност" %}:</strong> <span id="display_specialty_name">{{ selected_specialty }}</span></li>
+                <li><strong>{% trans "Лекар/Практикуващ" %}:</strong> <span id="display_practitioner_name">{{ selected_doctor }}</span></li>
+
+                {# Conditional display for event date input #}
+                <li id="event_date_display_row">
+                    <strong>{% trans "Дата на събитието" %}:</strong> <span id="display_event_date">{{ selected_event_date }}</span>
+                </li>
+                <div id="manual_event_date_container" class="mt-2 hidden">
+                    <li class="text-red-700 font-bold">{% trans "Дата на събитието: НЕ Е ОТКРИТА! Моля въведете ръчно." %}</li>
+                    <label for="manual_event_date_input" class="block text-gray-700 text-sm font-bold mb-2">{% trans "Въведете дата:" %}</label>
+                    <input type="date" id="manual_event_date_input" name="event_date"
+                           value="" {# value is initially empty, to be filled by user #}
+                           class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                 </div>
-
-                {# Дясна секция: Текстово поле за редакция #}
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <form method="post" action="{% url 'medj:upload_review_page' %}"
-                          class="space-y-6 h-full flex flex-col">
-                        {% csrf_token %}
-                        <div class="flex-grow mb-4">
-                            <label for="edited_ocr_text" class="block text-lg font-bold mb-2"
-                                   style="color: #0A4E75;">{% trans "Разчетен текст (можете да редактирате):" %}</label>
-                            <textarea id="edited_ocr_text" name="edited_ocr_text" rows="20"
-                                      class="w-full p-4 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 h-full resize-y"
-                                      style="background-color: #FFFFFF;">{{ ocr_text }}</textarea>
-                        </div>
-
-                        <div class="text-center pt-4">
-                            <button type="submit"
-                                    class="px-8 py-4 font-bold text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-300"
-                                    style="background-color: #15BC11;"
-                                    onmouseover="this.style.backgroundColor='#0A4E75'"
-                                    onmouseout="this.style.backgroundColor='#15BC11'">
-                                {% trans "Одобри и анализирай с AI" %}
-                            </button>
-                            <a href="{% url 'medj:upload_page' %}"
-                               class="ml-4 px-8 py-4 font-bold text-gray-700 bg-gray-200 rounded-lg transition-colors duration-300 hover:bg-gray-300">
-                                {% trans "Отказ" %}
-                            </a>
-                        </div>
-                    </form>
-                </div>
-            </div>
+                <input type="hidden" name="event_date" id="review_event_date_hidden" value="{{ selected_event_date }}">
+            </ul>
         </div>
-    </main>
+
+        {# This form contains the OCR text area and the AI analysis button #}
+        <form id="review-form" method="post" action="{% url 'medj:analyze_document' %}">
+            {% csrf_token %}
+            <input type="hidden" name="temp_document_id" id="review_document_id" value="{{ document_id }}">
+
+            {# Hidden inputs for selected options from Step 1 to be sent back for re-analysis #}
+            <input type="hidden" name="event_type_title" id="review_event_type_title_hidden" value="{{ selected_event_type }}">
+            <input type="hidden" name="category_name" id="review_category_name_hidden" value="{{ selected_category }}">
+            <input type="hidden" name="specialty_name" id="review_specialty_name_hidden" value="{{ selected_specialty }}">
+            <input type="hidden" name="practitioner_name" id="review_practitioner_name_hidden" value="{{ selected_doctor }}">
+
+            <div class="mb-4">
+                <label for="ocr_text_area" class="block text-gray-700 text-sm font-bold mb-2">{% trans "Разчетен текст (можете да редактирате):" %}</label>
+                <textarea id="ocr_text_area" name="edited_ocr_text" rows="20"
+                          class="w-full p-4 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 h-full resize-y"
+                          style="background-color: #FFFFFF;" placeholder="{% trans "Текстът от документа ще се появи тук след OCR..." %}"></textarea> {# Value will be set by JS #}
+            </div>
+
+            <div class="text-center pt-4 flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-4">
+                <button type="submit" id="analyze-button"
+                        class="px-8 py-4 font-bold text-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-300" {# Changed rounded-lg to rounded-2xl #}
+                        style="background-color: #15BC11;"
+                        onmouseover="this.style.backgroundColor='#0A4E75'"
+                        onmouseout="this.style.backgroundColor='#15BC11'">
+                    {% trans "Одобри и анализирай с AI" %}
+                </button>
+                <button type="button" id="back-to-upload-button"
+                        class="px-8 py-4 font-bold text-gray-700 bg-gray-200 rounded-2xl transition-colors duration-300 hover:bg-gray-300"> {# Changed rounded-lg to rounded-2xl #}
+                    {% trans "Качи друг документ" %}
+                </button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<script>
+    const MESSAGES = {{ MESSAGES|safe }};
+</script>
+<script src="{% static 'js/upload_logic.js' %}"></script>
 {% endblock %}

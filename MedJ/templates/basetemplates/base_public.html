@@ -1,65 +1,97 @@
- {% load static %}
- {% load i18n %}
- <!DOCTYPE html>
- <html lang="{{ LANGUAGE_CODE }}">
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>MedJ - {% trans "Вашият Здравен Дневник" %}</title>
-     <link rel="stylesheet" href="{% static 'css/output.css' %}">
-     <link rel="stylesheet" href="{% static 'css/custom.css' %}">
-     <link rel="stylesheet" href="{% static 'fontawesome/css/all.min.css' %}">
- </head>
- <body class="bg-site-background text-gray-800 font-sans min-h-screen flex flex-col">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedJ - {% trans "Вашият Здравен Дневник" %}</title>
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <link rel="stylesheet" href="{% static 'fontawesome/css/all.min.css' %}">
+</head>
+<body class="bg-site-background text-gray-800 font-sans min-h-screen flex flex-col">
 
-     <nav class="bg-button-blue p-4 shadow-md flex-shrink-0">
-         <div class="container mx-auto flex justify-between items-center">
-             <div class="flex items-center space-x-4">
-                 <div class="relative">
-                     <i class="fa-solid fa-earth-americas text-white text-xl cursor-pointer" id="language-toggle-icon-public"></i>
-                     <form id="language-form-public" action="{% url 'set_language' %}" method="post" class="hidden">
-                         {% csrf_token %}
-                         <input name="next" type="hidden" value="{{ request.get_full_path }}">
-                         {% get_current_language as LANGUAGE_CODE %}
-                         {% get_available_languages as LANGUAGES %}
-                         {% for lang_code, lang_name in LANGUAGES %}
-                             {% if lang_code != LANGUAGE_CODE %}
-                                 <input type="hidden" name="language" value="{{ lang_code }}">
-                             {% endif %}
-                         {% endfor %}
-                     </form>
-                 </div>
-                 <a href="{% url 'medj:landingpage' %}" class="flex items-center space-x-2 text-white text-2xl font-bold">
-                     <span>MedJ</span>#                 </a>
-             </div>
-             <div class="space-x-4">
-                 <a href="{% url 'medj:login' %}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md font-medium">{% trans 'Вход' %}</a>
-                 <a href="{% url 'medj:register' %}" class="bg-navbar-button-blue text-white px-3 py-2 rounded-md font-medium shadow-sm">{% trans 'Регистрация' %}</a>
-             </div>
-         </div>
-     </nav>
+    {# Navigation Bar #}
+    <nav class="bg-button-blue p-4 shadow-md flex-shrink-0"> {# Returned bg-button-blue class #}
+        <div class="container mx-auto flex justify-between items-center rounded-3xl">
+            <div class="flex items-center space-x-4">
+                {# Language Toggle #}
+                <div class="relative">
+                    <i class="fa-solid fa-earth-americas text-white text-xl cursor-pointer" id="language-toggle-icon-public"></i>
+                    {# Removed 'hidden' class from form. JS will manage display. #}
+                    <form id="language-form-public" action="{% url 'set_language' %}" method="post" class="absolute bg-white rounded-md shadow-md py-1 mt-2 z-10" style="display: none;">
+                        {% csrf_token %}
+                        <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                        {% get_current_language as LANGUAGE_CODE %}
+                        {% get_available_languages as LANGUAGES %}
+                        <select name="language" class="block w-full p-2">
+                            {% for lang_code, lang_name in LANGUAGES %}
+                                <option value="{{ lang_code }}" {% if lang_code == LANGUAGE_CODE %}selected{% endif %}>
+                                    {{ lang_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </div>
+                {# Site Title/Logo #}
+                <a href="{% url 'medj:landingpage' %}" class="flex items-center space-x-2 text-white text-2xl font-bold">
+                    <span>MedJ</span>
+                </a>
+            </div>
+            {# Login/Register Buttons #}
+            <div class="space-x-4">
+                <a href="{% url 'medj:login' %}" class="text-white hover:text-gray-200 px-3 py-2 rounded-md font-medium">{% trans 'Вход' %}</a>
+                <a href="{% url 'medj:register' %}" class="bg-navbar-button-blue text-white px-3 py-2 rounded-md font-medium shadow-sm">{% trans 'Регистрация' %}</a>
+            </div>
+        </div>
+    </nav>
 
-     <main class="flex-grow py-6">
-         {% block content %}
-         {% endblock content %}
-     </main>
+    {# Main content area for all public pages #}
+    <main class="flex-grow bg-site-background p-0">
+        {# This div acts as the main content container for all pages, with desired styling #}
+        <div class="container mx-auto p-6 md:p-8 rounded-3xl shadow-lg mt-0" style="background-color: #FDEFB7;">
+            {% block content %}
+            {% endblock content %}
+        </div>
+    </main>
 
+    {# Footer #}
+    <footer class="bg-navbar-button-blue p-4 text-white text-center mt-8 flex-shrink-0 rounded-3xl">
+        <p>&copy; 2025 MedJ. {% trans 'Всички права запазени.' %}</p>
+    </footer>
 
-     <footer class="bg-navbar-button-blue p-4 text-white text-center mt-8 flex-shrink-0">
-         <p>&copy; 2025 MedJ. {% trans 'Всички права запазени.' %}</p>
-     </footer>
+    {# JavaScript for language toggle #}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const languageToggleIconPublic = document.getElementById('language-toggle-icon-public');
+            const languageFormPublic = document.getElementById('language-form-public');
 
-     <script>
-         document.addEventListener('DOMContentLoaded', function() {
-             const languageToggleIconPublic = document.getElementById('language-toggle-icon-public');
-             const languageFormPublic = document.getElementById('language-form-public');
+            if (languageToggleIconPublic && languageFormPublic) {
+                const languageSelectElementPublic = languageFormPublic.querySelector('select[name="language"]');
+                languageToggleIconPublic.addEventListener('click', function(event) {
+                    event.stopPropagation();
+                    if (languageSelectElementPublic.style.display === 'block') {
+                        languageSelectElementPublic.style.display = 'none';
+                    } else {
+                        languageSelectElementPublic.style.display = 'block';
+                        languageSelectElementPublic.focus();
+                    }
+                });
 
-             if (languageToggleIconPublic && languageFormPublic) {
-                 languageToggleIconPublic.addEventListener('click', function() {
-                     languageFormPublic.submit();
-                 });
-             }
-         });
-     </script>
- </body>
- </html>
+                document.addEventListener('click', function(event) {
+                    if (!languageToggleIconPublic.contains(event.target) && !languageSelectElementPublic.contains(event.target)) {
+                        if (languageSelectElementPublic) languageSelectElementPublic.style.display = 'none';
+                    }
+                });
+                const languageSelectPublic = languageFormPublic.querySelector('select[name="language"]');
+                if (languageSelectPublic) {
+                    languageSelectPublic.addEventListener('change', function() {
+                        languageFormPublic.submit();
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+</html>

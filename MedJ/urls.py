@@ -1,6 +1,11 @@
+# MedJ/urls.py
+
 from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
+from django.conf import settings # Ensure settings is imported
+from django.conf.urls.static import static # Ensure static is imported
+
 
 app_name = 'medj'
 
@@ -42,8 +47,13 @@ urlpatterns = [
     # AJAX endpoint
     path('ajax/get-specialties/', views.get_specialties_for_category, name='get_specialties_for_category'),
 
-    # Export URL
-    path('export/medical-events/', views.export_medical_events_to_excel, name='export_medical_events_excel'),
-
-    path('test-upload/', views.test_upload_view, name='test_upload'),
+    # Excel Export Endpoint
+    # Corrected function name from 'export_medical_events_to_excel' to 'export_medical_events_excel'
+    path('export/medical-events/', views.export_medical_events_excel, name='export_medical_events_excel'),
 ]
+
+# This block should be in the main project's urls.py (e.g. MedJ2/urls2.py), not in app's urls.py
+# However, if it's placed here for convenience/dev, make sure settings are correctly configured.
+# if settings.DEBUG:
+#     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+#     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

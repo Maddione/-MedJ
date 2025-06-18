@@ -1,6 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Custom styles for MedJ project */
+/* This file should ONLY contain custom CSS rules, not @tailwind directives. */
 
 .dropdown-menu {
     display: none;
@@ -25,10 +24,8 @@
     background-color: #f1f1f1;
 }
 
-.dropdown-show .dropdown-menu {
-    display: block;
-}
-
+/* These spinner and visually hidden styles are generic and can stay in custom.css */
+/* They are not directly related to Font Awesome icons appearing/disappearing */
 .spinner-border {
     display: inline-block;
     width: 2rem;
@@ -72,10 +69,8 @@
     display: none !important;
 }
 #analysis-loading-overlay {
-    display: flex;
+    display: flex; /* Ensure it's flex when not hidden */
 }
-
-
 #analysis-results-content.hidden {
     display: none !important;
 }

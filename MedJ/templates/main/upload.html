@@ -3,192 +3,209 @@
 {% load i18n %}
 
 {% block content %}
-<main class="p-4 md:p-8" style="background-color: #EAEBDA;">
-    <div id="upload-container" class="max-w-7xl mx-auto p-6 md:p-8 rounded-2xl" style="background-color: #FDFEE9;">
-        <h2 class="text-2xl font-bold mb-6 text-center" style="color: #0A4E75;">{% trans "Качване на нов медицински документ" %}</h2>
-
+{# Main content area, no padding on main, to allow container to control spacing #}
+<main class="bg-EAEBDA">
+    {# Main Cream Block - #upload-container #}
+    {# 'container mx-auto' for width and centering, padding for internal spacing #}
+    <div id="upload-container" class="container mx-auto p-4 md:p-6 rounded-3xl shadow-lg"
+         style="background-color: #FDFEE9;">
+        {# Messages section #}
         {% if error_message %}
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-2xl relative mb-4" role="alert">
                 <strong class="font-bold">{% trans "Грешка!" %}</strong>
                 <span class="block sm:inline">{{ error_message }}</span>
             </div>
         {% endif %}
 
         {% if success_message %}
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-2xl relative mb-4" role="alert">
                 <strong class="font-bold">{% trans "Успех!" %}</strong>
                 <span class="block sm:inline">{{ success_message }}</span>
             </div>
         {% endif %}
 
-        <form id="full-upload-form" action="{% url 'medj:upload_page' %}" method="post" enctype="multipart/form-data" class="space-y-8">
+        {# Form for initial upload and selections #}
+        <form id="full-upload-form" action="{% url 'medj:perform_ocr' %}" method="post" enctype="multipart/form-data" class="flex flex-col space-y-6">
             {% csrf_token %}
 
-            {# Step 1: Selection of event, category, specialty, AND Doctor #}
-            <div id="step1-selection" class="p-6 rounded-2xl" style="background-color: #43B8CF;">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <div>
-                        <label for="event-type-select" class="block mb-2 text-sm font-bold" style="color: white;">{% trans "Тип на събитието" %}</label>
-                        <select id="event-type-select" name="event_type" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm">
-                            <option value="" disabled selected>{% trans "Изберете..." %}</option>
-                            {% for value, label in event_types %}
-                                <option value="{{ value }}">{{ label }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div>
-                        <label for="category" class="block mb-2 text-sm font-bold" style="color: white;">{% trans "Медицинска категория" %}</label>
-                        <select id="category" name="category_name" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm">
-                            <option value="" disabled selected>{% trans "Изберете категория..." %}</option>
-                            {% for cat in categories %}
-                                <option value="{{ cat.name }}">{{ cat.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div>
-                        <label for="specialist" class="block mb-2 text-sm font-bold" style="color: white;">{% trans "Специалност/Изследване" %}</label>
-                        <select id="specialist" name="specialty_name" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm" disabled>
-                            <option value="" disabled selected>{% trans "Първо изберете категория" %}</option>
-                            {# Options will be loaded dynamically by JS #}
-                        </select>
-                    </div>
-                    <div>
-                        <label for="doctor-select" class="block mb-2 text-sm font-bold" style="color: white;">{% trans "Избери лекар (незадължително)" %}</label>
-                        <select id="doctor-select" name="doctor_id" class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm">
-                            <option value="" selected>{% trans "Без избран лекар" %}</option>
-                            {% for doc in doctors %}
-                                <option value="{{ doc.id }}">{{ doc.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
+            {# Horizontal Light Blue Block - Selections #}
+            {# Using flex-wrap for responsiveness, justify-around for spacing, items-center for vertical alignment #}
+            {# Each select div now has appropriate width classes (w-full for small, md:w-1/4 for medium/large) #}
+            <div id="event-select-section" class="p-6 rounded-3xl shadow-md flex flex-wrap justify-around items-center gap-4" style="background-color: #43B8CF;">
+                {# Each select is in its own div, with width classes to control layout #}
+                <div class="w-full sm:w-[48%] md:w-[23%]"> {# Adjusted width for better fit on one row #}
+                    <label for="event-type-select" class="block mb-2 text-sm font-bold text-white">1. {% trans "Събитие" %}:</label>
+                    <select id="event-type-select" name="event_type_title" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm">
+                        <option value="" disabled selected>{% trans "Изберете тип..." %}</option>
+                        {% for value, label in event_types %}
+                            <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="w-full sm:w-[48%] md:w-[23%]"> {# Adjusted width for better fit on one row #}
+                    <label for="category" class="block mb-2 text-sm font-bold text-white">2. {% trans "Документ" %}:</label>
+                    <select id="category" name="category_name" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm">
+                        <option value="" disabled selected>{% trans "Изберете категория..." %}</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat.name }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="w-full sm:w-[48%] md:w-[23%]"> {# Adjusted width for better fit on one row #}
+                    <label for="specialist" class="block mb-2 text-sm font-bold text-white">3. {% trans "Специалност" %}:</label>
+                    <select id="specialist" name="specialty_name" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm" disabled>
+                        <option value="" disabled selected>{% trans "Първо изберете категория" %}</option>
+                        {# Options will be loaded dynamically by JS #}
+                    </select>
+                </div>
+                <div class="w-full sm:w-[48%] md:w-[23%]"> {# Adjusted width for better fit on one row #}
+                    <label for="doctor-select" class="block mb-2 text-sm font-bold text-white">{% trans "Лекар (незадължително)" %}:</label>
+                    <select id="doctor-select" name="practitioner_name" class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm">
+                        <option value="" selected>{% trans "Без избран лекар" %}</option>
+                        {% for doc in doctors %}
+                            <option value="{{ doc.name }}">{{ doc.name }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
             </div>
 
-            {# Step 2: File Upload #}
-            <div id="step2-upload" class="p-6 rounded-2xl border-2 border-dashed border-gray-300 text-center">
-                <input type="file" name="document" id="file_input" class="hidden" required>
-                <label for="file_input" class="cursor-pointer inline-block px-6 py-3 font-bold text-white rounded-lg transition-colors duration-300" style="background-color: #0A4E75;">
-                    {% trans "Избери файл от компютъра" %}
-                </label>
-                <p class="custom-file-text mt-4 text-gray-600">{% trans "Все още не е избран файл" %}</p>
-
-                {# File preview container - Adjusted for larger display and centering #}
-                {# Container for the large preview box, matching mokup dimensions #}
-                <div class="mt-8 mx-auto w-full max-w-2xl bg-gray-100 rounded-lg shadow-md border border-gray-300 flex items-center justify-center p-4" style="min-height: 600px;">
-                    <img id="image-preview" src="#" alt="Image Preview" class="hidden max-w-full max-h-full object-contain rounded-lg" style="height: auto; width: auto;">
-                    <iframe id="pdf-preview" src="#" class="hidden w-full h-full rounded-lg" style="border: none;"></iframe>
-                    {# Initial placeholder text if no file is selected yet #}
-                    <p id="preview-placeholder" class="text-gray-500">{% trans "Визуализация на документа ще се появи тук" %}</p>
+            {# Transparent Block - File Upload and Large Preview #}
+            <div id="file-upload-section" class="p-6 rounded-3xl shadow-md border border-gray-200 bg-transparent flex flex-col space-y-6">
+                {# File Input - Now "4. Избери документ" #}
+                <div class="text-center">
+                    <input type="file" name="file" id="file_input" class="hidden" required>
+                    <label for="file_input" class="cursor-pointer inline-block px-6 py-3 font-bold text-white rounded-2xl transition-colors duration-300" style="background-color: #0A4E75;">
+                        4. {% trans "Избери документ" %}
+                    </label>
+                    <p class="custom-file-text mt-4 text-gray-600">{% trans "Все още не е избран файл" %}</p>
                 </div>
 
-                {# Link for full size view - now below the preview box #}
-                <div class="mt-4 text-center">
-                    <a id="view-full-size-link" href="#" target="_blank" class="hidden text-button-blue hover:underline font-medium">
-                        {% trans "Преглед в цял размер" %}
-                    </a>
+                {# Large Document Preview Block - 4x wider visually #}
+                {# w-full to fill parent width. Heights adjusted for visual 4x ratio. #}
+                <div id="main-preview-area" class="relative w-full h-[10rem] md:h-[250px] bg-gray-200 rounded-3xl flex items-center justify-center overflow-hidden border border-gray-300 mx-auto">
+                    <img id="main-image-preview" src="" alt="Image Preview" class="max-w-full max-h-full object-contain hidden">
+                    <iframe id="main-pdf-preview" src="" class="w-full h-full hidden" style="border: none;"></iframe>
+                    <p id="main-preview-placeholder" class="text-gray-500">{% trans "Тук ще се появи преглед на документа." %}</p>
+                    <a id="view-full-size-link" href="#" target="_blank" class="absolute bottom-2 right-2 bg-gray-700 text-white text-xs px-2 py-1 rounded-md hidden">{% trans "Виж пълен размер" %}</a>
                 </div>
 
-                {# File Type Select #}
-                <div class="mt-6 max-w-xs mx-auto">
-                    <label for="file-type-select" class="sr-only">{% trans "Тип на файла" %}</label>
+                {# File Type Select - Now "5. Изберете тип файл" #}
+                <div class="mt-6 max-w-xs mx-auto w-full">
+                    <label for="file-type-select" class="block mb-2 text-sm font-bold text-gray-700 sr-only">5. {% trans "Изберете тип файл" %}</label>
                     <select id="file-type-select" name="file_type" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm">
-                        <option value="" disabled selected>{% trans "Посочете тип на файла..." %}</option>
+                        <option value="" disabled selected>5. {% trans "Изберете тип файл" %}</option>
                         <option value="image">{% trans "Изображение (JPG, PNG)" %}</option>
                         <option value="pdf">{% trans "PDF Документ" %}</option>
                     </select>
                 </div>
             </div>
 
-            {# This button will be controlled by JS #}
+            {# "Сканирай" Button - Now "6. Сканирай" #}
             <div class="text-center pt-4">
                 <button type="button" id="upload-ocr-button"
-                        class="w-full max-w-md px-6 py-4 font-bold text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                        class="w-full max-w-md px-6 py-4 font-bold text-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
                         style="background-color: #0A4E75;"
                         onmouseover="this.disabled || (this.style.backgroundColor='#43B8CF')"
                         onmouseout="this.disabled || (this.style.backgroundColor='#0A4E75')">
-                    {% trans "Стартирай OCR" %}
+                    6. {% trans "Сканирай" %}
                 </button>
             </div>
         </form>
 
-        {# Step 3: OCR Text Review and AI Analysis Button #}
-        <div id="step3-review" class="hidden space-y-6">
-            {# Warning for text review #}
-            <div class="bg-light-red-bg border border-error-red text-dark-red-text px-4 py-3 rounded relative mb-4" role="alert">
+        {# Step 3: OCR Text Review and AI Analysis Section (initially hidden) #}
+        <div id="step3-review" class="hidden space-y-6 mt-8 p-6 rounded-3xl bg-gray-100 border border-gray-300">
+            <h3 class="text-xl font-semibold mb-4 text-center" style="color: #0A4E75;">{% trans "Стъпка 2: Преглед и AI анализ" %}</h3>
+
+            <div class="bg-light-red-bg border border-error-red text-dark-red-text px-4 py-3 rounded-2xl relative mb-4" role="alert">
                 <strong class="font-bold">{% trans "Моля, обърнете внимание!" %}</strong>
                 <span class="block sm:inline">{% trans "Моля, внимателно прегледайте и редактирайте извлечения текст преди одобрение, за да гарантирате точност." %}</span>
             </div>
 
-            <div class="p-6 rounded-2xl bg-gray-100 border border-gray-300">
-                <h3 class="text-xl font-bold mb-4 text-center text-gray-800">{% trans "Преглед на извлечения текст" %}</h3>
-                <textarea id="ocr_text_area" rows="15" class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-blue-200 focus:border-blue-500" placeholder="{% trans "Текстът от документа ще се появи тук след OCR..." %}"></textarea>
-            </div>
+            <form id="review-form" method="post" action="{% url 'medj:analyze_document' %}">
+                {% csrf_token %}
+                <input type="hidden" name="temp_document_id" id="review_document_id" value="">
 
-            <div class="text-center">
-                <button type="button" id="analyze-button"
-                        class="w-full max-w-md px-6 py-4 font-bold text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
-                        style="background-color: #15BC11;"
-                        onmouseover="this.disabled || (this.style.backgroundColor='#0A4E75')"
-                        onmouseout="this.disabled || (this.style.backgroundColor='#15BC11')">
-                    {% trans "Одобри и анализирай с AI" %}
-                </button>
-                <button type="button" id="back-to-upload-button"
-                        class="mt-4 w-full max-w-md px-6 py-4 font-bold text-gray-700 bg-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-300 hover:bg-gray-300">
-                    {% trans "Качи друг документ" %}
-                </button>
-            </div>
+                {# Hidden inputs for selected options from Step 1 to be sent back for re-analysis #}
+                <input type="hidden" name="event_type_title" id="review_event_type_title_hidden" value="">
+                <input type="hidden" name="category_name" id="review_category_name_hidden" value="">
+                <input type="hidden" name="specialty_name" id="review_specialty_name_hidden" value="">
+                <input type="hidden" name="practitioner_name" id="review_practitioner_name_hidden" value="">
+
+                <div class="mb-6 p-4 rounded-2xl" style="background-color: #E0F2F7; border: 1px solid #B2EBF2;">
+                    <p class="text-sm font-semibold mb-2" style="color: #0A4E75;">{% trans "Избрани параметри:" %}</p>
+                    <ul class="list-disc list-inside text-gray-700">
+                        <li><strong>{% trans "Тип събитие" %}:</strong> <span id="display_event_type_title">{{ selected_event_type }}</span></li>
+                        <li><strong>{% trans "Категория" %}:</strong> <span id="display_category_name">{{ selected_category }}</span></li>
+                        <li><strong>{% trans "Специалност" %}:</strong> <span id="display_specialty_name">{{ selected_specialty }}</span></li>
+                        <li><strong>{% trans "Лекар/Практикуващ" %}:</strong> <span id="display_practitioner_name">{{ selected_doctor }}</span></li>
+
+                        {# Conditional display for event date input #}
+                        <li id="event_date_display_row">
+                            <strong>{% trans "Дата на събитието" %}:</strong> <span id="display_event_date">{{ selected_event_date }}</span>
+                        </li>
+                        <div id="manual_event_date_container" class="mt-2 hidden">
+                            <li class="text-red-700 font-bold">{% trans "Дата на събитието: НЕ Е ОТКРИТА! Моля въведете ръчно." %}</li>
+                            <label for="manual_event_date_input" class="block text-gray-700 text-sm font-bold mb-2">{% trans "Въведете дата:" %}</label>
+                            <input type="date" id="manual_event_date_input" name="event_date"
+                                   class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        </div>
+                        <input type="hidden" name="event_date" id="review_event_date_hidden" value="{{ selected_event_date }}">
+                    </ul>
+                </div>
+
+                <div class="mb-4">
+                    <label for="ocr_text_area" class="block text-gray-700 text-sm font-bold mb-2">{% trans "Разчетен текст (можете да редактирате):" %}</label>
+                    <textarea id="ocr_text_area" name="edited_ocr_text" rows="20"
+                              class="w-full p-4 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 h-full resize-y"
+                              style="background-color: #FFFFFF;" placeholder="{% trans "Текстът от документа ще се появи тук след OCR..." %}"></textarea>
+                </div>
+
+                <div class="text-center pt-4 flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-4">
+                    <button type="submit" id="analyze-button"
+                            class="px-8 py-4 font-bold text-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-300"
+                            style="background-color: #15BC11;"
+                            onmouseover="this.style.backgroundColor='#0A4E75'"
+                            onmouseout="this.style.backgroundColor='#15BC11'">
+                        {% trans "Одобри и анализирай с AI" %}
+                    </button>
+                    <button type="button" id="back-to-upload-button"
+                            class="px-8 py-4 font-bold text-gray-700 bg-gray-200 rounded-2xl transition-colors duration-300 hover:bg-gray-300">
+                        {% trans "Качи друг документ" %}
+                    </button>
+                </div>
+            </form>
         </div>
 
-        {# Results Section - initially hidden #}
-        <div id="results-section" class="hidden mt-8 p-6 rounded-2xl bg-blue-50 border border-blue-200">
-            <h3 class="text-xl font-bold mb-4 text-center" style="color: #0A4E75;">{% trans "Резултати от анализа" %}</h3>
+        {# Final Results Section (initially hidden) #}
+        <div id="results-section" class="hidden mt-8 p-6 rounded-3xl bg-blue-50 border border-blue-200">
+            <h3 class="text-xl font-semibold mb-4 text-center" style="color: #0A4E75;">{% trans "Резултати от анализа" %}</h3>
             <div id="result-summary" class="mb-4 text-gray-800 leading-relaxed">
                 {# AI Summary will be inserted here #}
             </div>
             <div id="result-html-table" class="overflow-x-auto">
                 {# AI HTML Table will be inserted here #}
             </div>
-             <div class="text-center mt-6">
+            <div class="text-center mt-6">
                 <button type="button" onclick="window.location.reload();"
-                        class="px-8 py-3 font-bold text-white rounded-lg transition-colors duration-300"
+                        class="px-8 py-3 font-bold text-white rounded-2xl transition-colors duration-300"
                         style="background-color: #0A4E75; hover-bg: #43B8CF;">
                     {% trans "Качи нов документ" %}
                 </button>
             </div>
         </div>
-     {# Results Section - initially hidden, will show loading overlay #}
-        <div id="results-section" class="hidden mt-8 p-6 rounded-2xl bg-blue-50 border border-blue-200">
-            <h3 class="text-2xl font-bold mb-4 text-center" style="color: #0A4E75;">{% trans "Резултати от анализа" %}</h3>
+    </div>
 
-            {# NEW: Loading Overlay for Analysis #}
-            <div id="analysis-loading-overlay" class="flex flex-col items-center justify-center p-8 text-center" style="min-height: 200px;">
-                <div class="spinner-border animate-spin inline-block w-8 h-8 border-4 rounded-full text-blue-500" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p class="mt-4 text-lg font-semibold text-gray-700">{% trans "Извършва се AI анализ, моля изчакайте..." %}</p>
-            </div>
-
-            {# Content for actual results - initially hidden, shown after analysis #}
-            <div id="analysis-results-content" class="hidden">
-                <div id="result-summary" class="mb-4 text-gray-800 leading-relaxed">
-                    {# AI Summary will be inserted here #}
-                </div>
-                <div id="result-html-table" class="overflow-x-auto">
-                    {# AI HTML Table will be inserted here #}
-                </div>
-                <div class="text-center mt-6">
-                    <button type="button" onclick="window.location.reload();"
-                            class="px-8 py-3 font-bold text-white rounded-lg transition-colors duration-300"
-                            style="background-color: #0A4E75; hover-bg: #43B8CF;">
-                        {% trans "Качи нов документ" %}
-                    </button>
-                </div>
-            </div>
+    {# Global Analysis Loading Overlay - this must be outside #upload-container to cover the whole page when fixed #}
+    <div id="analysis-loading-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center flex-col z-50 hidden rounded-2xl">
+        <div class="spinner-border animate-spin inline-block w-8 h-8 border-4 rounded-full text-blue-500" role="status">
+            <span class="visually-hidden">Loading...</span>
         </div>
+        <p class="mt-4 text-lg font-semibold text-white" id="loading-message">{% trans "Извършва се AI анализ, моля изчакайте..." %}</p>
     </div>
 </main>
 
 <script>
+    // Pass Django messages to JavaScript
     const MESSAGES = {{ MESSAGES|safe }};
 </script>
 <script src="{% static 'js/upload_logic.js' %}"></script>
