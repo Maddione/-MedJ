@@ -4,26 +4,133 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c000d4c4-fa58-48c8-ad0b-ada18b75ea4a" name="Changes" comment="- repair">
-      <change afterPath="$PROJECT_DIR$/static/css/tailwind_base.css" afterDir="false" />
+    <list default="true" id="c486bb59-c79b-4440-8fcc-e0c5e6eda3dc" name="Changes" comment="2.1">
+      <change afterPath="$PROJECT_DIR$/.dockerignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docker-compose.dev.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/entrypoint.dev.sh" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/medj/settings/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/medj/settings/base.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/medj/settings/dev.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/medj/settings/prod.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ocrapi/app.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ocrapi/dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ocrapi/requirements.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/admin.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/apps.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/forms.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/management/commands/cleanup_shares.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/migrations/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/models.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/auth/login.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/auth/register.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_app.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_auth.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_public.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/basetemplates/landingpage.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/main/casefiles.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/main/dashboard.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/main/history.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/main/personalcard.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/main/share.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/main/upload.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/subpages/doctors.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/subpages/document_detail.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/subpages/document_edit.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/subpages/document_edit_tags.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/subpages/document_export_pdf.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/subpages/document_move.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/subpages/event_detail.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/subpages/event_edit_tags.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/subpages/event_export_pdf.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/subpages/event_history.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/subpages/labtest_edit.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/subpages/labtests.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/subpages/medical_event_confirm_delete.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/subpages/medical_event_form.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/subpages/profile.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/subpages/share_view.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/subpages/upload_history.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templatetags/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templatetags/medj_filters.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/urls.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/views.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/admin/css/widgets.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/admin/js/cancel.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/admin/js/vendor/select2/LICENSE.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/admin/js/vendor/select2/i18n/el.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/admin/js/vendor/select2/i18n/hi.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/admin/js/vendor/xregexp/LICENSE.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/admin/js/vendor/xregexp/xregexp.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/js/labtest_edit_logic.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/src/styles.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/theme/apps.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/theme/package.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/theme/static_src/styles.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/theme/tailwind.config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitattributes" beforeDir="false" afterPath="$PROJECT_DIR$/.gitattributes" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/MedJ2.0.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/MedJ/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/MedJ/forms.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/MedJ/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/templates/basetemplates/base_app.html" beforeDir="false" afterPath="$PROJECT_DIR$/MedJ/templates/basetemplates/base_app.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/templates/basetemplates/base_public.html" beforeDir="false" afterPath="$PROJECT_DIR$/MedJ/templates/basetemplates/base_public.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/templates/main/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/MedJ/templates/main/dashboard.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/templates/main/upload.html" beforeDir="false" afterPath="$PROJECT_DIR$/MedJ/templates/main/upload.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/templates/registration/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/MedJ/templates/registration/login.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/templates/registration/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/MedJ/templates/registration/register.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/templates/subpages/upload_review.html" beforeDir="false" afterPath="$PROJECT_DIR$/MedJ/templates/subpages/upload_review.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/templates/temp_test_upload.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/MedJ/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/MedJ/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/css/custom.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/custom.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/css/output.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/output.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/.env.dev" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/admin.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/apps.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/forms.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/generate_key.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/migrations/0001_initial.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/migrations/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/.env.ocr" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/models.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/templates/basetemplates/base_app.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/templates/basetemplates/base_public.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/templates/basetemplates/landingpage.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/templates/main/casefiles.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/templates/main/dashboard.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/templates/main/history.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/templates/main/personalcard.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/templates/main/upload.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/templates/registration/login.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/templates/registration/register.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/templates/subpages/doctors.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/templates/subpages/event_detail.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/templates/subpages/profile.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/templates/subpages/upload_history.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/templates/subpages/upload_review.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/tests.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/urls.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/utils/parse_lab.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/utils/summary.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ/views.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ2/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ2/asgi.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/asgi.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ2/urls2.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MedJ2/wsgi.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/wsgi.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/locale/bg/LC_MESSAGES/django.mo" beforeDir="false" afterPath="$PROJECT_DIR$/locale/bg/LC_MESSAGES/django.mo" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/locale/bg/LC_MESSAGES/django.po" beforeDir="false" afterPath="$PROJECT_DIR$/locale/bg/LC_MESSAGES/django.po" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/locale/en_US/LC_MESSAGES/django.mo" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/locale/en_US/LC_MESSAGES/django.po" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/manage.py" beforeDir="false" afterPath="$PROJECT_DIR$/manage.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ocrapi/anonymizer.py" beforeDir="false" afterPath="$PROJECT_DIR$/ocrapi/anonymizer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ocrapi/gpt_client.py" beforeDir="false" afterPath="$PROJECT_DIR$/ocrapi/gpt_client.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ocrapi/vision_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/ocrapi/vision_handler.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/postcss.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/postcss.config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/settings/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/settings/base.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/settings/dev.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/settings/prod.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/css/custom.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/css/output.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/css/tailwind_base.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/dist/output.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/images/languageicon.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/js/event_detail_logic.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/event_detail_logic.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/static/js/upload_logic.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/upload_logic.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tailwind.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/tailwind.config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tailwind.config.js" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,150 +140,87 @@
   <component name="DjangoConsoleOptions" custom-start-script="import sys; print('Python %s on %s' % (sys.version, sys.platform))&#10;import django; print('Django %s' % django.get_version())&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;if 'setup' in dir(django): django.setup()&#10;import django_manage_shell; django_manage_shell.run(PROJECT_ROOT)">
     <option name="myCustomStartScript" value="import sys; print('Python %s on %s' % (sys.version, sys.platform))&#10;import django; print('Django %s' % django.get_version())&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;if 'setup' in dir(django): django.setup()&#10;import django_manage_shell; django_manage_shell.run(PROJECT_ROOT)" />
   </component>
-  <component name="ExportToHTMLSettings">
-    <option name="OUTPUT_DIRECTORY" value="$PROJECT_DIR$/../MedJ2.0\exportToHTML" />
-  </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Python Script" />
-        <option value="JavaScript File" />
+        <option value="TypeScript File" />
         <option value="HTML File" />
+        <option value="JavaScript File" />
+        <option value="Dockerfile" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory">{
-  &quot;lastFilter&quot;: {
-    &quot;state&quot;: &quot;OPEN&quot;,
-    &quot;assignee&quot;: &quot;Maddione&quot;
-  }
-}</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/Maddione/MedJ2.0.git&quot;,
-    &quot;accountId&quot;: &quot;74ccdd10-47c2-4e9f-9d7b-2c436b81186a&quot;
-  }
-}</component>
-  <component name="ProblemsViewState">
-    <option name="selectedTabId" value="CurrentFile" />
-  </component>
   <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 4
 }</component>
-  <component name="ProjectId" id="2yHohXsvXpDxFCHPxouieyTJYEG" />
-  <component name="ProjectLevelVcsManager">
-    <ConfirmationsSetting value="2" id="Add" />
-  </component>
+  <component name="ProjectId" id="30dfZJekO9UXgfCttoo7bCsCi6C" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
-    <option name="sortByType" value="true" />
-    <option name="sortKey" value="BY_TYPE" />
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
-    &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
     &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
-    &quot;Django Server.MedJ server.executor&quot;: &quot;Run&quot;,
+    &quot;Django Server.MedJ.executor&quot;: &quot;Run&quot;,
     &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;Python.bootstrap.executor&quot;: &quot;Run&quot;,
-    &quot;Python.manage.executor&quot;: &quot;Run&quot;,
+    &quot;Node.js.styles.css.executor&quot;: &quot;Debug&quot;,
+    &quot;Node.js.styles.ts.executor&quot;: &quot;Debug&quot;,
     &quot;RunOnceActivity.OpenDjangoStructureViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.pycharm.django.structure.promotion.once.per.project&quot;: &quot;true&quot;,
-    &quot;django.template.preview.state&quot;: &quot;SHOW_EDITOR&quot;,
+    &quot;SHELLCHECK.PATH&quot;: &quot;C:\\Users\\444\\AppData\\Roaming\\JetBrains\\PyCharm2025.1\\plugins\\Shell Script\\shellcheck.exe&quot;,
+    &quot;django.template.preview.state&quot;: &quot;SHOW_EDITOR_AND_PREVIEW&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/onlin/PycharmProjects/MedJ2.0&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;C:\\Program Files\\JetBrains\\PyCharm 2025.1.1.1\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.intellij.python.django.customization.DjangoModulesConfigurable&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;D:\\programi\\PyCharm 2025.1.3.1\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\onlin\PycharmProjects\MedJ2.0\staticfiles\img" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\onlin\PycharmProjects\MedJ2.0\static\fontawesome\css" />
-      <recent name="C:\Users\onlin\PycharmProjects\MedJ2.0\static\fontawesome\webfonts" />
-      <recent name="C:\Users\onlin\PycharmProjects\MedJ2.0\static\fontawesome" />
-      <recent name="C:\Users\onlin\PycharmProjects\MedJ2.0\static\css" />
-      <recent name="C:\Users\onlin\PycharmProjects\MedJ2.0\static\css\webfonts" />
+      <recent name="C:\Users\444\PychamProjects\MedJ2.1\static\css" />
+      <recent name="C:\Users\444\PychamProjects\MedJ2.1\static" />
+      <recent name="C:\Users\444\PychamProjects\MedJ2.1\static\images" />
+      <recent name="C:\Users\444\PychamProjects\MedJ2.1\static\js" />
+      <recent name="C:\Users\444\PychamProjects\MedJ2.1" />
     </key>
   </component>
-  <component name="RunManager" selected="Django Server.MedJ server">
-    <configuration name="bootstrap" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="MedJ2.0" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/static" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/static/bootstrap.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
+  <component name="RunManager" selected="Django Server.MedJ">
+    <configuration name="styles.css" type="NodeJSConfigurationType" temporary="true" nameIsGenerated="true" path-to-js-file="$PROJECT_DIR$/static/src/styles.css" typescript-loader="bundled" working-dir="$PROJECT_DIR$/static/src">
       <method v="2" />
     </configuration>
-    <configuration name="manage" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
-      <module name="MedJ2.0" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="C:\Users\onlin\PycharmProjects\MedJ2.0\manage.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="MedJ server" type="Python.DjangoServer" factoryName="Django server">
-      <module name="MedJ2.0" />
+    <configuration name="MedJ" type="Python.DjangoServer" factoryName="Django server">
+      <module name="MedJ2.1" />
       <option name="ENV_FILES" value="$PROJECT_DIR$/.env" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
-        <env name="PYTHONUNBUFFERED" value="1, DJANGO_SETTINGS_MODULE=settings.dev, DJANGO_ENV=dev" />
+        <env name="PYTHONUNBUFFERED" value="1, DJANGO_SETTINGS_MODULE=medj.settings, DJANGO_ENVIRONMENT =dev" />
+        <env name="DJANGO_SETTINGS_MODULE" value="medj.settings.__init__" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="C:\Users\onlin\PycharmProjects\MedJ2.0" />
-      <option name="IS_MODULE_SDK" value="true" />
+      <option name="SDK_NAME" value="Python 3.13 (MedJ2.1)" />
+      <option name="WORKING_DIRECTORY" value="C:\Users\444\PychamProjects\MedJ2.1" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="launchJavascriptDebuger" value="false" />
       <option name="port" value="8000" />
-      <option name="host" value="127.0.0.1" />
+      <option name="host" value="" />
       <option name="additionalOptions" value="" />
       <option name="browserUrl" value="" />
       <option name="runTestServer" value="false" />
@@ -185,343 +229,71 @@
       <option name="customRunCommand" value="" />
       <method v="2" />
     </configuration>
-    <list>
-      <item itemvalue="Django Server.MedJ server" />
-      <item itemvalue="Python.manage" />
-      <item itemvalue="Python.bootstrap" />
-    </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.bootstrap" />
+        <item itemvalue="Node.js.styles.css" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-b26f3e71634d-JavaScript-PY-251.26094.141" />
-        <option value="bundled-python-sdk-9f8e2b94138c-36ea0e71a18c-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-251.26094.141" />
+        <option value="bundled-js-predefined-d6986cc7102b-09060db00ec0-JavaScript-PY-251.26927.90" />
+        <option value="bundled-python-sdk-41e8cd69c857-64d779b69b7a-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-251.26927.90" />
       </set>
     </attachedChunks>
   </component>
-  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="c000d4c4-fa58-48c8-ad0b-ada18b75ea4a" name="Changes" comment="" />
-      <created>1749500978943</created>
+      <changelist id="c486bb59-c79b-4440-8fcc-e0c5e6eda3dc" name="Changes" comment="" />
+      <created>1753962427329</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1749500978943</updated>
-      <workItem from="1749605758862" duration="128000" />
-      <workItem from="1749606400796" duration="5883000" />
-      <workItem from="1749614373926" duration="62588000" />
-      <workItem from="1749739594306" duration="1632000" />
-      <workItem from="1749741318076" duration="13135000" />
-      <workItem from="1749758807010" duration="388000" />
-      <workItem from="1749814272567" duration="1452000" />
-      <workItem from="1749815908805" duration="10716000" />
-      <workItem from="1749828123086" duration="1289000" />
-      <workItem from="1749829473235" duration="12348000" />
-      <workItem from="1749843331795" duration="7014000" />
-      <workItem from="1749850442400" duration="10185000" />
-      <workItem from="1749860969568" duration="99228000" />
-      <workItem from="1750120764410" duration="19974000" />
-      <workItem from="1750144172032" duration="26346000" />
-      <workItem from="1750173682834" duration="1685000" />
+      <updated>1753962427329</updated>
+      <workItem from="1753962428850" duration="5815000" />
+      <workItem from="1753968449598" duration="6351000" />
+      <workItem from="1754072857296" duration="2190000" />
+      <workItem from="1754385830374" duration="598000" />
+      <workItem from="1754470249838" duration="2730000" />
+      <workItem from="1754999541820" duration="3815000" />
+      <workItem from="1755542768921" duration="11245000" />
+      <workItem from="1755696334723" duration="22230000" />
+      <workItem from="1755873937470" duration="6861000" />
+      <workItem from="1755886659086" duration="3105000" />
+      <workItem from="1755945253545" duration="594000" />
+      <workItem from="1755955432328" duration="19587000" />
+      <workItem from="1756288885922" duration="25608000" />
     </task>
-    <task id="LOCAL-00001" summary="updated html files">
-      <option name="closed" value="true" />
-      <created>1749520830536</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1749520830536</updated>
-    </task>
-    <task id="LOCAL-00002" summary="updated static folder">
-      <option name="closed" value="true" />
-      <created>1749523869832</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1749523869832</updated>
-    </task>
-    <task id="LOCAL-00003" summary="updated static folder">
-      <option name="closed" value="true" />
-      <created>1749523907413</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1749523907413</updated>
-    </task>
-    <task id="LOCAL-00004" summary="Added Google Cloud Vision as OCR">
-      <option name="closed" value="true" />
-      <created>1749528672471</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1749528672471</updated>
-    </task>
-    <task id="LOCAL-00005" summary="-updated reuirements.txt&#10;-fixed some typos">
-      <option name="closed" value="true" />
-      <created>1749578939744</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1749578939744</updated>
-    </task>
-    <task id="LOCAL-00006" summary="- fixed some typos">
-      <option name="closed" value="true" />
-      <created>1749598570811</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1749598570811</updated>
-    </task>
-    <task id="LOCAL-00007" summary="- added dropdown menus for upload page with document types&#10;-added language change with BG and ENG">
-      <option name="closed" value="true" />
-      <created>1749606784154</created>
-      <option name="number" value="00007" />
-      <option name="presentableId" value="LOCAL-00007" />
-      <option name="project" value="LOCAL" />
-      <updated>1749606784154</updated>
-    </task>
-    <task id="LOCAL-00008" summary="- Cloud Vision API for scanned docs&#10;- added annonymizer&#10;- added OpenAI for summary">
-      <option name="closed" value="true" />
-      <created>1749615431653</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1749615431653</updated>
-    </task>
-    <task id="LOCAL-00009" summary="- added conditions for uploads&#10;- defined uploaded document types&#10;-added gpt_client.py&#10;- moved the anonymizer separately&#10;-added a folder for utils">
-      <option name="closed" value="true" />
-      <created>1749630262367</created>
-      <option name="number" value="00009" />
-      <option name="presentableId" value="LOCAL-00009" />
-      <option name="project" value="LOCAL" />
-      <updated>1749630262367</updated>
-    </task>
-    <task id="LOCAL-00010" summary="- minor fixes&#10;- fixes so typos">
-      <option name="closed" value="true" />
-      <created>1749631888541</created>
-      <option name="number" value="00010" />
-      <option name="presentableId" value="LOCAL-00010" />
-      <option name="project" value="LOCAL" />
-      <updated>1749631888541</updated>
-    </task>
-    <task id="LOCAL-00011" summary="- minor fixes&#10;- fixes so typos">
-      <option name="closed" value="true" />
-      <created>1749633371547</created>
-      <option name="number" value="00011" />
-      <option name="presentableId" value="LOCAL-00011" />
-      <option name="project" value="LOCAL" />
-      <updated>1749633371547</updated>
-    </task>
-    <task id="LOCAL-00012" summary="- added casefiles,doctors,history,personalcard pages&#10;-updated upload/views/urls to reflect that">
-      <option name="closed" value="true" />
-      <created>1749693776153</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1749693776153</updated>
-    </task>
-    <task id="LOCAL-00013" summary="- split base.html in base_app and base_public&#10;- improved some templates, added basic info&#10;- added icons for language change&#10;- added profile icon&#10;- added a css file for wwebsite colors">
-      <option name="closed" value="true" />
-      <created>1749705136899</created>
-      <option name="number" value="00013" />
-      <option name="presentableId" value="LOCAL-00013" />
-      <option name="project" value="LOCAL" />
-      <updated>1749705136899</updated>
-    </task>
-    <task id="LOCAL-00014" summary="-updated the landing/base_app/upload page">
-      <option name="closed" value="true" />
-      <created>1749741793617</created>
-      <option name="number" value="00014" />
-      <option name="presentableId" value="LOCAL-00014" />
-      <option name="project" value="LOCAL" />
-      <updated>1749741793617</updated>
-    </task>
-    <task id="LOCAL-00015" summary="-updated the landing/base_app/upload page&#10;- added a warning message to upload/&#10;- added visualization of upload&#10;- implimented a two step upload process allowing the user option to edit and approve the text before analizing it&#10;-data from upload in now properly stored in the database&#10;-switched from bootstrap to tailwind due to conflicts">
-      <option name="closed" value="true" />
-      <created>1749834527586</created>
-      <option name="number" value="00015" />
-      <option name="presentableId" value="LOCAL-00015" />
-      <option name="project" value="LOCAL" />
-      <updated>1749834527586</updated>
-    </task>
-    <task id="LOCAL-00016" summary="rge branch 'main' of https://github.com/Maddione/MedJ2.0">
-      <option name="closed" value="true" />
-      <created>1749835387990</created>
-      <option name="number" value="00016" />
-      <option name="presentableId" value="LOCAL-00016" />
-      <option name="project" value="LOCAL" />
-      <updated>1749835387990</updated>
-    </task>
-    <task id="LOCAL-00017" summary="rge branch 'main' of https://github.com/Maddione/MedJ2.0">
-      <option name="closed" value="true" />
-      <created>1749835487461</created>
-      <option name="number" value="00017" />
-      <option name="presentableId" value="LOCAL-00017" />
-      <option name="project" value="LOCAL" />
-      <updated>1749835487461</updated>
-    </task>
-    <task id="LOCAL-00018" summary="rge branch 'main' of https://github.com/Maddione/MedJ2.0">
-      <option name="closed" value="true" />
-      <created>1749835634190</created>
-      <option name="number" value="00018" />
-      <option name="presentableId" value="LOCAL-00018" />
-      <option name="project" value="LOCAL" />
-      <updated>1749835634190</updated>
-    </task>
-    <task id="LOCAL-00019" summary="-fix">
-      <option name="closed" value="true" />
-      <created>1749837311878</created>
-      <option name="number" value="00019" />
-      <option name="presentableId" value="LOCAL-00019" />
-      <option name="project" value="LOCAL" />
-      <updated>1749837311878</updated>
-    </task>
-    <task id="LOCAL-00020" summary="- minor fixes">
-      <option name="closed" value="true" />
-      <created>1749861806620</created>
-      <option name="number" value="00020" />
-      <option name="presentableId" value="LOCAL-00020" />
-      <option name="project" value="LOCAL" />
-      <updated>1749861806620</updated>
-    </task>
-    <task id="LOCAL-00021" summary="- minor fixes">
-      <option name="closed" value="true" />
-      <created>1749864236417</created>
-      <option name="number" value="00021" />
-      <option name="presentableId" value="LOCAL-00021" />
-      <option name="project" value="LOCAL" />
-      <updated>1749864236417</updated>
-    </task>
-    <task id="LOCAL-00022" summary="- minor fixes">
-      <option name="closed" value="true" />
-      <created>1749938809634</created>
-      <option name="number" value="00022" />
-      <option name="presentableId" value="LOCAL-00022" />
-      <option name="project" value="LOCAL" />
-      <updated>1749938809634</updated>
-    </task>
-    <task id="LOCAL-00023" summary="- minor fixes">
-      <option name="closed" value="true" />
-      <created>1749945011449</created>
-      <option name="number" value="00023" />
-      <option name="presentableId" value="LOCAL-00023" />
-      <option name="project" value="LOCAL" />
-      <updated>1749945011449</updated>
-    </task>
-    <task id="LOCAL-00024" summary="- added FontAwesome for icons and fonts&#10;- added a &quot;MedicalEvent&quot; category">
-      <option name="closed" value="true" />
-      <created>1750026941647</created>
-      <option name="number" value="00024" />
-      <option name="presentableId" value="LOCAL-00024" />
-      <option name="project" value="LOCAL" />
-      <updated>1750026941647</updated>
-    </task>
-    <task id="LOCAL-00025" summary="- database update">
-      <option name="closed" value="true" />
-      <created>1750033341947</created>
-      <option name="number" value="00025" />
-      <option name="presentableId" value="LOCAL-00025" />
-      <option name="project" value="LOCAL" />
-      <updated>1750033341947</updated>
-    </task>
-    <task id="LOCAL-00026" summary="- database update + AJAX for Vision API call">
-      <option name="closed" value="true" />
-      <created>1750152067766</created>
-      <option name="number" value="00026" />
-      <option name="presentableId" value="LOCAL-00026" />
-      <option name="project" value="LOCAL" />
-      <updated>1750152067766</updated>
-    </task>
-    <task id="LOCAL-00027" summary="- settings/ added to github">
-      <option name="closed" value="true" />
-      <created>1750152596004</created>
-      <option name="number" value="00027" />
-      <option name="presentableId" value="LOCAL-00027" />
-      <option name="project" value="LOCAL" />
-      <updated>1750152596004</updated>
-    </task>
-    <task id="LOCAL-00028" summary="- testing">
-      <option name="closed" value="true" />
-      <created>1750154907216</created>
-      <option name="number" value="00028" />
-      <option name="presentableId" value="LOCAL-00028" />
-      <option name="project" value="LOCAL" />
-      <updated>1750154907216</updated>
-    </task>
-    <task id="LOCAL-00029" summary="- repair">
-      <option name="closed" value="true" />
-      <created>1750156441784</created>
-      <option name="number" value="00029" />
-      <option name="presentableId" value="LOCAL-00029" />
-      <option name="project" value="LOCAL" />
-      <updated>1750156441784</updated>
-    </task>
-    <option name="localTasksCounter" value="30" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
-  <component name="Vcs.Log.Tabs.Properties">
-    <option name="TAB_STATES">
-      <map>
-        <entry key="MAIN">
-          <value>
-            <State />
-          </value>
-        </entry>
-      </map>
-    </option>
-  </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="updated html files" />
-    <MESSAGE value="updated static folder" />
-    <MESSAGE value="Added Google Cloud Vision as OCR" />
-    <MESSAGE value="-updated reuirements.txt&#10;-fixed some typos" />
-    <MESSAGE value="- fixed some typos" />
-    <MESSAGE value="- added dropdown menus for upload page with document types&#10;-added language change with BG and ENG" />
-    <MESSAGE value="- Cloud Vision API for scanned docs&#10;- added annonymizer&#10;- added OpenAI for summary" />
-    <MESSAGE value="- added conditions for uploads&#10;- defined uploaded document types&#10;-added gpt_client.py&#10;- moved the anonymizer separately&#10;-added a folder for utils" />
-    <MESSAGE value="- minor fixes&#10;- fixes so typos" />
-    <MESSAGE value="- added casefiles,doctors,history,personalcard pages&#10;-updated upload/views/urls to reflect that" />
-    <MESSAGE value="- split base.html in base_app and base_public&#10;- improved some templates, added basic info&#10;- added icons for language change&#10;- added profile icon&#10;- added a css file for wwebsite colors" />
-    <MESSAGE value="-updated the landing/base_app/upload page" />
-    <MESSAGE value="-updated the landing/base_app/upload page&#10;- added a warning message to upload/&#10;- added visualization of upload&#10;- implimented a two step upload process allowing the user option to edit and approve the text before analizing it&#10;-data from upload in now properly stored in the database&#10;-switched from bootstrap to tailwind due to conflicts" />
-    <MESSAGE value="- added a warning message to upload/&#10;- added visualization of upload&#10;- implimented a two step upload process allowing the user option to edit and approve the text before analizing it&#10;-data from upload in now properly stored in the database&#10;-switched from bootstrap to tailwind due to conflicts" />
-    <MESSAGE value="rge branch 'main' of https://github.com/Maddione/MedJ2.0" />
-    <MESSAGE value="-fix" />
-    <MESSAGE value="- minor fixes" />
-    <MESSAGE value="- added FontAwesome for icons and fonts&#10;- added a &quot;MedicalEvent&quot; category" />
-    <MESSAGE value="- database update" />
-    <MESSAGE value="- database update + AJAX for Vision API call" />
-    <MESSAGE value="- settings/ added to github" />
-    <MESSAGE value="- testing" />
-    <MESSAGE value="- repair" />
-    <option name="LAST_COMMIT_MESSAGE" value="- repair" />
+    <MESSAGE value="2.1" />
+    <option name="LAST_COMMIT_MESSAGE" value="2.1" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/static/js/event_detail_logic.js</url>
-          <line>30</line>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/medj/urls.py</url>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/records/models.py</url>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/records/templatetags/medj_filters.py</url>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/records/views.py</url>
+          <line>486</line>
           <option name="timeStamp" value="5" />
         </line-breakpoint>
       </breakpoints>
-      <default-breakpoints>
-        <breakpoint enabled="true" type="jinja2-exception">
-          <properties exception="TemplateError" />
-        </breakpoint>
-        <breakpoint enabled="true" type="jupyter-exception">
-          <properties exception="BaseException" />
-        </breakpoint>
-        <breakpoint enabled="true" type="javascript-exception" />
-      </default-breakpoints>
     </breakpoint-manager>
   </component>
 </project>

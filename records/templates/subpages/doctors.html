@@ -1,0 +1,40 @@
+{% extends 'basetemplates/base_app.html' %}
+{% load i18n %}
+{% block content %}
+<main class="bg-site-background min-h-screen p-4 md:p-8">
+  <div class="container mx-auto max-w-7xl">
+    <div class="bg-block-background p-6 rounded-3xl shadow-lg mb-8">
+      <h1 class="text-3xl font-bold text-gray-800">{% trans "Лекари" %}</h1>
+      <p class="mt-2 text-gray-600">{% trans "Преглед на медицинските специалисти." %}</p>
+    </div>
+
+    <div class="bg-block-background p-6 rounded-3xl shadow-lg">
+      <div class="bg-navbar-button-blue text-white p-4 rounded-t-3xl -mx-6 -mt-6 mb-4">
+        <h2 class="text-xl font-semibold">{% trans "Списък с лекари" %}</h2>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm text-gray-700">
+          <thead>
+            <tr class="bg-creamy-main-content">
+              <th class="py-3 px-4 text-left font-semibold">{% trans "Име" %}</th>
+              <th class="py-3 px-4 text-left font-semibold">{% trans "Специалност" %}</th>
+              <th class="py-3 px-4 text-left font-semibold">{% trans "Тип" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for d in doctors %}
+              <tr class="bg-creamy-main-content border-b border-button-blue hover:bg-gray-50">
+                <td class="py-3 px-4 whitespace-nowrap">{{ d.full_name }}</td>
+                <td class="py-3 px-4">{{ d.specialty.name|default:"—" }}</td>
+                <td class="py-3 px-4">{{ d.get_practitioner_type_display }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="3" class="py-3 px-4 text-center text-gray-500">—</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock %}

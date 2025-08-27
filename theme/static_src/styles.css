@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body {
+    @apply bg-site-background;
+  }
+  a {
+    @apply no-underline;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-block-background rounded-3xl shadow-soft;
+  }
+
+  .btn-primary {
+    @apply px-6 py-3 bg-button-blue text-white font-bold rounded-3xl shadow hover:bg-navbar-button-blue transition-colors;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 bg-checkmark-green text-white font-bold rounded-3xl shadow hover:bg-green-700 transition-colors;
+  }
+
+  .btn-danger {
+    @apply px-6 py-3 bg-error-red text-white font-bold rounded-3xl shadow hover:bg-red-800 transition-colors;
+  }
+
+  .nav-link {
+    @apply px-4 py-2 text-white font-bold rounded-2xl hover:bg-navbar-button-blue transition-colors;
+  }
+
+  .input-text {
+    @apply w-full px-4 py-3 rounded-2xl bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-navbar-button-blue;
+  }
+
+  .section-title {
+    @apply text-2xl font-semibold text-navbar-button-blue;
+  }
+}

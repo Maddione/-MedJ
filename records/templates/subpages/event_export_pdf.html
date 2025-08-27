@@ -1,0 +1,126 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+  <meta charset="utf-8">
+  <title>{% trans "Обобщение на събитие" %}</title>
+  <style>
+    body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; color: #111; }
+    h1 { font-size: 20px; margin: 0 0 8px; }
+    h2 { font-size: 16px; margin: 18px 0 8px; color: #0A4E75; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ddd; padding: 6px 8px; vertical-align: top; }
+    th { background: #f3f4f6; }
+    .meta { margin-bottom: 12px; }
+    .muted { color: #555; }
+    .chip { display: inline-block; background: #e8edf3; padding: 2px 6px; border-radius: 8px; margin: 0 4px 4px 0; }
+  </style>
+</head>
+<body>
+  <h1>{% trans "Обобщение на събитие" %}</h1>
+  <div class="meta">
+    <div><strong>{% trans "Специалност" %}:</strong> {{ event.specialty.name }}</div>
+    <div><strong>{% trans "Дата" %}:</strong> {{ event.event_date|date:"d.m.Y" }}</div>
+    {% if event.summary %}<div class="muted">{{ event.summary }}</div>{% endif %}
+    {% if event.tags.all %}
+      <div style="margin-top:6px;">
+        {% for t in event.tags.all %}
+          <span class="chip">#{{ t.name }}</span>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  {% if diagnoses %}
+    <h2>{% trans "Диагнози" %}</h2>
+    <table>
+      <thead><tr><th>{% trans "Диагноза" %}</th><th>{% trans "МКБ-10" %}</th><th>{% trans "Дата" %}</th></tr></thead>
+      <tbody>
+        {% for d in diagnoses %}
+          <tr>
+            <td>{{ d.diagnosis_text }}</td>
+            <td>{{ d.icd10_code|default:"" }}</td>
+            <td>{{ d.diagnosed_at|date:"d.m.Y" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+  {% if treatment_plans %}
+    <h2>{% trans "Планове за лечение" %}</h2>
+    <table>
+      <thead><tr><th>{% trans "План" %}</th><th>{% trans "Лекарства" %}</th><th>{% trans "Период" %}</th></tr></thead>
+      <tbody>
+        {% for p in treatment_plans %}
+          <tr>
+            <td>{{ p.plan_text }}</td>
+            <td>{{ p.medications_list|default:"" }}</td>
+            <td>{% if p.start_date %}{{ p.start_date|date:"d.m.Y" }}{% endif %}{% if p.end_date %} – {{ p.end_date|date:"d.m.Y" }}{% endif %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+  {% if narrative_sections %}
+    <h2>{% trans "Наративни секции" %}</h2>
+    <table>
+      <thead><tr><th>{% trans "Секция" %}</th><th>{% trans "Съдържание" %}</th></tr></thead>
+      <tbody>
+        {% for n in narrative_sections %}
+          <tr>
+            <td>{{ n.section_title }}</td>
+            <td>{{ n.section_content }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+  {% if documents %}
+    <h2>{% trans "Документи" %}</h2>
+    <table>
+      <thead><tr><th>{% trans "Тип" %}</th><th>{% trans "Име" %}</th><th>{% trans "Дата" %}</th><th>{% trans "Лекар" %}</th></tr></thead>
+      <tbody>
+        {% for d in documents %}
+          <tr>
+            <td>{{ d.doc_type.name }}</td>
+            <td>{{ d.file.name|cut:"documents/" }}</td>
+            <td>{{ d.document_date|date:"d.m.Y" }}</td>
+            <td>{{ d.practitioner.full_name|default:"" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+  {% if labs %}
+    <h2>{% trans "Лабораторни показатели" %}</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>{% trans "Дата" %}</th>
+          <th>{% trans "Показател" %}</th>
+          <th>{% trans "Стойност" %}</th>
+          <th>{% trans "Единица" %}</th>
+          <th>{% trans "Референтни" %}</th>
+          <th>{% trans "Абн." %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in labs %}
+          <tr>
+            <td>{{ m.measured_at|date:"d.m.Y" }}</td>
+            <td>{{ m.indicator.code }}</td>
+            <td>{{ m.value_si|default:m.value_raw }}</td>
+            <td>{{ m.unit_si|default:m.unit_raw|default:"" }}</td>
+            <td>{% if m.ref_low_si and m.ref_high_si %}{{ m.ref_low_si }}–{{ m.ref_high_si }}{% endif %}</td>
+            <td>{% if m.is_abnormal %}1{% else %}{% if m.is_abnormal == False %}0{% endif %}{% endif %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+</body>
+</html>

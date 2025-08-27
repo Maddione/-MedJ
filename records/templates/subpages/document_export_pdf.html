@@ -1,0 +1,64 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+  <meta charset="utf-8">
+  <title>{% trans "Обобщение на документ" %}</title>
+  <style>
+    body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; color: #111; }
+    h1 { font-size: 20px; margin: 0 0 8px; }
+    h2 { font-size: 16px; margin: 18px 0 8px; color: #0A4E75; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ddd; padding: 6px 8px; vertical-align: top; }
+    th { background: #f3f4f6; }
+    .muted { color: #555; }
+    .chip { display: inline-block; background: #e8edf3; padding: 2px 6px; border-radius: 8px; margin: 0 4px 4px 0; }
+  </style>
+</head>
+<body>
+  <h1>{% trans "Обобщение на документ" %}</h1>
+
+  <h2>{% trans "Основни данни" %}</h2>
+  <table>
+    <tbody>
+      <tr>
+        <th style="width:28%">{% trans "Тип документ" %}</th>
+        <td>{{ document.doc_type.name }}</td>
+      </tr>
+      <tr>
+        <th>{% trans "Дата на документа" %}</th>
+        <td>{{ document.document_date|date:"d.m.Y" }}</td>
+      </tr>
+      <tr>
+        <th>{% trans "Файл" %}</th>
+        <td>{{ document.file.name|cut:"documents/" }}</td>
+      </tr>
+      <tr>
+        <th>{% trans "Лекар" %}</th>
+        <td>{{ document.practitioner.full_name|default:"" }}</td>
+      </tr>
+      <tr>
+        <th>{% trans "Събитие" %}</th>
+        <td>
+          {% if event %}
+            {{ event.specialty.name }} — {{ event.event_date|date:"d.m.Y" }}
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <th>{% trans "Тагове" %}</th>
+        <td>
+          {% for t in document.tags.all %}
+            <span class="chip">#{{ t.name }}</span>
+          {% endfor %}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  {% if document.original_ocr_text %}
+    <h2>{% trans "OCR текст" %}</h2>
+    <div class="muted">{{ document.original_ocr_text|linebreaksbr }}</div>
+  {% endif %}
+</body>
+</html>

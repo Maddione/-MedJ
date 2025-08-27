@@ -1,0 +1,74 @@
+{% extends 'basetemplates/base_public.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Регистрация в MedJ" %}{% endblock %}
+
+{% block content %}
+<main class="flex items-center justify-center min-h-[calc(100vh-120px)] px-4">
+  <div class="card max-w-md w-full p-8">
+    <div class="bg-navbar-button-blue text-white text-center rounded-3xl -mx-8 -mt-8 mb-8 p-6">
+      <h1 class="text-3xl font-bold">{% trans "Регистрация" %}</h1>
+    </div>
+
+    <form method="post" class="space-y-5">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+
+      <div>
+        <label for="{{ form.username.id_for_label }}" class="sr-only">{% trans "Потребителско име" %}</label>
+        {{ form.username|add_class:"input-text" }}
+        {{ form.username.errors }}
+      </div>
+
+      <div>
+        <label for="{{ form.email.id_for_label }}" class="sr-only">{% trans "Имейл" %}</label>
+        {{ form.email|add_class:"input-text" }}
+        {{ form.email.errors }}
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="{{ form.first_name.id_for_label }}" class="sr-only">{% trans "Име" %}</label>
+          {{ form.first_name|add_class:"input-text" }}
+          {{ form.first_name.errors }}
+        </div>
+        <div>
+          <label for="{{ form.last_name.id_for_label }}" class="sr-only">{% trans "Фамилия" %}</label>
+          {{ form.last_name|add_class:"input-text" }}
+          {{ form.last_name.errors }}
+        </div>
+      </div>
+
+      <div>
+        <label for="{{ form.password1.id_for_label }}" class="sr-only">{% trans "Парола" %}</label>
+        {{ form.password1|add_class:"input-text" }}
+        {{ form.password1.errors }}
+      </div>
+
+      <div>
+        <label for="{{ form.password2.id_for_label }}" class="sr-only">{% trans "Потвърдете паролата" %}</label>
+        {{ form.password2|add_class:"input-text" }}
+        {{ form.password2.errors }}
+      </div>
+
+      {% if form.user_type %}
+      <div>
+        <label class="section-title block mb-2">{% trans "Тип потребител" %}</label>
+        {{ form.user_type|add_class:"input-text" }}
+        {{ form.user_type.errors }}
+      </div>
+      {% endif %}
+
+      <button type="submit" class="btn-primary w-full text-xl">{% trans "Регистрация" %}</button>
+    </form>
+
+    <div class="mt-6 text-center">
+      <p class="text-gray-700">
+        {% trans "Вече имаш акаунт?" %}
+        <a href="{% url 'medj:login' %}" class="text-navbar-button-blue hover:underline">{% trans "Вход" %}</a>
+      </p>
+    </div>
+  </div>
+</main>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'basetemplates/base_public.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Вход в MedJ" %}{% endblock %}
+
+{% block content %}
+<main class="flex items-center justify-center min-h-[calc(100vh-120px)] px-4">
+  <div class="card max-w-md w-full p-8">
+    <div class="bg-navbar-button-blue text-white text-center rounded-3xl -mx-8 -mt-8 mb-8 p-6">
+      <h1 class="text-3xl font-bold">{% trans "Добре дошли" %}</h1>
+    </div>
+
+    <form method="post" class="space-y-5">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+
+      <div>
+        <label for="id_username" class="sr-only">{% trans "Потребителско име" %}</label>
+        <input type="text" name="username" id="id_username" required autofocus class="input-text">
+      </div>
+
+      <div>
+        <label for="id_password" class="sr-only">{% trans "Парола" %}</label>
+        <input type="password" name="password" id="id_password" required class="input-text">
+      </div>
+
+      <button type="submit" class="btn-primary w-full">{% trans "Вход" %}</button>
+    </form>
+
+    <div class="mt-6 text-center">
+      <p class="text-gray-700">
+        {% trans "Нямаш акаунт?" %}
+        <a href="{% url 'medj:register' %}" class="text-navbar-button-blue hover:underline">{% trans "Регистрирай се" %}</a>
+      </p>
+    </div>
+  </div>
+</main>
+{% endblock %}

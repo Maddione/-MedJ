@@ -1,117 +1,70 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const summaryTextarea = document.getElementById('summary_textarea');
-    const eventDateInput = document.getElementById('event_date_input');
-    const tagsInput = document.getElementById('tags_input');
-    const saveDetailsButton = document.getElementById('save-details-button');
-    const deleteButton = document.getElementById('delete-button');
-    
-    const eventId = saveDetailsButton ? saveDetailsButton.dataset.eventId : null;
-    const documentId = deleteButton ? deleteButton.dataset.documentId : null;
+    const medicalEventId = document.getElementById('medical-event-id').dataset.eventId;
+    const saveEventDetailsButton = document.getElementById('save-event-details-button');
+    const deleteEventButton = document.getElementById('delete-event-button');
+    const editBloodTestsButton = document.getElementById('edit-blood-tests-button'); // Бутон за редактиране на показатели
+
+    const summaryInput = document.getElementById('id_summary');
+    const eventDateInput = document.getElementById('id_event_date');
+    const tagsInput = document.getElementById('id_tags_input'); // Предполагаме, че има инпут за тагове
 
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    const languagePrefix = '/' + document.documentElement.lang;
 
-
-    // --- Save Details Button Logic --
-
-
-    if (saveDetailsButton) {
-        saveDetailsButton.addEventListener('click', function() {
-            if (!eventId) {
-                alert(MESSAGES.save_error || "Error: Event ID not found for saving.");
-                return;
-            }
-
-            saveDetailsButton.disabled = true;
-            saveDetailsButton.innerHTML = `<span class="spinner-border spinner-border-sm"></span> ${MESSAGES.saving_text || 'Запазва се...'}`;
-
-            const dataToSend = {
-                summary: summaryTextarea ? summaryTextarea.value : '',
-                event_date: eventDateInput ? eventDateInput.value : '', // YYYY-MM-DD
-                tags: tagsInput ? tagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0) : [],
+    if (saveEventDetailsButton) {
+        saveEventDetailsButton.addEventListener('click', function() {
+            const payload = {
+                summary: summaryInput ? summaryInput.value : '',
+                event_date: eventDateInput ? eventDateInput.value : '',
+                tags: tagsInput ? tagsInput.value : ''
             };
 
-            fetch(`${languagePrefix}/api/update-event-details/${eventId}/`, {
+            fetch(`/api/update-event-details/${medicalEventId}/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': csrfToken
                 },
-                body: JSON.stringify(dataToSend)
+                body: JSON.stringify(payload)
             })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(errorData => {
-                        throw new Error(errorData.message || MESSAGES.unknown_server_error);
-                    });
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    alert(MESSAGES.save_success || "Промените бяха запазени успешно!");
-                    window.location.reload(); // Reload to reflect changes
+                    alert('Успешно запазено!'); // MESSAGES.save_success
                 } else {
-                    alert(`${MESSAGES.save_error || 'Save error'}: ${data.message}`);
+                    alert('Грешка при запазване: ' + (data.message || 'Неизвестна грешка.')); // MESSAGES.save_error
                 }
             })
             .catch(error => {
-                console.error('Save Details Error:', error);
-                alert(`${MESSAGES.save_error || 'Save error'}: ${error.message}`);
-            })
-            .finally(() => {
-                saveDetailsButton.disabled = false;
-                saveDetailsButton.innerHTML = MESSAGES.save_details_button_text || 'Запази промените';
+                console.error('Fetch Error:', error);
+                alert('Мрежова грешка при запазване.'); // MESSAGES.network_server_error
             });
         });
     }
 
-    // --- Delete Button Logic ---
-    if (deleteButton) {
-        deleteButton.addEventListener('click', function() {
-            if (!documentId) {
-                alert(MESSAGES.delete_error || "Error: Document ID not found for deletion.");
-                return;
+    if (deleteEventButton) {
+        deleteEventButton.addEventListener('click', function(event) {
+            event.preventDefault();
+            if (confirm('Сигурни ли сте, че искате да изтриете това медицинско събитие и свързания с него документ?')) { // MESSAGES.confirm_delete_event
+                fetch(`/api/delete-document/${medicalEventId}/`, { // Използваме event_id като document_id, защото source_document е OneToOne
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert('Събитието и документът бяха успешно изтрити!'); // MESSAGES.event_deleted_success
+                        window.location.href = data.redirect_url;
+                    } else {
+                        alert('Грешка при изтриване: ' + (data.message || 'Неизвестна грешка.')); // MESSAGES.delete_error
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch Error:', error);
+                    alert('Критична грешка при изтриване.'); // MESSAGES.critical_delete_error
+                });
             }
-
-            if (!confirm(MESSAGES.confirm_delete_event || "Сигурни ли сте, че искате да изтриете това медицинско събитие и свързания с него документ?")) {
-                return;
-            }
-
-            deleteButton.disabled = true;
-            deleteButton.innerHTML = `<span class="spinner-border spinner-border-sm"></span> ${MESSAGES.deleting_event_text || 'Изтрива се...'}`;
-
-            fetch(`${languagePrefix}/api/delete-document/${documentId}/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrfToken,
-                    'Content-Type': 'application/json'
-                },
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(errorData => {
-                        throw new Error(errorData.message || MESSAGES.unknown_server_error);
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.status === 'success') {
-                    alert(MESSAGES.event_deleted_success || "Събитието и документът бяха успешно изтрити!");
-                    window.location.href = data.redirect_url || '{% url "medj:history" %}'; // Redirect after deletion
-                } else {
-                    alert(`${MESSAGES.delete_error || 'Delete error'}: ${data.message}`);
-                }
-            })
-            .catch(error => {
-                console.error('Delete Error:', error);
-                alert(`${MESSAGES.critical_delete_error || 'Critical delete error'}: ${error.message}`);
-            })
-            .finally(() => {
-                deleteButton.disabled = false;
-                deleteButton.innerHTML = MESSAGES.delete_button_text || 'Изтрий документ';
-            });
         });
     }
 });

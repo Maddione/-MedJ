@@ -1,0 +1,63 @@
+{% extends 'basetemplates/base_app.html' %}
+{% load i18n %}
+{% block content %}
+<main class="bg-site-background min-h-screen p-4 md:p-8">
+  <div class="container mx-auto max-w-3xl">
+    <div class="bg-block-background p-6 rounded-3xl shadow-lg mb-8">
+      <h1 class="text-3xl font-bold text-gray-800">{% trans "Преместване на документ" %}</h1>
+      <p class="text-gray-600 mt-2">{{ document.file.name|default:"" }}</p>
+    </div>
+    <div class="bg-block-background p-6 rounded-3xl shadow-lg">
+      <form method="post" id="move-form">
+        {% csrf_token %}
+        <div class="grid gap-6">
+          <div>
+            <label class="block mb-2 text-gray-700">{% trans "Специалност" %}</label>
+            {{ form.specialty }}
+          </div>
+          <div>
+            <label class="block mb-2 text-gray-700">{% trans "Прикачи към съществуващо събитие" %}</label>
+            {{ form.target_event }}
+            <p class="text-sm text-gray-500 mt-1">{% trans "или" %}</p>
+          </div>
+          <div>
+            <label class="block mb-2 text-gray-700">{% trans "Създай ново събитие на дата" %}</label>
+            {{ form.new_event_date }}
+          </div>
+        </div>
+        {% if form.errors %}
+          <div class="mt-6 bg-light-red-bg border border-error-red text-dark-red-text px-4 py-3 rounded-lg">
+            {% for field, errors in form.errors.items %}{% for error in errors %}<p>{{ error }}</p>{% endfor %}{% endfor %}
+          </div>
+        {% endif %}
+        <div class="flex gap-3 mt-8">
+          <button class="px-6 py-3 bg-button-blue text-white rounded-lg">{% trans "Премести" %}</button>
+          <a href="{% url 'medj:medical_event_detail' pk=document.medical_event.id %}" class="px-6 py-3 bg-gray-200 rounded-lg text-gray-800">{% trans "Отказ" %}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>
+<script>
+document.addEventListener('change', async (e) => {
+  if (e.target.name === 'specialty') {
+    const specId = e.target.value;
+    const url = "{% url 'medj:events_by_specialty' %}" + "?specialty=" + specId;
+    const res = await fetch(url, {headers: {'X-Requested-With':'XMLHttpRequest'}});
+    const data = await res.json();
+    const select = document.getElementById("id_target_event");
+    select.innerHTML = "";
+    const empty = document.createElement("option");
+    empty.value = "";
+    empty.textContent = "";
+    select.appendChild(empty);
+    data.results.forEach(r => {
+      const o = document.createElement("option");
+      o.value = r.id;
+      o.textContent = `${r.date} — ${r.summary}`;
+      select.appendChild(o);
+    });
+  }
+});
+</script>
+{% endblock %}

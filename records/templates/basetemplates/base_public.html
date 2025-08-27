@@ -1,0 +1,57 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="{{ request.LANGUAGE_CODE }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{% block title %}MedJ{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/dist/output.css' %}">
+  <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'src/styles.css' %}">
+  <link rel="stylesheet" href="{% static 'fontawesome/css/all.min.css' %}">
+  <script src="https://unpkg.com/flowbite@2.5.1/dist/flowbite.min.js"></script>
+</head>
+<body class="bg-site-background text-gray-900 min-h-screen flex flex-col">
+  <nav class="bg-button-blue">
+    <div class="max-w-screen-xl mx-auto p-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button type="button" data-dropdown-toggle="language-dropdown-menu" class="inline-flex items-center font-medium justify-center px-3 py-2 text-sm text-white rounded-xl hover:bg-navbar-button-blue">
+          <svg class="w-6 h-6 rounded-full me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3900 3900"><path fill="#b22234" d="M0 0h7410v3900H0z"/><path d="M0 450h7410m0 600H0m0 600h7410m0 600H0m0 600h7410m0 600H0" stroke="#fff" stroke-width="300"/><path fill="#3c3b6e" d="M0 0h2964v2100H0z"/></svg>
+          <span class="uppercase">{{ request.LANGUAGE_CODE|default:'bg' }}</span>
+          <i class="fa-solid fa-chevron-down text-xs ml-2"></i>
+        </button>
+        <div id="language-dropdown-menu" class="z-50 hidden my-2 w-48 text-base list-none bg-white divide-y divide-gray-100 rounded-xl shadow">
+          <ul class="py-2 font-medium" role="none">
+            <li>
+              <form action="{% url 'set_language' %}" method="post" class="block">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <button type="submit" name="language" value="bg" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">🇧🇬 Български</button>
+              </form>
+            </li>
+            <li>
+              <form action="{% url 'set_language' %}" method="post" class="block">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <button type="submit" name="language" value="en" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">🇬🇧 English</button>
+              </form>
+            </li>
+          </ul>
+        </div>
+        <a href="{% url 'medj:landing' %}" class="text-white text-2xl font-semibold">MedJ</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="{% url 'medj:login' %}" class="btn-primary">{% trans "Вход" %}</a>
+        <a href="{% url 'medj:register' %}" class="btn-primary">{% trans "Регистрация" %}</a>
+      </div>
+    </div>
+  </nav>
+  <main class="flex-grow">
+    {% block content %}{% endblock %}
+  </main>
+  {% block scripts %}
+  <script src="{% static 'js/bootstrap.min.js' %}"></script>
+  {% endblock %}
+</body>
+</html>

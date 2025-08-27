@@ -1,0 +1,121 @@
+{% extends 'basetemplates/base_public.html' %}
+{% load i18n %}
+{% block content %}
+<main class="bg-site-background min-h-screen p-4 md:p-8">
+  <div class="container mx-auto max-w-4xl">
+    <div class="bg-block-background p-6 rounded-3xl shadow-lg mb-8">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-800">
+            {% if mode == "document" %}{% trans "Споделен документ" %}{% else %}{% trans "Споделено събитие" %}{% endif %}
+          </h1>
+          <p class="mt-2 text-gray-600">
+            {% trans "Валиден до:" %} <span id="expires-at">{{ expires_at|date:"c" }}</span>
+            • <span class="font-semibold" id="countdown"></span>
+          </p>
+        </div>
+            {% if request.user.is_authenticated and request.user.patient_profile and request.user.patient_profile.id == owner_patient_id %}
+              <form method="post" action="{% url 'medj:share_revoke' token=token %}">
+                {% csrf_token %}
+                <button class="px-4 py-2 bg-error-red text-white rounded-lg shadow hover:bg-dark-red-text transition">
+                  {% trans "Отмени линка" %}
+                </button>
+              </form>
+            {% endif %}
+      </div>
+    </div>
+
+    {% if mode == "document" %}
+      <div class="bg-block-background p-6 rounded-3xl shadow-lg">
+        <h2 class="text-xl font-semibold text-navbar-button-blue mb-4">{% trans "Документ" %}</h2>
+        <p class="text-gray-700 mb-3">{{ file_name|default:"" }}</p>
+        <div class="mb-6">
+          {% if file_url|lower|endswith:".pdf" %}
+            <iframe src="{{ file_url }}#toolbar=0&navpanes=0&scrollbar=0" width="100%" height="600" class="rounded-lg shadow-md border border-gray-300"></iframe>
+          {% else %}
+            <img src="{{ file_url }}" class="max-w-full h-auto rounded-lg shadow-md border border-gray-300" alt="">
+          {% endif %}
+        </div>
+        {% if allow_download %}
+          <a href="{{ file_url }}" class="px-6 py-3 bg-checkmark-green text-white rounded-lg shadow hover:bg-green-700 transition" download>
+            <i class="fa-solid fa-download"></i> {% trans "Изтегли" %}
+          </a>
+        {% endif %}
+        <div class="mt-6">
+          <img src="{% url 'medj:share_qr' token=token %}" alt="QR" class="w-48 h-48 border p-2 rounded-lg">
+          <p class="text-gray-600 text-sm mt-2">{% trans "Сканирайте за отваряне на тази страница." %}</p>
+        </div>
+      </div>
+    {% else %}
+      <div class="bg-block-background p-6 rounded-3xl shadow-lg">
+        <h2 class="text-xl font-semibold text-navbar-button-blue mb-4">{% trans "Събитие" %}</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div class="bg-creamy-main-content p-4 rounded-lg">
+            <p class="text-gray-700 text-sm">{% trans "Специалност" %}</p>
+            <p class="text-button-blue text-2xl font-bold mt-1">{{ event.specialty.name }}</p>
+          </div>
+          <div class="bg-creamy-main-content p-4 rounded-lg">
+            <p class="text-gray-700 text-sm">{% trans "Дата" %}</p>
+            <p class="text-button-blue text-2xl font-bold mt-1">{{ event.event_date|date:"d.m.Y" }}</p>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm text-gray-700">
+            <thead>
+              <tr class="bg-gray-200">
+                <th class="py-2 px-4 text-left font-semibold">{% trans "Тип" %}</th>
+                <th class="py-2 px-4 text-left font-semibold">{% trans "Име" %}</th>
+                <th class="py-2 px-4 text-left font-semibold">{% trans "Дата" %}</th>
+                <th class="py-2 px-4 text-center font-semibold">{% trans "Действия" %}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for d in documents %}
+                <tr class="border-b border-gray-200">
+                  <td class="py-2 px-4">{{ d.doc_type.name }}</td>
+                  <td class="py-2 px-4">{{ d.file.name|cut:"documents/" }}</td>
+                  <td class="py-2 px-4 whitespace-nowrap">{{ d.document_date|date:"d.m.Y" }}</td>
+                  <td class="py-2 px-4 text-center">
+                    {% if allow_download %}
+                      <a href="{{ d.file.url }}" class="text-checkmark-green hover:underline"><i class="fa-solid fa-download"></i></a>
+                    {% else %} — {% endif %}
+                  </td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="4" class="py-3 px-4 text-center text-gray-500">—</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="mt-6">
+          <img src="{% url 'medj:share_qr' token=token %}" alt="QR" class="w-48 h-48 border p-2 rounded-lg">
+          <p class="text-gray-600 text-sm mt-2">{% trans "Сканирайте за отваряне на тази страница." %}</p>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</main>
+
+<script>
+(function(){
+  const el = document.getElementById('expires-at');
+  const target = new Date(el.textContent).getTime();
+  const cd = document.getElementById('countdown');
+  function tick(){
+    const now = Date.now();
+    const diff = target - now;
+    if (diff <= 0) {
+      cd.textContent = "{{ _('Изтекъл') if False else 'Изтекъл' }}";
+      window.location.reload();
+      return;
+    }
+    const s = Math.floor(diff/1000)%60;
+    const m = Math.floor(diff/60000)%60;
+    const h = Math.floor(diff/3600000);
+    cd.textContent = `${h}h ${m}m ${s}s`;
+    requestAnimationFrame(()=>setTimeout(tick, 500));
+  }
+  tick();
+})();
+</script>
+{% endblock %}

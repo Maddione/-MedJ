@@ -1,0 +1,27 @@
+{% extends 'basetemplates/base_app.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<main class="bg-site-background min-h-screen flex items-center justify-center p-4 md:p-8">
+    <div class="bg-block-background p-8 rounded-3xl shadow-lg max-w-md w-full text-center">
+        <h1 class="text-3xl font-bold text-error-red mb-4">{% trans "Потвърждение за изтриване" %}</h1>
+        <p class="text-gray-700 text-lg mb-6">
+            {% blocktrans %}Сигурни ли сте, че искате да изтриете медицинско събитие:
+            <span class="font-bold">{{ medical_event.get_event_type_title_display }} ({{ medical_event.event_date|date:"d.m.Y" }})</span>
+            за пациент {{ medical_event.patient.user.username }}?{% endblocktrans %}
+        </p>
+        <p class="text-gray-600 text-sm mb-8">{% trans "Тази операция не може да бъде отменена." %}</p>
+
+        <form method="post" action="{% url 'medj:medical_event_delete' pk=medical_event.id %}">
+            {% csrf_token %}
+            <button type="submit" class="px-8 py-4 bg-error-red text-white font-bold rounded-lg shadow-md hover:bg-dark-red-text transition-colors">
+                {% trans "Изтрий" %}
+            </button>
+            <a href="{% url 'medj:medical_event_detail' pk=medical_event.id %}" class="ml-4 px-8 py-4 bg-gray-200 text-gray-700 font-bold rounded-lg shadow-md hover:bg-gray-300 transition-colors">
+                {% trans "Отказ" %}
+            </a>
+        </form>
+    </div>
+</main>
+{% endblock %}

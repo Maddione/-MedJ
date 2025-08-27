@@ -1,352 +1,281 @@
-// static/js/upload_logic.js
-
 document.addEventListener('DOMContentLoaded', function() {
-    // Select elements based on the new HTML structure
-    const uploadContainer = document.getElementById('upload-container'); // The main cream block
-    const eventTypeSelect = document.getElementById('event-type-select');
-    const categorySelect = document.getElementById('category');
-    const specialtySelect = document.getElementById('specialist');
+    const mainUploadForm = document.getElementById('main-upload-form');
+    const formActionInput = document.getElementById('form-action');
+    const step1Section = document.getElementById('step1-selection-section');
+    const step2UploadSection = document.getElementById('step2-upload-section');
+    const mainSubmitButtonContainer = document.getElementById('main-submit-button-container');
+
+    const step3ReviewSection = document.getElementById('step3-review-section');
+    const editedOcrTextArea = document.getElementById('edited-ocr-text-area');
+    const analyzeAndSaveButton = document.getElementById('analyze-and-save-button');
+    const backToStep1Button = document.getElementById('back-to-step1-button');
+
+    const step4ResultsSection = document.getElementById('step4-results-section');
+    const analysisSummaryDisplay = document.getElementById('analysis-summary-display');
+    const analysisHtmlTableDisplay = document.getElementById('analysis-html-table-display');
+    const viewMedicalEventButton = document.getElementById('view-medical-event-button');
+
+    const eventSelect = document.getElementById('event-type-select');
+    const categorySelect = document.getElementById('category-select');
+    const specialtySelect = document.getElementById('specialty-select');
     const doctorSelect = document.getElementById('doctor-select');
-    const fileInput = document.getElementById('file_input');
+    const fileInput = document.getElementById('document-input');
     const fileTypeSelect = document.getElementById('file-type-select');
-    const uploadOcrButton = document.getElementById('upload-ocr-button'); // The "Сканирай" button
-    const analyzeButton = document.getElementById('analyze-button'); // The "Одобри и анализирай с AI" button
-    const ocrTextArea = document.getElementById('ocr_text_area');
+    const mainUploadButton = document.getElementById('main-upload-button');
 
-    // Main layout sections (visibility controlled)
-    const fullUploadForm = document.getElementById('full-upload-form'); // The form for initial upload
-    const step3ReviewDiv = document.getElementById('step3-review'); // The review section (Step 2)
-    const resultsSection = document.getElementById('results-section'); // The final results section
-
-    // Elements within resultsSection (if they are still defined within it)
-    const resultSummary = document.getElementById('result-summary');
-    const resultHtmlTable = document.getElementById('result-html-table');
-
-    // Preview elements (now main preview is the only one in HTML structure related to file input)
-    const mainImagePreview = document.getElementById('main-image-preview');
-    const mainPdfPreview = document.getElementById('main-pdf-preview');
-    const mainPreviewPlaceholder = document.getElementById('main-preview-placeholder');
+    const fileNameDisplay = document.getElementById('file-name-display');
+    const imagePreview = document.getElementById('image-preview');
+    const pdfPreview = document.getElementById('pdf-preview');
+    const previewPlaceholder = document.getElementById('preview-placeholder');
     const viewFullSizeLink = document.getElementById('view-full-size-link');
 
+    const reviewEventTypeSpan = document.getElementById('review-event-type');
+    const reviewCategorySpan = document.getElementById('review-category');
+    const reviewSpecialtySpan = document.getElementById('review-specialty');
+    const reviewDoctorSpan = document.getElementById('review-doctor');
+
+    const specialtiesUrl = mainUploadForm.dataset.specialtiesUrl; // Ще вземем от data-specialties-url атрибут
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    const languagePrefix = '/' + document.documentElement.lang;
 
-    // Global loading overlay
-    const analysisLoadingOverlay = document.getElementById('analysis-loading-overlay');
+    const inputsToValidate = [eventSelect, categorySelect, specialtySelect, fileInput, fileTypeSelect];
 
-    // Elements on upload_review.html for display and hidden submission
-    const displayEventTypeTitle = document.getElementById('display_event_type_title');
-    const displayCategoryName = document.getElementById('display_category_name');
-    const displaySpecialtyName = document.getElementById('display_specialty_name');
-    const displayPractitionerName = document.getElementById('display_practitioner_name');
-    const displayEventDate = document.getElementById('display_event_date');
-    const manualEventDateInput = document.getElementById('manual_event_date_input');
-    const manualEventDateContainer = document.getElementById('manual_event_date_container');
+    const spinnerSVG = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
 
-    // Hidden inputs on review form for re-submission
-    const reviewDocumentIdInput = document.getElementById('review_document_id');
-    const reviewEventTypeTitleHidden = document.getElementById('review_event_type_title_hidden');
-    const reviewCategoryNameHidden = document.getElementById('review_category_name_hidden');
-    const reviewSpecialtyNameHidden = document.getElementById('review_specialty_name_hidden');
-    const reviewPractitionerNameHidden = document.getElementById('review_practitioner_name_hidden');
-    const reviewEventDateHidden = document.getElementById('review_event_date_hidden');
-
-
-    // Back to Upload Button Logic (on review page)
-    const backToUploadButton = document.getElementById('back-to-upload-button');
-    if (backToUploadButton) {
-        backToUploadButton.addEventListener('click', function() {
-            window.location.href = `${languagePrefix}/upload/`;
+    function checkFormValidity() {
+        const allValid = inputsToValidate.every(input => {
+            if (input.type === 'file') {
+                return input.files.length > 0;
+            }
+            return input.value.trim() !== '';
         });
+        mainUploadButton.disabled = !allValid;
+        if (!allValid) {
+            mainUploadButton.classList.add('opacity-40', 'cursor-not-allowed');
+        } else {
+            mainUploadButton.classList.remove('opacity-40', 'cursor-not-allowed');
+        }
     }
 
-    // --- OCR Upload Button (Сканирай) Logic ---
-    if (uploadOcrButton) {
-        uploadOcrButton.addEventListener('click', function() {
-            const file = fileInput.files[0];
-            const eventType = eventTypeSelect.value;
-            const categoryName = categorySelect.value;
-            const specialtyName = specialtySelect.value;
-            const doctorName = doctorSelect.value;
-            const fileType = fileTypeSelect.value;
+    function showLoading(button, message) {
+        button.disabled = true;
+        button.innerHTML = `${spinnerSVG}${message}`;
+        button.style.backgroundColor = '#0A4E75';
+    }
 
-            if (!file) {
-                alert(MESSAGES.select_file);
-                return;
-            }
-            if (!eventType) {
-                alert(MESSAGES.select_event_type || "Моля, изберете тип на събитието.");
-                return;
-            }
-            if (!categoryName) {
-                alert(MESSAGES.select_category || "Моля, изберете медицинска категория.");
-                return;
-            }
-            if (!specialtyName) {
-                alert(MESSAGES.select_specialty || "Моля, изберете специалност/изследване.");
-                return;
-            }
-            if (!fileType) {
-                alert(MESSAGES.select_file_type || "Моля, посочете тип на файла.");
-                return;
-            }
+    function resetButton(button, originalText, originalColor) {
+        button.disabled = false;
+        button.innerHTML = originalText;
+        button.style.backgroundColor = originalColor;
+    }
 
-            if (file.size > 10 * 1024 * 1024) { // 10 MB limit
-                alert(MESSAGES.file_too_large);
-                return;
-            }
+    function displayError(message) {
+        const errorDiv = document.querySelector('.bg-light-red-bg');
+        if (errorDiv) {
+            errorDiv.querySelector('span').textContent = message;
+            errorDiv.classList.remove('hidden');
+        } else {
+            alert(message);
+        }
+    }
 
-            const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.tiff', '.bmp', '.webp', '.pdf'];
-            const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
-            if (!allowedExtensions.includes(fileExtension)) {
-                alert(MESSAGES.invalid_file_type);
-                return;
-            }
+    function hideError() {
+        const errorDiv = document.querySelector('.bg-light-red-bg');
+        if (errorDiv) {
+            errorDiv.classList.add('hidden');
+        }
+    }
 
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('csrfmiddlewaretoken', csrfToken);
-            formData.append('event_type_title', eventType);
-            formData.append('category_name', categoryName);
-            formData.append('specialty_name', specialtyName);
-            formData.append('practitioner_name', doctorName);
-            formData.append('file_type', fileType);
+    function updateUI(data, step) {
+        if (step === 1) { // Show initial form
+            step1Section.classList.remove('hidden');
+            step2UploadSection.classList.remove('hidden');
+            mainSubmitButtonContainer.classList.remove('hidden');
+            step3ReviewSection.classList.add('hidden');
+            step4ResultsSection.classList.add('hidden');
+        } else if (step === 2) { // Show review section
+            editedOcrTextArea.value = data.ocr_text;
+            reviewEventTypeSpan.textContent = data.selected_event_type_display;
+            reviewCategorySpan.textContent = data.selected_category_display;
+            reviewSpecialtySpan.textContent = data.selected_specialty_display;
+            reviewDoctorSpan.textContent = data.selected_doctor_display;
 
-            uploadOcrButton.disabled = true;
-            uploadOcrButton.innerHTML = `<span class="spinner-border spinner-border-sm"></span> ${MESSAGES.uploading_file || 'Качва се файл...'}`;
-
-            // Hide initial form and show global loading overlay
-            if (fullUploadForm) fullUploadForm.classList.add('hidden');
-            if (analysisLoadingOverlay) analysisLoadingOverlay.classList.remove('hidden');
-
-            fetch(`${languagePrefix}/api/perform-ocr/`, {
-                method: 'POST',
-                body: formData,
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(errorData => {
-                        throw new Error(errorData.message || MESSAGES.unknown_server_error);
-                    });
+            if (data.temp_file_url) {
+                previewPlaceholder.classList.add('hidden');
+                viewFullSizeLink.href = data.temp_file_url;
+                viewFullSizeLink.classList.remove('hidden');
+                if (data.file_type === 'image') {
+                    imagePreview.src = data.temp_file_url;
+                    imagePreview.classList.remove('hidden');
+                    pdfPreview.classList.add('hidden');
+                } else if (data.file_type === 'pdf') {
+                    pdfPreview.src = data.temp_file_url + '#toolbar=0&navpanes=0&scrollbar=0';
+                    pdfPreview.classList.remove('hidden');
+                    imagePreview.classList.add('hidden');
                 }
-                return response.json();
-            })
-            .then(data => {
+            }
+            step1Section.classList.add('hidden');
+            step2UploadSection.classList.add('hidden');
+            mainSubmitButtonContainer.classList.add('hidden');
+            step3ReviewSection.classList.remove('hidden');
+            step4ResultsSection.classList.add('hidden');
+        } else if (step === 3) { // Show results section
+            analysisSummaryDisplay.innerHTML = data.summary;
+            analysisHtmlTableDisplay.innerHTML = data.html_table;
+            viewMedicalEventButton.href = `${window.location.origin}/medical-events/${data.event_id}/detail/`;
+
+            step1Section.classList.add('hidden');
+            step2UploadSection.classList.add('hidden');
+            mainSubmitButtonContainer.classList.add('hidden');
+            step3ReviewSection.classList.add('hidden');
+            step4ResultsSection.classList.remove('hidden');
+        }
+    }
+
+    mainUploadForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        hideError();
+
+        const formData = new FormData(this);
+        const action = formData.get('action');
+
+        if (action === 'perform_ocr_and_analyze') {
+            if (mainUploadButton.disabled) {
+                displayError(MESSAGES.choose_category_specialist_file);
+                return;
+            }
+            showLoading(mainUploadButton, MESSAGES.processing);
+        } else if (action === 'analyze_and_save') {
+            showLoading(analyzeAndSaveButton, MESSAGES.analysis_ai);
+        }
+
+        fetch(this.action, {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (action === 'perform_ocr_and_analyze') {
+                resetButton(mainUploadButton, MESSAGES.upload_button, '#15BC11');
                 if (data.status === 'success') {
-                    if (ocrTextArea) ocrTextArea.value = data.ocr_text;
-                    if (reviewDocumentIdInput) reviewDocumentIdInput.value = data.document_id;
-
-                    // Set hidden inputs on review form for re-submission
-                    if (reviewEventTypeTitleHidden) reviewEventTypeTitleHidden.value = eventType;
-                    if (reviewCategoryNameHidden) reviewCategoryNameHidden.value = categoryName;
-                    if (reviewSpecialtyNameHidden) reviewSpecialtyNameHidden.value = specialtyName;
-                    if (reviewPractitionerNameHidden) reviewPractitionerNameHidden.value = doctorName;
-
-                    // Display selected options on the review page
-                    if (displayEventTypeTitle) displayEventTypeTitle.textContent = eventTypeSelect.options[eventTypeSelect.selectedIndex].textContent;
-                    if (displayCategoryName) displayCategoryName.textContent = categorySelect.options[categorySelect.selectedIndex].textContent;
-                    if (displaySpecialtyName) displaySpecialtyName.textContent = specialtySelect.options[specialtySelect.selectedIndex].textContent;
-                    if (displayPractitionerName) displayPractitionerName.textContent = doctorSelect.options[doctorSelect.selectedIndex].textContent;
-
-                    // Handle main preview (now only one set of preview elements)
-                    if (data.file_url) {
-                        const fileExtension = '.' + data.file_url.split('.').pop().toLowerCase();
-                        if (fileExtension === '.pdf') {
-                            mainPdfPreview.src = data.file_url;
-                            mainPdfPreview.classList.remove('hidden');
-                            mainImagePreview.classList.add('hidden');
-                        } else if (['.jpg', '.jpeg', '.png', '.gif', '.tiff', '.bmp', '.webp'].includes(fileExtension)) {
-                            mainImagePreview.src = data.file_url;
-                            mainImagePreview.classList.remove('hidden');
-                            mainPdfPreview.classList.add('hidden');
-                        }
-                        if (mainPreviewPlaceholder) mainPreviewPlaceholder.classList.add('hidden');
-                        if (viewFullSizeLink) viewFullSizeLink.href = data.file_url;
-                    } else {
-                        if (mainPreviewPlaceholder) mainPreviewPlaceholder.classList.remove('hidden');
-                    }
-
-                    if (step3ReviewDiv) step3ReviewDiv.classList.remove('hidden'); // Show review step
-                    alert(MESSAGES.ocr_success);
+                    updateUI(data, 2); // Show review section
+                    formActionInput.value = 'analyze_and_save'; // Change action for next step
                 } else {
-                    alert(`${MESSAGES.upload_error || 'Upload error'}: ${data.message}`);
-                    // Show initial form on error
-                    if (fullUploadForm) fullUploadForm.classList.remove('hidden');
+                    displayError(data.message || MESSAGES.critical_ocr_error);
                 }
-            })
-            .catch(error => {
-                console.error('OCR Upload Error:', error);
-                alert(`${MESSAGES.critical_upload_error || 'Critical upload error'}: ${error.message}`);
-                if (fullUploadForm) fullUploadForm.classList.remove('hidden');
-            })
-            .finally(() => {
-                uploadOcrButton.disabled = false;
-                uploadOcrButton.innerHTML = MESSAGES.uploading_file || 'Качи и обработи с OCR';
-                if (analysisLoadingOverlay) analysisLoadingOverlay.classList.add('hidden');
-            });
-        });
-    }
-
-    // --- AI Analyze Button Logic ---
-    if (analyzeButton) {
-        analyzeButton.addEventListener('click', function() {
-            const editedOcrText = ocrTextArea ? ocrTextArea.value : '';
-            const documentId = reviewDocumentIdInput.value;
-
-            if (!editedOcrText || !documentId) {
-                alert((MESSAGES.analysis_error || 'Analysis error') + " " + (MESSAGES.no_text_or_doc_id || "No text or document ID."));
-                return;
-            }
-
-            analyzeButton.disabled = true;
-            analyzeButton.innerHTML = `<span class="spinner-border spinner-border-sm"></span> ${MESSAGES.analyze_loading || 'Извършва се анализ...'}`;
-
-            // Hide review section and show global loading overlay
-            if (step3ReviewDiv) step3ReviewDiv.classList.add('hidden');
-            if (analysisLoadingOverlay) analysisLoadingOverlay.classList.remove('hidden');
-
-            const formData = new FormData();
-            formData.append('edited_ocr_text', editedOcrText);
-            formData.append('temp_document_id', documentId);
-            formData.append('csrfmiddlewaretoken', csrfToken);
-
-            const reviewForm = document.getElementById('review-form');
-            if (reviewForm) {
-                const eventTypeTitleInput = reviewForm.querySelector('input[name="event_type_title"]');
-                const categoryNameInput = reviewForm.querySelector('input[name="category_name"]');
-                const specialtyNameInput = reviewForm.querySelector('input[name="specialty_name"]');
-                const practitionerNameInput = reviewForm.querySelector('input[name="practitioner_name"]');
-                const manualEventDateInput = document.getElementById('manual_event_date_input');
-
-                if (eventTypeTitleInput) formData.append('event_type_title', eventTypeTitleInput.value);
-                if (categoryNameInput) formData.append('category_name', categoryNameInput.value);
-                if (specialtyNameInput) formData.append('specialty_name', specialtyNameInput.value);
-                if (practitionerNameInput) formData.append('practitioner_name', practitionerNameInput.value);
-
-                if (manualEventDateInput && manualEventDateInput.value) {
-                    formData.append('event_date', manualEventDateInput.value);
-                } else if (reviewEventDateHidden && reviewEventDateHidden.value) {
-                    formData.append('event_date', reviewEventDateHidden.value);
-                }
-            }
-
-
-            fetch(`${languagePrefix}/api/analyze-document/`, {
-                method: 'POST',
-                body: formData,
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(errorData => {
-                        throw new Error(errorData.message || MESSAGES.unknown_server_error);
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
+            } else if (action === 'analyze_and_save') {
+                resetButton(analyzeAndSaveButton, MESSAGES.approve_analyze_ai, '#15BC11');
                 if (data.status === 'success') {
-                    alert(data.message);
-                    if (data.redirect_url) {
-                        window.location.href = data.redirect_url;
-                    }
+                    updateUI(data, 3); // Show results section
+                } else {
+                    displayError(data.message || MESSAGES.critical_analysis_error);
                 }
-                else if (data.status === 'redirect_to_review') {
-                    alert(data.message);
-                    window.location.href = data.redirect_url;
-                }
-                else {
-                    alert(`${MESSAGES.analysis_error || 'Analysis error'}: ${data.message}`);
-                }
-            })
-            .catch(error => {
-                console.error('Analyze Error:', error);
-                alert(`${MESSAGES.critical_analysis_error || 'Critical analysis error'}: ${error.message}`);
-            })
-            .finally(() => {
-                if (analyzeButton) {
-                    analyzeButton.disabled = false;
-                    analyzeButton.innerHTML = MESSAGES.approve_analyze_ai || 'Одобри и анализирай с AI';
-                }
-                if (analysisLoadingOverlay) analysisLoadingOverlay.classList.add('hidden');
-            });
+            }
+        })
+        .catch(error => {
+            console.error('Fetch Error:', error);
+            if (action === 'perform_ocr_and_analyze') {
+                resetButton(mainUploadButton, MESSAGES.upload_button, '#15BC11');
+                displayError(MESSAGES.network_server_error);
+            } else if (action === 'analyze_and_save') {
+                resetButton(analyzeAndSaveButton, MESSAGES.approve_analyze_ai, '#15BC11');
+                displayError(MESSAGES.network_server_error);
+            }
         });
-    }
+    });
 
-    // --- Dynamic loading of specialties based on category ---
-    if (categorySelect && specialtySelect) {
-        categorySelect.addEventListener('change', function() {
-            const selectedCategoryName = categorySelect.value;
-            if (selectedCategoryName) {
-                specialtySelect.disabled = true;
-                specialtySelect.innerHTML = `<option value="">${MESSAGES.loading_specialties || "Зарежда специалности..."}</option>`;
+    backToStep1Button.addEventListener('click', function() {
+        formActionInput.value = 'perform_ocr_and_analyze';
+        updateUI({}, 1); // Reset to step 1
+        editedOcrTextArea.value = '';
+        fileInput.value = '';
+        fileNameDisplay.textContent = MESSAGES.no_file_chosen;
+        fileNameDisplay.style.color = '#6B7280';
+        previewPlaceholder.classList.remove('hidden');
+        imagePreview.classList.add('hidden');
+        pdfPreview.classList.add('hidden');
+        viewFullSizeLink.classList.add('hidden');
+        checkFormValidity();
+    });
 
-                fetch(`${languagePrefix}/ajax/get-specialties/?category_name=${encodeURIComponent(selectedCategoryName)}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        specialtySelect.innerHTML = `<option value="">${MESSAGES.select_specialty || "Изберете специалност..."}</option>`;
-                        data.specialties.forEach(specialty => {
-                            const option = document.createElement('option');
-                            option.value = specialty.name;
-                            option.textContent = specialty.name;
-                            specialtySelect.appendChild(option);
+    categorySelect.addEventListener('change', function () {
+        const categoryId = this.value;
+        specialtySelect.innerHTML = '<option value="" disabled selected>' + MESSAGES.choose_specialty_prompt + '</option>';
+        specialtySelect.disabled = true;
+
+        if (categoryId) {
+            fetch(`${specialtiesUrl}?category_id=${categoryId}`)
+                .then(response => response.json())
+                .then(data => {
+                    specialtySelect.innerHTML = '<option value="" disabled selected>' + MESSAGES.choose_specialty_prompt + '</option>';
+                    if (data.specialties.length === 0) {
+                        specialtySelect.innerHTML = '<option value="" disabled selected>' + MESSAGES.no_specialties_found + '</option>';
+                    } else {
+                        data.specialties.forEach(function (spec) {
+                            const option = new Option(spec.name, spec.id);
+                            specialtySelect.add(option);
                         });
-                        specialtySelect.disabled = false;
-                    })
-                    .catch(error => {
-                        console.error('Error loading specialties:', error);
-                        specialtySelect.innerHTML = `<option value="">${MESSAGES.error_loading_specialties || "Грешка при зареждане..."}</option>`;
-                        specialtySelect.disabled = true;
-                    });
-            } else {
-                specialtySelect.disabled = true;
-                specialtySelect.innerHTML = `<option value="">${MESSAGES.select_category_first || "Първо изберете категория"}</option>`;
-            }
-        });
-    }
+                    }
+                    specialtySelect.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    specialtySelect.innerHTML = '<option value="">' + MESSAGES.error_fetching_specialties + '</option>';
+                })
+                .finally(() => {
+                    checkFormValidity();
+                });
+        } else {
+            specialtySelect.innerHTML = '<option value="" disabled selected>' + MESSAGES.choose_specialty_first + '</option>';
+            checkFormValidity();
+        }
+    });
 
-    // --- File Input Change Listener for Preview ---
-    if (fileInput) {
-        fileInput.addEventListener('change', function() {
-            const file = this.files[0];
-            const customFileText = document.querySelector('.custom-file-text');
-            if (file) {
-                customFileText.textContent = file.name;
-                const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
-                const fileURL = URL.createObjectURL(file);
+    eventSelect.addEventListener('change', function() {
+        if (this.value) {
+            categorySelect.disabled = false;
+            categorySelect.value = "";
+            specialtySelect.disabled = true;
+            specialtySelect.value = "";
+            categorySelect.querySelector('option[disabled]').textContent = MESSAGES.choose_category_first;
+        } else {
+            categorySelect.disabled = true;
+            categorySelect.value = "";
+            specialtySelect.disabled = true;
+            specialtySelect.value = "";
+            categorySelect.querySelector('option[disabled]').textContent = MESSAGES.choose_category_first;
+        }
+        checkFormValidity();
+    });
 
-                // Reset previews
-                mainImagePreview.classList.add('hidden');
-                mainPdfPreview.classList.add('hidden');
-                mainPreviewPlaceholder.classList.remove('hidden');
+    fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            fileNameDisplay.textContent = `${MESSAGES.file_chosen}: ${this.files[0].name}`;
+            fileNameDisplay.style.color = '#15BC11';
+            previewPlaceholder.classList.remove('hidden');
+            imagePreview.classList.add('hidden');
+            pdfPreview.classList.add('hidden');
+            viewFullSizeLink.classList.add('hidden');
+        } else {
+            fileNameDisplay.textContent = MESSAGES.no_file_chosen;
+            fileNameDisplay.style.color = '#6B7280';
+            previewPlaceholder.classList.remove('hidden');
+            imagePreview.classList.add('hidden');
+            pdfPreview.classList.add('hidden');
+            viewFullSizeLink.classList.add('hidden');
+        }
+        checkFormValidity();
+    });
 
-                viewFullSizeLink.classList.add('hidden');
+    fileTypeSelect.addEventListener('change', checkFormValidity);
+    doctorSelect.addEventListener('change', checkFormValidity);
 
-                if (fileExtension === '.pdf') {
-                    mainPdfPreview.src = fileURL;
-                    mainPdfPreview.classList.remove('hidden');
-                    mainImagePreview.classList.add('hidden');
-                    mainPreviewPlaceholder.classList.add('hidden');
+    categorySelect.disabled = true;
+    specialtySelect.disabled = true;
+    checkFormValidity();
 
-                    viewFullSizeLink.href = fileURL;
-                    viewFullSizeLink.classList.remove('hidden');
-                } else if (['.jpg', '.jpeg', '.png', '.gif', '.tiff', '.bmp', '.webp'].includes(fileExtension)) {
-                    mainImagePreview.src = fileURL;
-                    mainImagePreview.classList.remove('hidden');
-                    mainPdfPreview.classList.add('hidden');
-                    mainPreviewPlaceholder.classList.add('hidden');
-
-                    viewFullSizeLink.href = fileURL;
-                    viewFullSizeLink.classList.remove('hidden');
-                }
-            } else {
-                customFileText.textContent = MESSAGES.no_file_selected || "Все още не е избран файл";
-
-                mainImagePreview.classList.add('hidden');
-                mainPdfPreview.classList.add('hidden');
-                mainPreviewPlaceholder.classList.remove('hidden');
-
-                viewFullSizeLink.classList.add('hidden');
-            }
-        });
-    }
+    inputsToValidate.forEach(input => {
+        if (input !== fileInput && input !== fileTypeSelect && input !== eventSelect && input !== categorySelect && input !== doctorSelect) {
+            input.addEventListener('change', checkFormValidity);
+        }
+    });
 });

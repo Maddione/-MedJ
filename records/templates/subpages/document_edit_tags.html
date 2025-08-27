@@ -1,0 +1,23 @@
+{% extends 'basetemplates/base_app.html' %}
+{% load i18n %}
+{% block content %}
+<main class="bg-site-background min-h-screen p-4 md:p-8">
+  <div class="container mx-auto max-w-3xl">
+    <div class="bg-block-background p-6 rounded-3xl shadow-lg mb-8">
+      <h1 class="text-3xl font-bold text-gray-800">{% trans "Редакция на тагове за документ" %}</h1>
+    </div>
+    <div class="bg-block-background p-6 rounded-3xl shadow-lg">
+      <form method="post">
+        {% csrf_token %}
+        <div class="mb-6">
+          {{ form.tags }}
+        </div>
+        <div class="flex gap-3">
+          <button class="px-6 py-3 bg-button-blue text-white rounded-lg">{% trans "Запази" %}</button>
+          <a href="{% url 'medj:medical_event_detail' pk=document.medical_event.id %}" class="px-6 py-3 bg-gray-200 rounded-lg text-gray-800">{% trans "Отказ" %}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>
+{% endblock %}

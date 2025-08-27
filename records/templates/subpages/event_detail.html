@@ -1,0 +1,102 @@
+{% extends 'basetemplates/base_app.html' %}
+{% load static %}
+{% load i18n %}
+{% load medj_filters %}
+
+{% block content %}
+<main class="bg-site-background min-h-screen p-4 md:p-8">
+    <div class="container mx-auto max-w-7xl">
+        <div class="bg-block-background p-6 rounded-3xl shadow-lg mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">
+                {% trans "Детайли за събитие" %}
+            </h1>
+            <p class="mt-2 text-gray-600">
+                {% trans "Преглед и управление на медицинското събитие и свързаните с него документи." %}
+            </p>
+        </div>
+
+        <div class="bg-block-background p-6 rounded-3xl shadow-lg mb-8">
+            <h2 class="text-2xl font-bold text-navbar-button-blue mb-6">{% trans "Основна информация" %}</h2>
+            <ul class="space-y-3 text-gray-700">
+                <li><strong>{% trans "Дата:" %}</strong> {{ medical_event.event_date|date:"d.m.Y" }}</li>
+                <li><strong>{% trans "Тип:" %}</strong> {{ medical_event.get_event_type_title_display }}</li>
+                <li><strong>{% trans "Категория:" %}</strong> {{ medical_event.display_categories }}</li>
+                <li><strong>{% trans "Специалност:" %}</strong> {{ medical_event.display_specialties }}</li>
+                <li><strong>{% trans "Пациент:" %}</strong> {{ medical_event.patient.user.username }}</li>
+                <li><strong>{% trans "Лекари:" %}</strong>
+                    {% for p in medical_event.practitioners.all %}
+                        {{ p.full_name }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                        {% trans "Няма избрани лекари" %}
+                    {% endfor %}
+                </li>
+                <li><strong>{% trans "Тагове:" %}</strong>
+                    {% for t in medical_event.tags.all %}
+                        <span class="px-2 py-1 bg-gray-200 rounded-lg text-sm">{{ t.name }}</span>
+                    {% empty %}
+                        {% trans "Няма тагове" %}
+                    {% endfor %}
+                </li>
+            </ul>
+            <div class="mt-6">
+                <a href="{% url 'medj:medical_event_edit' pk=medical_event.id %}" class="px-6 py-3 bg-button-blue text-white font-bold rounded-lg shadow-md hover:bg-navbar-button-blue transition-colors">
+                    {% trans "Редактирай" %}
+                </a>
+                <a href="{% url 'medj:export_event_pdf' pk=medical_event.id %}" class="ml-4 px-6 py-3 bg-white text-button-blue rounded-lg shadow-md border hover:bg-gray-50 transition-colors font-semibold">
+                {% trans "Експорт PDF (събитие)" %}
+                </a>
+                <a href="{% url 'medj:medical_event_list' %}" class="ml-4 px-6 py-3 bg-gray-200 text-gray-700 font-bold rounded-lg shadow-md hover:bg-gray-300 transition-colors">
+                    {% trans "Назад към списъка" %}
+                </a>
+            </div>
+        </div>
+
+        <div class="bg-block-background p-6 rounded-3xl shadow-lg">
+            <h2 class="text-2xl font-bold text-navbar-button-blue mb-6">{% trans "Документи" %}</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm text-gray-700">
+                    <thead>
+                        <tr class="bg-navbar-button-blue text-white">
+                            <th class="py-3 px-4 text-left font-semibold">{% trans "Файл" %}</th>
+                            <th class="py-3 px-4 text-left font-semibold">{% trans "Тип документ" %}</th>
+                            <th class="py-3 px-4 text-left font-semibold">{% trans "Качен на" %}</th>
+                            <th class="py-3 px-4 text-left font-semibold">{% trans "Лекар" %}</th>
+                            <th class="py-3 px-4 text-center font-semibold">{% trans "Действия" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in medical_event.documents.all %}
+                        <tr class="bg-creamy-main-content border-b border-button-blue hover:bg-gray-50">
+                            <td class="py-3 px-4">{{ d.file.name|filename_from_path }}</td>
+                            <td class="py-3 px-4">{{ d.get_doc_kind_display }}</td>
+                            <td class="py-3 px-4">{{ d.uploaded_at|date:"d.m.Y" }}</td>
+                            <td class="py-3 px-4">
+                                {% if d.practitioner %}
+                                    {{ d.practitioner.full_name }}
+                                {% else %}
+                                    {% trans "Не е указан" %}
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-4 text-center">
+                                <a href="{{ d.file.url }}" target="_blank" class="text-checkmark-green hover:underline mr-2">
+                                    <i class="fa-solid fa-download"></i>
+                                </a>
+                                <a href="{% url 'medj:generate_pdf' pk=d.id %}" target="_blank" class="text-error-red hover:underline">
+                                    <i class="fa-solid fa-file-pdf"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="py-4 px-4 text-center text-gray-500">
+                                {% trans "Няма качени документи за това събитие." %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

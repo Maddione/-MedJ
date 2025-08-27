@@ -1,0 +1,68 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: medj_db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-medj}
+      POSTGRES_USER: ${POSTGRES_USER:-medj}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-medjpass}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  web:
+    build: .
+    container_name: medj_web
+    command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: medj.settings.dev
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles_collected
+      - media_volume:/app/media
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      ocrapi:
+        condition: service_started
+
+  tailwind:
+    build: .
+    container_name: medj_tailwind
+    command: sh -c "python manage.py tailwind install && python manage.py tailwind build && python manage.py tailwind start"
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: medj.settings.dev
+    volumes:
+      - .:/app
+    depends_on:
+      web:
+        condition: service_started
+
+  ocrapi:
+    build:
+      context: ./ocrapi
+      dockerfile: dockerfile
+    container_name: medj_ocrapi
+    env_file:
+      - .env.ocr
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./secrets:/secrets:ro
+
+volumes:
+  pgdata:
+  static_volume:
+  media_volume:

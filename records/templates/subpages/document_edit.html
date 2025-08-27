@@ -1,0 +1,38 @@
+{% extends 'basetemplates/base_app.html' %}
+{% load i18n %}
+{% block content %}
+<main class="bg-site-background min-h-screen p-4 md:p-8">
+  <div class="container mx-auto max-w-xl">
+    <div class="bg-block-background p-6 rounded-3xl shadow-lg mb-8">
+      <h1 class="text-3xl font-bold text-gray-800">{% trans "Редакция на документ" %}</h1>
+      <p class="mt-2 text-gray-600">{{ document.file.name|cut:"documents/" }}</p>
+    </div>
+    <div class="bg-block-background p-6 rounded-3xl shadow-lg">
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Вид документ" %}</label>
+          {{ form.doc_type }}
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Дата на документа" %}</label>
+          {{ form.document_date }}
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Лекар" %}</label>
+          {{ form.practitioner }}
+        </div>
+        {% if form.errors %}
+          <div class="bg-light-red-bg border border-error-red text-dark-red-text px-4 py-3 rounded-lg">
+            {% for field, errors in form.errors.items %}{% for error in errors %}<p>{{ error }}</p>{% endfor %}{% endfor %}
+          </div>
+        {% endif %}
+        <div class="pt-2 flex gap-3">
+          <button class="px-6 py-3 bg-button-blue text-white rounded-lg">{% trans "Запази" %}</button>
+          <a href="{% url 'medj:document_detail' pk=document.id %}" class="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg">{% trans "Отказ" %}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>
+{% endblock %}

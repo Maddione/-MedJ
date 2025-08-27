@@ -1,64 +1,82 @@
 import os
 import json
 import openai
-from django.conf import settings
+from openai import OpenAI
+from django.utils.translation import gettext as _l  # Добавено за преводи
 
+client = None
 try:
-    client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
-    print("DEBUG: OpenAI client initialized successfully.")
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError(_l("OPENAI_API_KEY environment variable not set."))
+    client = OpenAI(api_key=api_key)
 except Exception as e:
-    print(f"ERROR: Failed to initialize OpenAI client: {e}")
-    client = None
+    pass
 
-def call_gpt_for_document(text: str, category: str, extracted_fields: dict) -> dict:
+
+def call_gpt_for_document(text: str, user_context: dict) -> dict:
     if not client:
-        print("ERROR: OpenAI client is not initialized when call_gpt_for_document is called.")
-        raise ConnectionError("OpenAI клиентът не е инициализиран правилно. Проверете API ключа.")
+        raise ConnectionError(_l("OpenAI клиентът не е инициализиран правилно. Проверете API ключа."))
+
+    event_type = user_context.get('event_type', _l('неизвестен'))
+    category_name = user_context.get('category_name', _l('неизвестна'))
+    specialty_name = user_context.get('specialty_name', _l('неизвестна'))
 
     system_prompt = f"""
-Ти си експертен асистент за обработка на медицински документи. Твоята задача е да анализираш предоставения текст от медицински документ, който е от категория '{category}', и да върнеш информацията в **строго един JSON обект**.
+Ти си експертен асистент за обработка на медицински документи по {specialty_name}. Твоята задача е да извличаш, структурираш и обобщаваш ключова медицинска информация от предоставените текстове от {category_name}.
+Изключително важно е да даваш отговорите само на български език.
+Използвай предоставения контекст от потребителя за {event_type} за да направиш анализа по-прецизен и фокусиран.
 
-Този **единствен JSON обект** трябва да съдържа следните ключове на най-горно ниво:
-1.  "summary": Кратко обобщение на документа от 1-2 изречения на български език.
-2.  "html_table": HTML таблица (<table>...</table>) с два основни стълба: "Показател" и "Стойност/Резултат". Включи най-важните медицински показатели от документа.
-3.  "event_date": Датата на медицинското събитие във формат ISO-MM-DD. Ако не е изрично посочена, използвай текущата дата.
-4.  "detected_specialty": Медицинската специалност, свързана с документа (напр. "Ендокринология", "Кардиология").
-5.  "suggested_tags": Масив от низове, съдържащи ключови думи/тагове, свързани със събитието (напр. ["Кръвни изследвания", "Щитовидна жлеза", "TSH"]).
-6.  "blood_test_results": Масив от JSON обекти за кръвни изследвания. Всеки обект трябва да има ключове: "indicator_name", "value", "unit", "reference_range" (ако е налично). Ако документът не е кръвно изследване, този масив трябва да е празен: [].
-7.  "diagnosis": Стринг с основната диагноза от документа, ако е приложимо. Ако не е, остави го празен стринг: "".
-8.  "treatment_plan": Стринг с плана за лечение/препоръки от документа, ако е приложимо. Ако не е, остави го празен стринг: "".
+Очаквай следните ключове в JSON отговора:
+- "summary": Кратко, обобщено резюме на документа на български език (2-3 изречения).
+- "event_date": Датата на събитието, ако е налична (форматYYYY-MM-DD). Ако няма, използвай текущата дата.
+- "detected_specialty": Медицинска специалност, ако може да бъде извлечена (напр. "Кардиология", "Пулмология").
+- "suggested_tags": Списък от 3 до 5 подходящи тага (напр. ["Пневмония", "Болнично лечение", "Антибиотик", "Левкоцити"]).
 
-Всички имена на хора (пациенти, лекари) в "summary", "html_table", "diagnosis", "treatment_plan" и други генерирани текстове трябва да бъдат анонимизирани до "Пациент" или "Лекар".
+В допълнение, ако документът съдържа структурирани данни, върни ги под ключ "structured_data" като списък от обекти. Всеки обект в този списък трябва да има поле "type", което да указва вида на данните, и специфични полета за този тип.
 
-Пример за структура на JSON обект за кръвно изследване:
-```json
-{{
-  "summary": "Пациентът е провел рутинни кръвни изследвания. Наблюдават се леко завишени стойности на TSH, което налага консултация с ендокринолог. Другите показатели са в норма.",
-  "html_table": "<table><thead><tr><th>Показател</th><th>Стойност/Резултат</th></tr></thead><tbody><tr><td>Хемоглобин</td><td>145 g/L</td></tr><tr><td>TSH</td><td>5.1 mU/L</td></tr><tr><td>Глюкоза</td><td>5.4 mmol/L</td></tr></tbody></table>",
-  "event_date": "2025-05-20",
-  "detected_specialty": "Ендокринология",
-  "suggested_tags": ["Хормони", "Щитовидна жлеза", "TSH"],
-  "blood_test_results": [
-    {{
-      "indicator_name": "TSH",
-      "value": "5.1",
-      "unit": "mU/L",
-      "reference_range": "0.4 - 4.0"
-    }},
-    {{
-      "indicator_name": "Глюкоза",
-      "value": "5.4",
-      "unit": "mmol/L",
-      "reference_range": "3.9 - 6.1"
-    }}
-  ],
-  "diagnosis": "",
-  "treatment_plan": ""
-}}
-```
+Поддържани типове "structured_data":
+
+1.  Ако документът е лабораторно изследване (категория: "Кръвни изследвания", "Изследване на урина" и т.н.):
+    type: "blood_test_panel"
+    panel_name: Име на панела (ако е налично, напр. "ПКК", "Биохимия")
+    results: Списък от обекти, всеки с:
+        indicator_name: Име на показателя (напр. "Левкоцити (WBC)", "Хемоглобин (HGB)")
+        value: Стойност (напр. "12.5", "142")
+        unit: Мерна единица (напр. "x10^9/L", "g/L")
+        reference_range: Референтни граници (напр. "4.0 - 10.0", "135 - 175")
+        is_abnormal: Boolean (true/false) дали стойността е извън референтните граници.
+        notes: Допълнителни бележки за резултата (ако има)
+
+2.  Ако документът е епикриза или друг дълъг текстов документ (категория: "Епикриза", "Амбулаторен лист", "Консултация"):
+    type: "narrative_section"
+    section_title: Заглавие на секцията (напр. "Диагноза при приемане", "Проведено лечение", "Заключение и препоръки")
+    section_content: Съдържание на секцията.
+
+3.  Ако се разпознае лекар (напр. "Д-р Иван Иванов"):
+    type: "detected_practitioner"
+    name: Пълно име на лекаря (напр. "Иван Иванов", "Мария Петрова")
+    title: Титла (напр. "Д-р", "Проф.", "Доц.", "Асистент", "Мед. сестра")
+    inferred_specialty: Изведена специалност от текста (ако може да се определи, напр. "Пулмология", "Кардиология")
+
+4.  Ако се разпознае Диагноза:
+    type: "diagnosis"
+    diagnosis_text: Пълен текст на диагнозата
+    icd10_code: Код по МКБ-10 (ако е наличен)
+    date: Дата на диагностициране (форматYYYY-MM-DD)
+
+5.  Ако се разпознае План за лечение:
+    type: "treatment_plan"
+    plan_text: Пълен текст на плана за лечение
+    medications: Списък от лекарства (напр. ["Аугментин", "Парацетамол"])
+    start_date: Начална дата на лечение (форматYYYY-MM-DD)
+    end_date: Крайна дата на лечение (форматYYYY-MM-DD)
+
+Винаги връщай валиден JSON. Ако не можеш да извлечеш определен ключ, го изключи от JSON-а или го остави празен стринг/списък, но не връщай null.
+Използвай български език за всички извлечени текстови полета и резюме.
 """
+
     try:
-        print(f"DEBUG: Sending to GPT-4o. Category: {category}, Text length: {len(text)} chars. Text snippet: {text[:200]}...")
         completion = client.chat.completions.create(
             model="gpt-4o",
             response_format={"type": "json_object"},
@@ -70,115 +88,11 @@ def call_gpt_for_document(text: str, category: str, extracted_fields: dict) -> d
         )
 
         response_content = completion.choices[0].message.content
-        print(f"DEBUG: Raw GPT response content type: {str(type(response_content))}")
-        print(f"DEBUG: Raw GPT response content: {response_content[:1000]}...")
-
-        parsed_json = json.loads(response_content)
-        print("DEBUG: GPT response successfully parsed as JSON.")
-        return parsed_json
+        return json.loads(response_content)
 
     except openai.APIError as e:
-        print(f"ERROR: OpenAI API Error in call_gpt_for_document: {e}")
-        raise ConnectionError(f"Грешка при комуникация с OpenAI: {e}")
-    except json.JSONDecodeError as e:
-        print(f"ERROR: JSON Decode Error in call_gpt_for_document: {e}. Raw content was: {response_content[:1000]}...")
-        return {}
+        raise ConnectionError(_l(f"Грешка при комуникация с OpenAI: {e}"))
+    except json.JSONDecodeError:
+        raise ValueError(_l("Грешка: Отговорът от AI не е в очаквания JSON формат."))
     except Exception as e:
-        print(f"CRITICAL ERROR: Unexpected error in gpt_client: {e}")
-        raise Exception(f"Неочаквана грешка в gpt_client: {e}")
-
-
-def summarize_document(text: str) -> str:
-    """Извиква GPT за обобщение на текста."""
-    if not client:
-        return "Няма обобщение (OpenAI клиентът не е инициализиран)."
-    try:
-        completion = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system",
-                 "content": "Ти си помощник, който обобщава медицински текстове кратко и ясно на български."},
-                {"role": "user", "content": f"Обобщи следния медицински текст кратко на български:\n\n{text}"}
-            ],
-            max_tokens=500
-        )
-        return str(completion.choices[0].message.content)
-    except Exception as e:
-        print(f"ERROR: Error summarizing document: {e}")
-        return f"Грешка при обобщаване: {e}"
-
-
-def extract_entities(text: str) -> dict:
-    """Извиква GPT за извличане на ключови същности (диагнози, препоръки и т.н.)."""
-    if not client:
-        return {"error": "OpenAI клиентът не е инициализиран."}
-    try:
-        completion = client.chat.completions.create(
-            model="gpt-4o",
-            response_format={"type": "json_object"},
-            messages=[
-                {"role": "system",
-                 "content": "Ти си асистент, който извлича ключови същности (диагнози, препоръки, лекарства) от медицински текст и ги връща като JSON. Използвай ключове: 'Диагноза', 'Препоръки', 'Лекарства', 'ДатаНаСъбитието' (YYYY-MM-DD)."},
-                {"role": "user", "content": f"Извлечи същности от следния медицински текст:\n\n{text}"}
-            ],
-            max_tokens=1000
-        )
-        return json.loads(str(completion.choices[0].message.content))
-    except Exception as e:
-        print(f"ERROR: Error extracting entities: {e}")
-        return {"error": f"Грешка при извличане на същности: {e}"}
-
-
-def analyze_lab_results(text: str) -> list:
-    """Извиква GPT за анализ на лабораторни резултати и връща структуриран списък."""
-    if not client:
-        return [{"error": "OpenAI клиентът не е инициализиран."}]
-    try:
-        completion = client.chat.completions.create(
-            model="gpt-4o",
-            response_format={"type": "json_object"},
-            messages=[
-                {"role": "system",
-                 "content": "Ти си асистент, който извлича кръвни резултати от медицински текст. Върни списък от JSON обекти, всеки с ключове: 'indicator_name', 'value', 'unit', 'reference_range'. Ако няма референтен диапазон, остави празно."},
-                {"role": "user", "content": f"Извлечи лабораторни резултати от следния текст:\n\n{text}"}
-            ],
-            max_tokens=1500
-        )
-        response_data = json.loads(str(completion.choices[0].message.content))
-        if isinstance(response_data, list):
-            return response_data
-        elif isinstance(response_data, dict) and "results" in response_data:
-            return response_data["results"]
-        else:
-            print(f"ERROR: Unexpected GPT response format for lab results: {response_data}")
-            return []
-    except Exception as e:
-        print(f"ERROR: Error analyzing lab results: {e}")
-        return [{"error": f"Грешка при анализ на лабораторни резултати: {e}"}]
-
-
-def get_summary_and_html_table(text: str) -> dict:
-    """
-    Извиква GPT за генериране на обобщение и HTML таблица.
-    Тази функция може да използва call_gpt_for_document, ако тя връща всичко необходимо.
-    """
-    if not client:
-        return {"summary": "Няма обобщение (OpenAI клиентът не е инициализиран).",
-                "html_table": "<table><tr><td>Няма таблица.</td></tr></table>"}
-
-    try:
-        gpt_output = call_gpt_for_document(text, "general", {})
-
-        summary = str(gpt_output.get("summary", "Няма обобщение."))
-        html_table = str(gpt_output.get("html_table", "<table><tr><td>Няма таблица.</td></tr></table>"))
-
-        return {
-            "summary": summary,
-            "html_table": html_table
-        }
-    except Exception as e:
-        print(f"ERROR: Error getting summary and HTML table: {e}")
-        return {
-            "summary": str(f"Грешка при генериране на обобщение и таблица: {e}"),
-            "html_table": "<table><tr><td>Възникна грешка при генериране на таблица.</td></tr></table>"
-        }
+        raise Exception(_l(f"Неочаквана грешка в gpt_client: {e}"))
