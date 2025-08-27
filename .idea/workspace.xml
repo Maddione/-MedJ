@@ -5,132 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c486bb59-c79b-4440-8fcc-e0c5e6eda3dc" name="Changes" comment="2.1">
-      <change afterPath="$PROJECT_DIR$/.dockerignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docker-compose.dev.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dockerfile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/entrypoint.dev.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/medj/settings/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/medj/settings/base.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/medj/settings/dev.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/medj/settings/prod.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ocrapi/app.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ocrapi/dockerfile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ocrapi/requirements.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/admin.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/apps.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/forms.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/management/commands/cleanup_shares.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/migrations/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/models.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/auth/login.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/auth/register.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_app.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_auth.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_public.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/basetemplates/landingpage.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/main/casefiles.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/main/dashboard.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/main/history.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/main/personalcard.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/main/share.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/main/upload.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/subpages/doctors.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/subpages/document_detail.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/subpages/document_edit.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/subpages/document_edit_tags.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/subpages/document_export_pdf.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/subpages/document_move.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/subpages/event_detail.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/subpages/event_edit_tags.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/subpages/event_export_pdf.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/subpages/event_history.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/subpages/labtest_edit.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/subpages/labtests.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/subpages/medical_event_confirm_delete.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/subpages/medical_event_form.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/subpages/profile.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/subpages/share_view.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/subpages/upload_history.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templatetags/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templatetags/medj_filters.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/urls.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/views.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/admin/css/widgets.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/admin/js/cancel.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/admin/js/vendor/select2/LICENSE.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/admin/js/vendor/select2/i18n/el.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/admin/js/vendor/select2/i18n/hi.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/admin/js/vendor/xregexp/LICENSE.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/admin/js/vendor/xregexp/xregexp.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/js/labtest_edit_logic.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/src/styles.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/theme/apps.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/theme/package.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/theme/static_src/styles.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/theme/tailwind.config.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitattributes" beforeDir="false" afterPath="$PROJECT_DIR$/.gitattributes" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/MedJ2.0.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/.env.dev" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/admin.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/apps.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/forms.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/generate_key.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/migrations/0001_initial.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/migrations/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/.env.ocr" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/models.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/templates/basetemplates/base_app.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/templates/basetemplates/base_public.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/templates/basetemplates/landingpage.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/templates/main/casefiles.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/templates/main/dashboard.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/templates/main/history.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/templates/main/personalcard.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/templates/main/upload.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/templates/registration/login.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/templates/registration/register.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/templates/subpages/doctors.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/templates/subpages/event_detail.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/templates/subpages/profile.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/templates/subpages/upload_history.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/templates/subpages/upload_review.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/tests.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/urls.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/utils/parse_lab.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/utils/summary.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ/views.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ2/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ2/asgi.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/asgi.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ2/urls2.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MedJ2/wsgi.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/wsgi.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/locale/bg/LC_MESSAGES/django.mo" beforeDir="false" afterPath="$PROJECT_DIR$/locale/bg/LC_MESSAGES/django.mo" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/locale/bg/LC_MESSAGES/django.po" beforeDir="false" afterPath="$PROJECT_DIR$/locale/bg/LC_MESSAGES/django.po" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/locale/en_US/LC_MESSAGES/django.mo" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/locale/en_US/LC_MESSAGES/django.po" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/manage.py" beforeDir="false" afterPath="$PROJECT_DIR$/manage.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ocrapi/anonymizer.py" beforeDir="false" afterPath="$PROJECT_DIR$/ocrapi/anonymizer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ocrapi/gpt_client.py" beforeDir="false" afterPath="$PROJECT_DIR$/ocrapi/gpt_client.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ocrapi/vision_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/ocrapi/vision_handler.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/postcss.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/postcss.config.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/settings/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/settings/base.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/settings/dev.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/settings/prod.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/css/custom.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/css/output.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/css/tailwind_base.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/dist/output.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/images/languageicon.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/js/event_detail_logic.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/event_detail_logic.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/js/upload_logic.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/upload_logic.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tailwind.config.js" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -154,6 +30,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "Maddione"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/Maddione/MedJ2.1.git",
+    "accountId": "4a247ed9-dc78-4755-bb83-4e52c53fea8f"
+  }
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 4
@@ -262,12 +150,32 @@
       <workItem from="1755886659086" duration="3105000" />
       <workItem from="1755945253545" duration="594000" />
       <workItem from="1755955432328" duration="19587000" />
-      <workItem from="1756288885922" duration="25608000" />
+      <workItem from="1756288885922" duration="27135000" />
     </task>
+    <task id="LOCAL-00001" summary="2.1">
+      <option name="closed" value="true" />
+      <created>1756331674983</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1756331674983</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="2.1" />
