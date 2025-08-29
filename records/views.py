@@ -6,7 +6,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.http import JsonResponse, HttpResponse, HttpResponseForbidden, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
@@ -64,6 +64,29 @@ def custom_login_view(request):
 def custom_logout_view(request):
     logout(request)
     return redirect("medj:landing")
+
+@login_required
+def dashboard(request):
+    """
+    Минимална динамика за началното табло:
+    - брой събития
+    - брой документи
+    - последни 5 събития/документа
+    """
+    patient = _require_patient_profile(request.user)
+    if not patient:
+        return HttpResponseForbidden()
+
+    events_qs = MedicalEvent.objects.filter(patient=patient).order_by("-event_date", "-id")
+    docs_qs = Document.objects.filter(medical_event__patient=patient).order_by("-uploaded_at", "-id")
+
+    ctx = {
+        "events_count": events_qs.count(),
+        "documents_count": docs_qs.count(),
+        "recent_events": events_qs.select_related("specialty")[:5],
+        "recent_documents": docs_qs.select_related("doc_type", "medical_event")[:5],
+    }
+    return render(request, "main/dashboard.html", ctx)
 
 @login_required
 def upload_document(request):
@@ -131,7 +154,7 @@ def event_list(request):
         qs = qs.filter(
             Q(summary__icontains=search_q) |
             Q(tags__name__icontains=search_q) |
-            Q(specialty__name__icontains=search_q)
+            Q(specialty__translations__name__icontains=search_q)  # i18n
         ).distinct()
     qs = qs.order_by("-event_date", "-id")
     return render(request, "subpages/event_history.html", {"medical_events": qs, "tags_query": tag_param, "search_query": search_q})
@@ -196,6 +219,35 @@ def event_edit_tags(request, pk):
     return render(request, "subpages/event_edit_tags.html", {"form": form, "medical_event": event})
 
 @login_required
+def document_detail(request, pk):
+    patient = _require_patient_profile(request.user)
+    if not patient:
+        return HttpResponseForbidden()
+    doc = get_object_or_404(Document.objects.select_related("medical_event", "doc_type", "practitioner"), pk=pk, medical_event__patient=patient)
+    event = doc.medical_event
+    return render(request, "subpages/document_detail.html", {"document": doc, "event": event})
+
+@login_required
+def document_edit(request, pk):
+    patient = _require_patient_profile(request.user)
+    if not patient:
+        return HttpResponseForbidden()
+    doc = get_object_or_404(
+        Document.objects.select_related("medical_event"),
+        pk=pk,
+        medical_event__patient=patient,
+    )
+    if request.method == "POST":
+        form = DocumentEditForm(request.POST, instance=doc)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _l("Документът е обновен."))
+            return redirect("medj:document_detail", pk=doc.pk)
+    else:
+        form = DocumentEditForm(instance=doc)
+    return render(request, "subpages/document_edit.html", {"form": form, "document": doc})
+
+@login_required
 def document_edit_tags(request, pk):
     patient = _require_patient_profile(request.user)
     if not patient:
@@ -207,18 +259,17 @@ def document_edit_tags(request, pk):
             new_tags = set(form.cleaned_data["tags"].values_list("id", flat=True))
             current = set(doc.tags.values_list("id", flat=True))
             inherited_ids = set(DocumentTag.objects.filter(document=doc, is_inherited=True).values_list("tag_id", flat=True))
-            keep_inherited = current & inherited_ids
-            target = new_tags | keep_inherited
-            to_add = target - current
-            to_remove = current - target
+            # Премахваме само "не-наследени" когато трябва
+            to_add = new_tags - current
+            to_remove = (current - new_tags) - inherited_ids
             if to_add:
-                DocumentTag.objects.bulk_create([DocumentTag(document=doc, tag_id=t, is_inherited=False) for t in to_add if t not in inherited_ids])
+                doc.tags.add(*list(to_add))
             if to_remove:
-                DocumentTag.objects.filter(document=doc, tag_id__in=list(to_remove), is_inherited=False).delete()
+                doc.tags.remove(*list(to_remove))
             messages.success(request, _l("Таговете на документа са обновени."))
-            return redirect("medj:medical_event_detail", pk=doc.medical_event_id)
+            return redirect("medj:document_detail", pk=doc.pk)
     else:
-        form = DocumentTagForm(initial={"tags": doc.tags.all()})
+        form = DocumentTagForm(initial={"tags": doc.tags.exclude(documenttag__is_inherited=True)})
     return render(request, "subpages/document_edit_tags.html", {"form": form, "document": doc})
 
 @login_required
@@ -231,144 +282,99 @@ def document_move(request, pk):
     if request.method == "POST":
         form = MoveDocumentForm(request.POST, user=request.user, specialty=initial_specialty)
         if form.is_valid():
-            target_event = form.cleaned_data.get("target_event")
-            new_event_date = form.cleaned_data.get("new_event_date")
+            target = form.cleaned_data["target_event"]
+            new_date = form.cleaned_data["new_event_date"]
             specialty = form.cleaned_data["specialty"]
-            with transaction.atomic():
-                if target_event:
-                    doc.medical_event = target_event
-                    doc.save(update_fields=["medical_event"])
-                else:
-                    new_event = MedicalEvent.objects.create(patient=patient, specialty=specialty, event_date=new_event_date)
-                    doc.medical_event = new_event
-                    doc.document_date = new_event_date
-                    doc.save(update_fields=["medical_event", "document_date"])
-            messages.success(request, _l("Документът е преместен успешно."))
-            return redirect("medj:medical_event_detail", pk=doc.medical_event_id)
+            if target:
+                doc.medical_event = target
+                doc.save(update_fields=["medical_event"])
+            else:
+                new_event = MedicalEvent.objects.create(
+                    patient=patient,
+                    specialty=specialty,
+                    event_date=new_date,
+                )
+                doc.medical_event = new_event
+                doc.save(update_fields=["medical_event"])
+            messages.success(request, _l("Документът е преместен."))
+            return redirect("medj:document_detail", pk=doc.pk)
     else:
         form = MoveDocumentForm(user=request.user, specialty=initial_specialty)
     return render(request, "subpages/document_move.html", {"form": form, "document": doc})
 
 @login_required
-def labtest_edit(request, event_id):
+def export_event_pdf(request, pk):
     patient = _require_patient_profile(request.user)
     if not patient:
         return HttpResponseForbidden()
-    event = get_object_or_404(MedicalEvent, pk=event_id, patient=patient)
-    indicators = LabIndicator.objects.all().order_by("code")
-    dates = list(
-        LabTestMeasurement.objects.filter(event=event)
-        .values_list("measured_at", flat=True)
-        .distinct()
-        .order_by("measured_at")
-    )
-    measurements = LabTestMeasurement.objects.filter(event=event).select_related("indicator").order_by("indicator__code", "measured_at")
-    matrix = {}
+    event = get_object_or_404(MedicalEvent, pk=pk, patient=patient)
+    docs = event.documents.select_related("doc_type").all().order_by("document_date")
+    ctx = {"medical_event": event, "documents": docs}
+    html = render_to_string("subpages/event_export_pdf.html", ctx, request=request)
+    pdf = HTML(string=html, base_url=request.build_absolute_uri("/")).write_pdf()
+    filename = f"Event-{event.event_date.strftime('%Y-%m-%d')}.pdf"
+    resp = HttpResponse(pdf, content_type="application/pdf")
+    resp["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return resp
+
+@login_required
+def export_lab_csv(request, pk):
+    patient = _require_patient_profile(request.user)
+    if not patient:
+        return HttpResponseForbidden()
+    event = get_object_or_404(MedicalEvent, pk=pk, patient=patient)
+    measurements = LabTestMeasurement.objects.filter(event=event).select_related("indicator").order_by("measured_at", "indicator__code")
+
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(["measured_at", "code", "value_si", "unit_si", "ref_low_si", "ref_high_si", "is_abnormal"])
     for m in measurements:
-        key = m.indicator.code
-        matrix.setdefault(key, {})
-        matrix[key][m.measured_at] = m
-    if request.method == "POST":
-        changes = []
-        for key, value in request.POST.items():
-            if not key.startswith("cell__"):
-                continue
-            _, code, dt = key.split("__", 2)
-            val = value.strip()
-            if not val:
-                continue
-            indicator = LabIndicator.objects.filter(code=code).first()
-            if not indicator:
-                continue
-            existing = LabTestMeasurement.objects.filter(event=event, indicator=indicator, measured_at=dt).first()
-            if existing:
-                existing.value_raw = val
-                existing.value_si = _to_float(val)
-                existing.save(update_fields=["value_raw", "value_si"])
-            else:
-                LabTestMeasurement.objects.create(
-                    event=event,
-                    document=event.documents.first(),
-                    indicator=indicator,
-                    measured_at=dt,
-                    value_raw=val,
-                    value_si=_to_float(val),
-                )
-            changes.append((code, dt))
-        if changes:
-            messages.success(request, _l("Промените са записани."))
-        return redirect("medj:labtest_edit", event_id=event.id)
-    ctx = {
-        "medical_event": event,
-        "indicators": indicators,
-        "dates": dates,
-        "matrix": matrix,
-    }
-    return render(request, "subpages/labtest_edit.html", ctx)
+        writer.writerow([
+            m.measured_at.isoformat(),
+            m.indicator.code if m.indicator else "",
+            m.value_si if m.value_si is not None else "",
+            m.unit_si or "",
+            m.ref_low_si if m.ref_low_si is not None else "",
+            m.ref_high_si if m.ref_high_si is not None else "",
+            "" if m.is_abnormal is None else ("1" if m.is_abnormal else "0"),
+        ])
+    resp = HttpResponse(buf.getvalue(), content_type="text/csv")
+    resp["Content-Disposition"] = f'attachment; filename="lab_results_{event.pk}.csv"'
+    return resp
 
 @login_required
-def labtests_view(request, event_id):
+def tags_autocomplete(request):
     patient = _require_patient_profile(request.user)
     if not patient:
         return HttpResponseForbidden()
-    event = get_object_or_404(MedicalEvent, pk=event_id, patient=patient)
-    indicators = LabIndicator.objects.all().order_by("code")
-    series = {}
-    qs = LabTestMeasurement.objects.filter(event=event).select_related("indicator").order_by("indicator__code", "measured_at")
-    for m in qs:
-        key = m.indicator.code
-        series.setdefault(key, [])
-        series[key].append({"date": m.measured_at.isoformat(), "value": m.value_si, "unit": m.unit_si or m.unit_raw, "abn": m.is_abnormal})
-    return render(request, "subpages/labtests.html", {"medical_event": event, "series": series, "indicators": indicators})
-
-def _to_float(s):
-    try:
-        return float(str(s).replace(",", "."))
-    except Exception:
-        return None
+    q = request.GET.get("q", "").strip()
+    qs = Tag.objects.all()
+    if q:
+        qs = qs.filter(name__icontains=q)
+    data = [{"id": t.id, "name": t.name} for t in qs.order_by("name")[:20]]
+    return JsonResponse(data, safe=False)
 
 @login_required
-def practitioners_list(request):
-    doctors = PractitionerProfile.objects.select_related("specialty").all().order_by("full_name")
-    return render(request, "subpages/doctors.html", {"doctors": doctors})
-
-@login_required
-@require_POST
-def create_share_token(request):
+def upload_history(request):
     patient = _require_patient_profile(request.user)
     if not patient:
         return HttpResponseForbidden()
-    scope = request.POST.get("scope")
-    duration = request.POST.get("duration")
-    allow_download = request.POST.get("allow_download") == "1"
-    if scope not in {"document", "event"}:
-        raise PermissionDenied()
-    if duration not in {"1h", "6h", "12h", "24h", "72h", "7d"}:
-        duration = "6h"
-    if scope == "document":
-        pk = request.POST.get("document_id")
-        doc = get_object_or_404(Document, pk=pk, medical_event__patient=patient)
-        obj_event = None
-        obj_doc = doc
-    else:
-        pk = request.POST.get("event_id")
-        ev = get_object_or_404(MedicalEvent, pk=pk, patient=patient)
-        obj_event = ev
-        obj_doc = None
-    now = timezone.now()
-    delta_map = {"1h": 1, "6h": 6, "12h": 12, "24h": 24, "72h": 72, "7d": 168}
-    expires_at = now + timezone.timedelta(hours=delta_map[duration])
-    st = ShareToken.objects.create(
-        scope=scope,
-        document=obj_doc,
-        event=obj_event,
-        patient=patient,
-        allow_download=allow_download,
-        expires_at=expires_at,
-        is_active=True,
-    )
-    messages.success(request, _l("Създаден е линк за споделяне."))
-    return redirect("medj:share_view", token=st.token)
+    docs = Document.objects.filter(medical_event__patient=patient).select_related("doc_type", "medical_event__specialty", "practitioner").prefetch_related("tags")
+    tag_param = request.GET.get("tags", "").strip()
+    search_q = request.GET.get("q", "").strip()
+    if tag_param:
+        names = [t.strip() for t in tag_param.split(",") if t.strip()]
+        if names:
+            docs = docs.filter(tags__name__in=names).distinct()
+    if search_q:
+        docs = docs.filter(
+            Q(file__icontains=search_q) |
+            Q(doc_type__translations__name__icontains=search_q) |
+            Q(medical_event__specialty__translations__name__icontains=search_q) |
+            Q(tags__name__icontains=search_q)
+        ).distinct()
+    docs = docs.order_by("-uploaded_at", "-id")
+    return render(request, "subpages/upload_history.html", {"documents": docs, "tags_query": tag_param, "search_query": search_q})
 
 def share_view(request, token):
     st = get_object_or_404(ShareToken, token=token)
@@ -427,172 +433,3 @@ def share_revoke(request, token):
     st.save(update_fields=["is_active"])
     messages.success(request, _l("Линкът за споделяне е деактивиран."))
     return redirect("medj:medical_event_list")
-
-@login_required
-def document_detail(request, pk):
-    patient = _require_patient_profile(request.user)
-    if not patient:
-        return HttpResponseForbidden()
-    doc = get_object_or_404(Document.objects.select_related("medical_event", "doc_type", "practitioner"), pk=pk, medical_event__patient=patient)
-    event = doc.medical_event
-    return render(request, "subpages/document_detail.html", {"document": doc, "event": event})
-
-@login_required
-def document_edit(request, pk):
-    patient = _require_patient_profile(request.user)
-    if not patient:
-        return HttpResponseForbidden()
-    doc = get_object_or_404(
-        Document.objects.select_related("medical_event"),
-        pk=pk,
-        medical_event__patient=patient,
-    )
-    if request.method == "POST":
-        form = DocumentEditForm(request.POST, instance=doc)
-        if form.is_valid():
-            form.save()
-            messages.success(request, _l("Документът е обновен."))
-            return redirect("medj:document_detail", pk=doc.pk)
-    else:
-        form = DocumentEditForm(instance=doc)
-    return render(request, "subpages/document_edit.html", {"form": form, "document": doc})
-
-@login_required
-def export_event_pdf(request, pk):
-    patient = _require_patient_profile(request.user)
-    if not patient:
-        return HttpResponseForbidden()
-    event = get_object_or_404(
-        MedicalEvent.objects.select_related("specialty", "patient__user"),
-        pk=pk,
-        patient=patient,
-    )
-    documents = event.documents.select_related("doc_type", "practitioner").all().order_by("document_date", "uploaded_at")
-    diagnoses = event.diagnoses.all().order_by("diagnosed_at")
-    treatment_plans = event.treatment_plans.all().order_by("start_date")
-    narrative_sections = event.narrative_sections.all().order_by("order", "id") if hasattr(event, "narrative_sections") else []
-    labs = LabTestMeasurement.objects.filter(event=event).select_related("indicator").order_by("measured_at", "indicator__code")
-    ctx = {
-        "event": event,
-        "documents": documents,
-        "diagnoses": diagnoses,
-        "treatment_plans": treatment_plans,
-        "narrative_sections": narrative_sections,
-        "labs": labs,
-    }
-    html = render_to_string("subpages/event_export_pdf.html", ctx, request=request)
-    pdf = HTML(string=html, base_url=request.build_absolute_uri("/")).write_pdf()
-    filename = f"Event-{event.event_date.strftime('%Y-%m-%d')}-{slugify(event.specialty.name if event.specialty else 'event')}.pdf"
-    resp = HttpResponse(pdf, content_type="application/pdf")
-    resp["Content-Disposition"] = f'attachment; filename="{filename}"'
-    return resp
-
-@login_required
-def export_lab_csv(request):
-    patient = _require_patient_profile(request.user)
-    if not patient:
-        return HttpResponse(status=403)
-    qs = LabTestMeasurement.objects.filter(event__patient=patient).select_related("event", "indicator", "document", "event__specialty", "document__practitioner").order_by("measured_at", "indicator__code")
-    event_id = request.GET.get("event")
-    if event_id:
-        qs = qs.filter(event_id=event_id)
-    date_from = request.GET.get("from")
-    date_to = request.GET.get("to")
-    if date_from:
-        qs = qs.filter(measured_at__gte=date_from)
-    if date_to:
-        qs = qs.filter(measured_at__lte=date_to)
-    codes = request.GET.get("codes")
-    if codes:
-        code_list = [c.strip() for c in codes.split(",") if c.strip()]
-        if code_list:
-            qs = qs.filter(indicator__code__in=code_list)
-    resp = HttpResponse(content_type="text/csv; charset=utf-8")
-    resp["Content-Disposition"] = 'attachment; filename="lab_measurements.csv"'
-    w = csv.writer(resp)
-    w.writerow([
-        "patient",
-        "event_date",
-        "measured_at",
-        "specialty",
-        "indicator_code",
-        "indicator_name",
-        "value_si",
-        "unit_si",
-        "ref_low_si",
-        "ref_high_si",
-        "is_abnormal",
-        "document_date",
-        "doc_type",
-        "practitioner",
-    ])
-    for m in qs:
-        w.writerow([
-            patient.user.username if patient and patient.user else "",
-            m.event.event_date.strftime("%Y-%m-%d") if m.event and m.event.event_date else "",
-            m.measured_at.strftime("%Y-%m-%d") if m.measured_at else "",
-            m.event.specialty.name if m.event and m.event.specialty else "",
-            m.indicator.code if m.indicator else "",
-            getattr(m.indicator, "name", "") if m.indicator else "",
-            m.value_si if m.value_si is not None else m.value_raw,
-            m.unit_si or m.unit_raw or "",
-            m.ref_low_si or "",
-            m.ref_high_si or "",
-            "1" if m.is_abnormal else "0" if m.is_abnormal is not None else "",
-            m.document.document_date.strftime("%Y-%m-%d") if m.document and m.document.document_date else "",
-            m.document.doc_type.name if m.document and m.document.doc_type else "",
-            m.document.practitioner.full_name if m.document and m.document.practitioner else "",
-        ])
-    return resp
-
-@login_required
-def generate_pdf(request, pk):
-    patient = _require_patient_profile(request.user)
-    if not patient:
-        return HttpResponse(status=403)
-    doc = get_object_or_404(
-        Document.objects.select_related("medical_event", "doc_type", "practitioner", "medical_event__specialty", "medical_event__patient__user"),
-        pk=pk,
-        medical_event__patient=patient,
-    )
-    ctx = {"document": doc, "event": doc.medical_event}
-    html = render_to_string("subpages/document_export_pdf.html", ctx, request=request)
-    pdf = HTML(string=html, base_url=request.build_absolute_uri("/")).write_pdf()
-    filename = f"Document-{doc.document_date.strftime('%Y-%m-%d') if doc.document_date else 'undated'}-{slugify(doc.doc_type.name if doc.doc_type else 'document')}.pdf"
-    resp = HttpResponse(pdf, content_type="application/pdf")
-    resp["Content-Disposition"] = f'attachment; filename="{filename}"'
-    return resp
-
-@login_required
-def tags_autocomplete(request):
-    patient = _require_patient_profile(request.user)
-    if not patient:
-        return HttpResponseForbidden()
-    q = request.GET.get("q", "").strip()
-    qs = Tag.objects.all()
-    if q:
-        qs = qs.filter(name__icontains=q)
-    data = [{"id": t.id, "name": t.name} for t in qs.order_by("name")[:20]]
-    return JsonResponse(data, safe=False)
-
-@login_required
-def upload_history(request):
-    patient = _require_patient_profile(request.user)
-    if not patient:
-        return HttpResponseForbidden()
-    docs = Document.objects.filter(medical_event__patient=patient).select_related("doc_type", "medical_event__specialty", "practitioner").prefetch_related("tags")
-    tag_param = request.GET.get("tags", "").strip()
-    search_q = request.GET.get("q", "").strip()
-    if tag_param:
-        names = [t.strip() for t in tag_param.split(",") if t.strip()]
-        if names:
-            docs = docs.filter(tags__name__in=names).distinct()
-    if search_q:
-        docs = docs.filter(
-            Q(file__icontains=search_q) |
-            Q(doc_type__name__icontains=search_q) |
-            Q(medical_event__specialty__name__icontains=search_q) |
-            Q(tags__name__icontains=search_q)
-        ).distinct()
-    docs = docs.order_by("-uploaded_at", "-id")
-    return render(request, "subpages/upload_history.html", {"documents": docs, "tags_query": tag_param, "search_query": search_q})

@@ -1,68 +1,53 @@
 services:
   db:
-    image: postgres:15-alpine
-    container_name: medj_db
+    image: postgres:16
+    env_file: .env.dev
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-medj}
-      POSTGRES_USER: ${POSTGRES_USER:-medj}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-medjpass}
-    ports:
-      - "5432:5432"
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - medj21_db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
-      retries: 20
+      retries: 30
 
   web:
-    build: .
-    container_name: medj_web
-    command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"
-    env_file:
-      - .env
-    environment:
-      DJANGO_SETTINGS_MODULE: medj.settings.dev
-    volumes:
-      - .:/app
-      - static_volume:/app/staticfiles_collected
-      - media_volume:/app/media
-    ports:
-      - "8000:8000"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env.dev
     depends_on:
       db:
         condition: service_healthy
-      ocrapi:
-        condition: service_started
-
-  tailwind:
-    build: .
-    container_name: medj_tailwind
-    command: sh -c "python manage.py tailwind install && python manage.py tailwind build && python manage.py tailwind start"
-    env_file:
-      - .env
-    environment:
-      DJANGO_SETTINGS_MODULE: medj.settings.dev
     volumes:
       - .:/app
-    depends_on:
-      web:
-        condition: service_started
+      - ./secrets:/app/secrets:ro
+    ports:
+      - "8000:8000"
+    command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"
 
   ocrapi:
     build:
       context: ./ocrapi
-      dockerfile: dockerfile
-    container_name: medj_ocrapi
-    env_file:
-      - .env.ocr
+      dockerfile: Dockerfile
+    env_file: .env.dev
+    volumes:
+      - ./secrets:/app/secrets:ro
     ports:
       - "5000:5000"
+
+  tailwind:
+    image: node:20-alpine
+    working_dir: /app
+    env_file: .env.dev
     volumes:
-      - ./secrets:/secrets:ro
+      - .:/app
+    command: sh -c "npx tailwindcss -i theme/static_src/styles.css -o static/css/dist/output.css --watch"
+    depends_on:
+      - web
 
 volumes:
-  pgdata:
-  static_volume:
-  media_volume:
+  medj21_db_data:

@@ -1,6 +1,7 @@
 {% extends 'basetemplates/base_public.html' %}
 {% load static %}
 {% load i18n %}
+{% load medj_filters %}
 
 {% block title %}{% trans "Регистрация в MedJ" %}{% endblock %}
 
@@ -16,45 +17,45 @@
       {{ form.non_field_errors }}
 
       <div>
-        <label for="{{ form.username.id_for_label }}" class="sr-only">{% trans "Потребителско име" %}</label>
+        <label for="{{ form.username.id_for_label }}" class="label">{% trans "Потребителско име" %}</label>
         {{ form.username|add_class:"input-text" }}
         {{ form.username.errors }}
       </div>
 
       <div>
-        <label for="{{ form.email.id_for_label }}" class="sr-only">{% trans "Имейл" %}</label>
+        <label for="{{ form.email.id_for_label }}" class="label">{% trans "Имейл" %}</label>
         {{ form.email|add_class:"input-text" }}
         {{ form.email.errors }}
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label for="{{ form.first_name.id_for_label }}" class="sr-only">{% trans "Име" %}</label>
+          <label for="{{ form.first_name.id_for_label }}" class="label">{% trans "Име" %}</label>
           {{ form.first_name|add_class:"input-text" }}
           {{ form.first_name.errors }}
         </div>
         <div>
-          <label for="{{ form.last_name.id_for_label }}" class="sr-only">{% trans "Фамилия" %}</label>
+          <label for="{{ form.last_name.id_for_label }}" class="label">{% trans "Фамилия" %}</label>
           {{ form.last_name|add_class:"input-text" }}
           {{ form.last_name.errors }}
         </div>
       </div>
 
       <div>
-        <label for="{{ form.password1.id_for_label }}" class="sr-only">{% trans "Парола" %}</label>
+        <label for="{{ form.password1.id_for_label }}" class="label">{% trans "Парола" %}</label>
         {{ form.password1|add_class:"input-text" }}
         {{ form.password1.errors }}
       </div>
 
       <div>
-        <label for="{{ form.password2.id_for_label }}" class="sr-only">{% trans "Потвърдете паролата" %}</label>
+        <label for="{{ form.password2.id_for_label }}" class="label">{% trans "Потвърди парола" %}</label>
         {{ form.password2|add_class:"input-text" }}
         {{ form.password2.errors }}
       </div>
 
       {% if form.user_type %}
       <div>
-        <label class="section-title block mb-2">{% trans "Тип потребител" %}</label>
+        <label for="{{ form.user_type.id_for_label }}" class="label">{% trans "Тип потребител" %}</label>
         {{ form.user_type|add_class:"input-text" }}
         {{ form.user_type.errors }}
       </div>

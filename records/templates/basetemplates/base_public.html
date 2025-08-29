@@ -1,55 +1,65 @@
 {% load static %}
 {% load i18n %}
 <!DOCTYPE html>
-<html lang="{{ request.LANGUAGE_CODE }}">
+<html lang="{{ request.LANGUAGE_CODE|default:'bg' }}">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>{% block title %}MedJ{% endblock %}</title>
+
+  <!-- Само компилирания Tailwind/компонентен стил -->
   <link rel="stylesheet" href="{% static 'css/dist/output.css' %}">
   <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-  <link rel="stylesheet" href="{% static 'src/styles.css' %}">
   <link rel="stylesheet" href="{% static 'fontawesome/css/all.min.css' %}">
-  <script src="https://unpkg.com/flowbite@2.5.1/dist/flowbite.min.js"></script>
 </head>
-<body class="bg-site-background text-gray-900 min-h-screen flex flex-col">
-  <nav class="bg-button-blue">
-    <div class="max-w-screen-xl mx-auto p-4 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <button type="button" data-dropdown-toggle="language-dropdown-menu" class="inline-flex items-center font-medium justify-center px-3 py-2 text-sm text-white rounded-xl hover:bg-navbar-button-blue">
-          <svg class="w-6 h-6 rounded-full me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3900 3900"><path fill="#b22234" d="M0 0h7410v3900H0z"/><path d="M0 450h7410m0 600H0m0 600h7410m0 600H0m0 600h7410m0 600H0" stroke="#fff" stroke-width="300"/><path fill="#3c3b6e" d="M0 0h2964v2100H0z"/></svg>
-          <span class="uppercase">{{ request.LANGUAGE_CODE|default:'bg' }}</span>
-          <i class="fa-solid fa-chevron-down text-xs ml-2"></i>
-        </button>
-        <div id="language-dropdown-menu" class="z-50 hidden my-2 w-48 text-base list-none bg-white divide-y divide-gray-100 rounded-xl shadow">
-          <ul class="py-2 font-medium" role="none">
-            <li>
-              <form action="{% url 'set_language' %}" method="post" class="block">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="{{ request.path }}">
-                <button type="submit" name="language" value="bg" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">🇧🇬 Български</button>
-              </form>
-            </li>
-            <li>
-              <form action="{% url 'set_language' %}" method="post" class="block">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="{{ request.path }}">
-                <button type="submit" name="language" value="en" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">🇬🇧 English</button>
-              </form>
-            </li>
-          </ul>
+<body class="bg-site-background text-surface-text min-h-screen flex flex-col">
+  <!-- NAVBAR (публичен) -->
+  <header class="bg-button-blue shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 md:px-6">
+      <div class="h-14 md:h-16 flex items-center justify-between">
+        <div class="flex items-center gap-3 md:gap-4">
+          <!-- Language switch -->
+          <form action="{% url 'set_language' %}" method="post" class="flex items-center gap-2">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.path }}">
+            <span class="sr-only">{% trans "Език" %}</span>
+            <i class="fa-solid fa-globe text-white/90 text-lg md:text-xl"></i>
+            <select name="language" onchange="this.form.submit()"
+                    class="bg-white/10 text-white text-sm md:text-base border border-white/20 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-white/40">
+              {% get_current_language as LANGUAGE_CODE %}
+              {% get_available_languages as LANGUAGES %}
+              {% get_language_info_list for LANGUAGES as languages %}
+              {% for language in languages %}
+                <option value="{{ language.code }}" {% if language.code == LANGUAGE_CODE %}selected{% endif %}>
+                  {{ language.code|upper }}
+                </option>
+              {% endfor %}
+            </select>
+          </form>
+
+          <!-- Само текст MedJ (линк към началото) -->
+          <a href="{% url 'medj:landing' %}" class="text-white font-semibold md:font-bold text-lg md:text-xl no-underline">
+            MedJ
+          </a>
         </div>
-        <a href="{% url 'medj:landing' %}" class="text-white text-2xl font-semibold">MedJ</a>
-      </div>
-      <div class="flex items-center gap-3">
-        <a href="{% url 'medj:login' %}" class="btn-primary">{% trans "Вход" %}</a>
-        <a href="{% url 'medj:register' %}" class="btn-primary">{% trans "Регистрация" %}</a>
+
+        <nav class="flex items-center gap-2 md:gap-3">
+          <a href="{% url 'medj:login' %}" class="text-white/90 hover:text-white no-underline text-sm md:text-base px-2 py-1 rounded-md">
+            {% trans "Вход" %}
+          </a>
+          <a href="{% url 'medj:register' %}"
+             class="no-underline px-3 md:px-4 py-1.5 md:py-2 rounded-xl bg-navbar-button-blue text-white text-sm md:text-base hover:opacity-95 transition">
+            {% trans "Регистрация" %}
+          </a>
+        </nav>
       </div>
     </div>
-  </nav>
+  </header>
+
   <main class="flex-grow">
     {% block content %}{% endblock %}
   </main>
+
   {% block scripts %}
   <script src="{% static 'js/bootstrap.min.js' %}"></script>
   {% endblock %}

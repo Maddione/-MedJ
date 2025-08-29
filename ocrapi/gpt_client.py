@@ -2,26 +2,52 @@ import os
 import json
 import openai
 from openai import OpenAI
-from django.utils.translation import gettext as _l  # Добавено за преводи
+from django.utils.translation import gettext as _l
 
-client = None
-try:
-    api_key = os.environ.get("OPENAI_API_KEY")
+_client = None
+
+def _read_file_value(path):
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return f.read().strip()
+    except Exception:
+        return ""
+
+def _resolve_openai_key():
+    v = os.getenv("OPENAI_API_KEY", "").strip()
+    if v and len(v) > 20 and "\n" not in v and " " not in v and not os.path.isfile(v):
+        return v
+    if v and os.path.isfile(v):
+        file_val = _read_file_value(v)
+        if file_val:
+            return file_val
+    f = os.getenv("OPENAI_API_KEY_FILE", "").strip()
+    if f and os.path.isfile(f):
+        file_val = _read_file_value(f)
+        if file_val:
+            return file_val
+    rel = "secrets/openai-key.txt"
+    if os.path.isfile(rel):
+        file_val = _read_file_value(rel)
+        if file_val:
+            return file_val
+    return ""
+
+def _get_client():
+    global _client
+    if _client is not None:
+        return _client
+    api_key = _resolve_openai_key()
     if not api_key:
-        raise ValueError(_l("OPENAI_API_KEY environment variable not set."))
-    client = OpenAI(api_key=api_key)
-except Exception as e:
-    pass
-
+        raise ValueError(_l("OPENAI_API_KEY липсва или е невалиден."))
+    _client = OpenAI(api_key=api_key)
+    return _client
 
 def call_gpt_for_document(text: str, user_context: dict) -> dict:
-    if not client:
-        raise ConnectionError(_l("OpenAI клиентът не е инициализиран правилно. Проверете API ключа."))
-
-    event_type = user_context.get('event_type', _l('неизвестен'))
-    category_name = user_context.get('category_name', _l('неизвестна'))
-    specialty_name = user_context.get('specialty_name', _l('неизвестна'))
-
+    client = _get_client()
+    event_type = user_context.get("event_type", _l("неизвестен"))
+    category_name = user_context.get("category_name", _l("неизвестна"))
+    specialty_name = user_context.get("specialty_name", _l("неизвестна"))
     system_prompt = f"""
 Ти си експертен асистент за обработка на медицински документи по {specialty_name}. Твоята задача е да извличаш, структурираш и обобщаваш ключова медицинска информация от предоставените текстове от {category_name}.
 Изключително важно е да даваш отговорите само на български език.
@@ -75,7 +101,6 @@ def call_gpt_for_document(text: str, user_context: dict) -> dict:
 Винаги връщай валиден JSON. Ако не можеш да извлечеш определен ключ, го изключи от JSON-а или го остави празен стринг/списък, но не връщай null.
 Използвай български език за всички извлечени текстови полета и резюме.
 """
-
     try:
         completion = client.chat.completions.create(
             model="gpt-4o",
@@ -86,10 +111,8 @@ def call_gpt_for_document(text: str, user_context: dict) -> dict:
                 {"role": "user", "content": f"Ето текста за анализ:\n\n{text}"}
             ]
         )
-
         response_content = completion.choices[0].message.content
         return json.loads(response_content)
-
     except openai.APIError as e:
         raise ConnectionError(_l(f"Грешка при комуникация с OpenAI: {e}"))
     except json.JSONDecodeError:
