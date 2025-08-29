@@ -1,14 +1,16 @@
 {
   "name": "theme",
   "version": "1.0.0",
-  "private": true,
-  "devDependencies": {
-    "tailwindcss": "^3.4.9",
-    "postcss": "^8.4.41",
-    "autoprefixer": "^10.4.19"
-  },
+  "description": "MedJ Frontend Assets",
+  "main": "index.js",
   "scripts": {
-    "start": "tailwindcss -i ./static_src/styles.css -o ../static/output.css --watch",
-    "build": "tailwindcss -i ./static_src/styles.css -o ../static/output.css --minify"
+    "build": "tailwindcss -i ./static_src/styles.css -o ./static/css/dist/styles.css",
+    "watch": "tailwindcss -i ./static_src/styles.css -o ./static/css/dist/styles.css --watch"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.7",
+    "tailwindcss": "^3.4.1"
   }
 }

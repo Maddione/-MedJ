@@ -1,75 +1,34 @@
-{% extends 'basetemplates/base_public.html' %}
-{% load static %}
+{% extends "basetemplates/base_public.html" %}
 {% load i18n %}
-{% load medj_filters %}
 
-{% block title %}{% trans "Регистрация в MedJ" %}{% endblock %}
+{% block title %}{% trans "Регистрация" %}{% endblock %}
 
 {% block content %}
-<main class="flex items-center justify-center min-h-[calc(100vh-120px)] px-4">
-  <div class="card max-w-md w-full p-8">
-    <div class="bg-navbar-button-blue text-white text-center rounded-3xl -mx-8 -mt-8 mb-8 p-6">
-      <h1 class="text-3xl font-bold">{% trans "Регистрация" %}</h1>
+<div class="flex items-center justify-center min-h-screen bg-brand-background">
+    <div class="bg-brand-cream rounded-2xl shadow-card p-8 w-full max-w-sm">
+        <h1 class="text-2xl font-bold text-center mb-6 text-brand-text">{% trans "Регистрация" %}</h1>
+
+        {% if form.non_field_errors %}
+            <div class="bg-brand-red/10 text-brand-red p-3 rounded mb-4">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <form method="post" action="" class="space-y-4">
+            {% csrf_token %}
+
+            {% for field in form %}
+                <div>
+                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-brand-text">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="text-brand-red text-sm mt-1">{{ field.errors }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="w-full py-2 px-4 rounded-md font-semibold text-lg bg-brand-blue text-brand-cream hover:bg-brand-cyan transition-colors">
+                {% trans "Създай акаунт" %}
+            </button>
+        </form>
     </div>
-
-    <form method="post" class="space-y-5">
-      {% csrf_token %}
-      {{ form.non_field_errors }}
-
-      <div>
-        <label for="{{ form.username.id_for_label }}" class="label">{% trans "Потребителско име" %}</label>
-        {{ form.username|add_class:"input-text" }}
-        {{ form.username.errors }}
-      </div>
-
-      <div>
-        <label for="{{ form.email.id_for_label }}" class="label">{% trans "Имейл" %}</label>
-        {{ form.email|add_class:"input-text" }}
-        {{ form.email.errors }}
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label for="{{ form.first_name.id_for_label }}" class="label">{% trans "Име" %}</label>
-          {{ form.first_name|add_class:"input-text" }}
-          {{ form.first_name.errors }}
-        </div>
-        <div>
-          <label for="{{ form.last_name.id_for_label }}" class="label">{% trans "Фамилия" %}</label>
-          {{ form.last_name|add_class:"input-text" }}
-          {{ form.last_name.errors }}
-        </div>
-      </div>
-
-      <div>
-        <label for="{{ form.password1.id_for_label }}" class="label">{% trans "Парола" %}</label>
-        {{ form.password1|add_class:"input-text" }}
-        {{ form.password1.errors }}
-      </div>
-
-      <div>
-        <label for="{{ form.password2.id_for_label }}" class="label">{% trans "Потвърди парола" %}</label>
-        {{ form.password2|add_class:"input-text" }}
-        {{ form.password2.errors }}
-      </div>
-
-      {% if form.user_type %}
-      <div>
-        <label for="{{ form.user_type.id_for_label }}" class="label">{% trans "Тип потребител" %}</label>
-        {{ form.user_type|add_class:"input-text" }}
-        {{ form.user_type.errors }}
-      </div>
-      {% endif %}
-
-      <button type="submit" class="btn-primary w-full text-xl">{% trans "Регистрация" %}</button>
-    </form>
-
-    <div class="mt-6 text-center">
-      <p class="text-gray-700">
-        {% trans "Вече имаш акаунт?" %}
-        <a href="{% url 'medj:login' %}" class="text-navbar-button-blue hover:underline">{% trans "Вход" %}</a>
-      </p>
-    </div>
-  </div>
-</main>
+</div>
 {% endblock %}

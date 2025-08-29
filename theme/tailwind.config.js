@@ -1,30 +1,36 @@
+const defaultTheme = require('tailwindcss/defaultTheme')
+
 module.exports = {
   content: [
-    "./templates/**/*.html",
-    "./records/templates/**/*.html",
-    "./theme/**/*.css",
+    '../records/templates/**/*.html',
+    './static_src/**/*.js',
   ],
   theme: {
     extend: {
       colors: {
-        "site-background": "#EAEBDA",
-        "block-background": "#FDFEE9",
-        "creamy-main-content": "#FDEFB7",
-        "button-blue": "#43B8CF",
-        "navbar-button-blue": "#0A4E75",
-        "checkmark-green": "#15BC11",
-        "error-red": "#D84137",
-        "light-red-bg": "#FFEBEE",
-        "dark-red-text": "#B71C1C"
+        'brand-cream': '#FDFEE9',
+        'brand-background': '#EAEBDA',
+        'brand-cyan': '#43B8CF',
+        'brand-blue': '#0A4E75',
+        'brand-green': '#15BC11',
+        'brand-red': '#D84137',
+        'brand-text': '#042A41',
+      },
+      fontFamily: {
+        sans: ['Inter', ...defaultTheme.fontFamily.sans],
       },
       borderRadius: {
-        "2xl": "1rem",
-        "3xl": "1.5rem"
+        '2xl': '1rem',
+        '3xl': '1.5rem',
+        '4xl': '2rem',
       },
       boxShadow: {
-        soft: "0 10px 25px rgba(0,0,0,0.15)"
+        'soft': '0 4px 12px rgba(0, 0, 0, 0.08)',
+        'card': '0 2px 8px rgba(0, 0, 0, 0.06)',
       }
     }
   },
-  plugins: []
+  plugins: [
+      require('@tailwindcss/forms'),
+  ]
 }

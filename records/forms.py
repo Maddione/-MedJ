@@ -1,25 +1,39 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _l
 from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import (
     Document,
     MedicalSpecialty,
     DocumentType,
     PractitionerProfile,
     MedicalEvent,
-    Document,
     Tag,
 )
 
 UserModel = get_user_model()
+
+class LoginForm(AuthenticationForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].widget.attrs.update(
+            {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}
+        )
+        self.fields['password'].widget.attrs.update(
+            {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline'}
+        )
 
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(required=True, label=_l("Имейл"))
 
     class Meta:
         model = UserModel
-        fields = ["username", "email", "first_name", "last_name", "password1", "password2"]
+        fields = ["username", "email", "first_name", "last_name"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            field.widget.attrs.update({'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2'})
 
 class DocumentUploadForm(forms.ModelForm):
     specialty = forms.ModelChoiceField(queryset=MedicalSpecialty.objects.all(), label=_l("Специалност"))

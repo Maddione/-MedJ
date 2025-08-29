@@ -1,16 +1,13 @@
-{% load static %}
-{% load i18n %}
+{% load static i18n %}
 <!DOCTYPE html>
 <html lang="{{ request.LANGUAGE_CODE }}">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>{% block title %}MedJ{% endblock %}</title>
-  <link rel="stylesheet" href="{% static 'css/dist/output.css' %}">
-  <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-  <link rel="stylesheet" href="{% static 'src/styles.css' %}">
-  <link rel="stylesheet" href="{% static 'fontawesome/css/all.min.css' %}">
-  <script src="https://unpkg.com/flowbite@2.5.1/dist/flowbite.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MedJ{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/dist/output.css' %}">
 </head>
 <body class="bg-site-background text-gray-900 min-h-screen flex flex-col">
   <nav class="bg-button-blue">

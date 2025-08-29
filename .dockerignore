@@ -22,9 +22,9 @@ secrets/*.json
 /temp_uploads/
 
 /staticfiles_collected/
-/static/dist/
-/static/css/dist/
-/static/js/dist/
+/theme/static/dist/
+/theme/static/css/dist/
+/theme/static/js/dist/
 /theme/static_src/dist/
 
 locale/*/LC_MESSAGES/*.mo

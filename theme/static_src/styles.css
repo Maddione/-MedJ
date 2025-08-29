@@ -3,40 +3,49 @@
 @tailwind utilities;
 
 @layer base {
-  html, body {
-    @apply bg-site-background;
-  }
-  a {
-    @apply no-underline;
+  body {
+    background-color: theme('colors.brand-background');
+    color: theme('colors.brand-text');
+    @apply font-sans antialiased;
   }
 }
 
 @layer components {
-  .card {
-    @apply bg-block-background rounded-3xl shadow-soft;
+  .topbar {
+    @apply bg-white shadow-md;
+  }
+  .topbar-inner {
+    @apply container mx-auto px-6 py-3;
+  }
+  .brand {
+    @apply flex items-center;
+  }
+  .brand-text {
+    color: theme('colors.brand-blue');
+    @apply text-2xl font-bold;
   }
 
-  .btn-primary {
-    @apply px-6 py-3 bg-button-blue text-white font-bold rounded-3xl shadow hover:bg-navbar-button-blue transition-colors;
+  .nav-btn {
+    @apply px-4 py-2 rounded-full font-semibold transition-colors duration-200;
+  }
+  .nav-btn--primary {
+    background-color: theme('colors.brand-blue');
+    @apply text-white hover:bg-opacity-90;
   }
 
-  .btn-secondary {
-    @apply px-6 py-3 bg-checkmark-green text-white font-bold rounded-3xl shadow hover:bg-green-700 transition-colors;
+  .lang-dropdown {
+    @apply relative;
   }
-
-  .btn-danger {
-    @apply px-6 py-3 bg-error-red text-white font-bold rounded-3xl shadow hover:bg-red-800 transition-colors;
+  .lang-btn {
+    @apply flex items-center gap-2 text-sm font-semibold text-gray-600;
   }
-
-  .nav-link {
-    @apply px-4 py-2 text-white font-bold rounded-2xl hover:bg-navbar-button-blue transition-colors;
+  .lang-menu {
+    @apply absolute top-full mt-2 w-40 bg-white rounded-lg shadow-lg py-1 z-10 hidden;
   }
-
-  .input-text {
-    @apply w-full px-4 py-3 rounded-2xl bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-navbar-button-blue;
+  .lang-menu.open {
+    @apply block;
   }
-
-  .section-title {
-    @apply text-2xl font-semibold text-navbar-button-blue;
+  .lang-item {
+    @apply flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left;
   }
 }
