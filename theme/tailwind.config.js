@@ -10,8 +10,8 @@ module.exports = {
       colors: {
         'brand-cream': '#FDFEE9',
         'brand-background': '#EAEBDA',
-        'brand-cyan': '#43B8CF',
-        'brand-blue': '#0A4E75',
+        'nav-cyan': '#43B8CF',
+        'button-blue': '#0A4E75',
         'brand-green': '#15BC11',
         'brand-red': '#D84137',
         'brand-text': '#042A41',

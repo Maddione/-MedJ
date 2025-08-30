@@ -1,18 +1,7 @@
 {% extends "basetemplates/base_public.html" %}
-{% load i18n static %}
+{% load i18n %}
 
-{% block title %}MedJ{% endblock %}
-
-{% block content %}
-<section class="landing-hero">
-  <div class="hero-inner">
-    <img src="{% static 'images/logo.svg' %}" alt="MedJ" class="hero-logo">
-    <div class="hero-cta">
-      <a href="{% url 'medj:login' %}" class="cta-btn">{% trans "Започнете сега" %}</a>
-    </div>
-    <p class="hero-subtitle">
-      {% trans "Организирайте, проследявайте и анализирайте медицинските си данни лесно и сигурно." %}
-    </p>
-  </div>
-</section>
+{% block nav_items %}
+  <a href="{% url 'medj:login' %}" class="px-5 py-2 rounded-lg bg-button-blue text-white font-semibold hover:opacity-90">{% trans "ВХОД" %}</a>
+  <a href="{% url 'medj:register' %}" class="px-5 py-2 rounded-lg bg-button-blue text-white font-semibold hover:opacity-90">{% trans "Регистрация" %}</a>
 {% endblock %}

@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import FileExtensionValidator
 from django.db import models, transaction
-from django.db.models.signals import m2m_changed, post_delete, post_save
+from django.db.models.signals import m2m_changed, post_save
 from django.dispatch import receiver
 from parler.models import TranslatableModel, TranslatedFields
 import uuid
@@ -16,7 +16,6 @@ from django.utils import timezone
 class User(AbstractUser):
     USER_TYPES = (
         ("patient", "Patient"),
-        ("practitioner", "Practitioner"),
     )
     user_type = models.CharField(max_length=20, choices=USER_TYPES, default="patient")
 
@@ -25,7 +24,11 @@ class User(AbstractUser):
 
 
 class PatientProfile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="patientprofile"  # Corrected placement and name
+    )
     date_of_birth = models.DateField(null=True, blank=True)
     gender = models.CharField(max_length=10, null=True, blank=True)
     phone_number = models.CharField(max_length=64, null=True, blank=True)
@@ -34,20 +37,6 @@ class PatientProfile(models.Model):
 
     def __str__(self):
         return f"PatientProfile<{self.user}>"
-
-
-class PractitionerProfile(models.Model):
-    PRACTITIONER_TYPES = (
-        ("physician", "Physician"),
-        ("nurse", "Nurse"),
-        ("other", "Other"),
-    )
-    full_name = models.CharField(max_length=255)
-    practitioner_type = models.CharField(max_length=20, choices=PRACTITIONER_TYPES, default="physician")
-    specialty = models.ForeignKey("MedicalSpecialty", null=True, blank=True, on_delete=models.SET_NULL)
-
-    def __str__(self):
-        return self.full_name
 
 
 class MedicalCategory(models.Model):
@@ -97,7 +86,6 @@ class Tag(models.Model):
     CATEGORY_CHOICES = (
         ("generic", "Generic"),
         ("specialty", "Specialty"),
-        ("doctor", "Doctor"),
         ("medication", "Medication"),
         ("auto", "Auto"),
         ("manual", "Manual"),
@@ -118,7 +106,6 @@ class MedicalEvent(models.Model):
     specialty = models.ForeignKey(MedicalSpecialty, on_delete=models.PROTECT)
     event_date = models.DateField()
     summary = models.TextField(blank=True, null=True)
-    practitioners = models.ManyToManyField(PractitionerProfile, blank=True)
     tags = models.ManyToManyField(Tag, through="EventTag", blank=True)
 
     class Meta:
@@ -150,7 +137,6 @@ class Document(models.Model):
     )
     doc_kind = models.CharField(max_length=16, choices=KIND_CHOICES, default="pdf")
     uploaded_at = models.DateTimeField(auto_now_add=True)
-    practitioner = models.ForeignKey(PractitionerProfile, null=True, blank=True, on_delete=models.SET_NULL)
     original_ocr_text = models.TextField(blank=True, null=True)
     sha256 = models.CharField(max_length=64, db_index=True, blank=True)
     tags = models.ManyToManyField(Tag, through="DocumentTag", blank=True)
@@ -165,8 +151,10 @@ class Document(models.Model):
         if not self.file:
             return None
         h = hashlib.sha256()
+        self.file.open()
         for chunk in self.file.chunks():
             h.update(chunk)
+        self.file.close()
         return h.hexdigest()
 
 
@@ -260,58 +248,6 @@ class LabTestMeasurement(models.Model):
         ordering = ["-measured_at", "-id"]
 
 
-@receiver(post_save, sender=Document)
-def _document_post_save(sender, instance: Document, created, **kwargs):
-    if created:
-        if not instance.sha256 and instance.file:
-            try:
-                instance.sha256 = instance.compute_sha256()
-                Document.objects.filter(pk=instance.pk).update(sha256=instance.sha256)
-            except Exception:
-                pass
-        if instance.practitioner_id:
-            instance.medical_event.practitioners.add(instance.practitioner_id)
-        event_tag_ids = EventTag.objects.filter(event=instance.medical_event).values_list("tag_id", flat=True)
-        bulk = []
-        for tag_id in event_tag_ids:
-            if not DocumentTag.objects.filter(document=instance, tag_id=tag_id).exists():
-                bulk.append(DocumentTag(document=instance, tag_id=tag_id, is_inherited=True))
-        if bulk:
-            DocumentTag.objects.bulk_create(bulk)
-
-
-@receiver(post_delete, sender=Document)
-def _document_post_delete(sender, instance: Document, **kwargs):
-    if instance.practitioner_id:
-        still_used = Document.objects.filter(
-            medical_event=instance.medical_event,
-            practitioner=instance.practitioner_id
-        ).exists()
-        if not still_used:
-            instance.medical_event.practitioners.remove(instance.practitioner_id)
-
-
-@receiver(m2m_changed, sender=EventTag)
-def _event_tags_changed(sender, instance, action, reverse, model, pk_set, **kwargs):
-    if action not in {"post_add", "post_remove"} or reverse or not pk_set:
-        return
-    if not isinstance(instance, MedicalEvent):
-        return
-    doc_qs = instance.documents.all().only("id")
-    tag_ids = list(pk_set)
-    if action == "post_add":
-        bulk = []
-        for doc in doc_qs:
-            existing = set(DocumentTag.objects.filter(document=doc, tag_id__in=tag_ids).values_list("tag_id", flat=True))
-            for tag_id in tag_ids:
-                if tag_id not in existing:
-                    bulk.append(DocumentTag(document=doc, tag_id=tag_id, is_inherited=True))
-        if bulk:
-            DocumentTag.objects.bulk_create(bulk)
-    elif action == "post_remove":
-        for doc in doc_qs:
-            DocumentTag.objects.filter(document=doc, tag_id__in=tag_ids, is_inherited=True).delete()
-
 class ShareToken(models.Model):
     SCOPE_CHOICES = (
         ("document", "Document"),
@@ -319,8 +255,10 @@ class ShareToken(models.Model):
     )
     token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False, db_index=True)
     scope = models.CharField(max_length=16, choices=SCOPE_CHOICES)
-    document = models.ForeignKey("Document", null=True, blank=True, on_delete=models.CASCADE, related_name="share_tokens")
-    event = models.ForeignKey("MedicalEvent", null=True, blank=True, on_delete=models.CASCADE, related_name="share_tokens")
+    document = models.ForeignKey("Document", null=True, blank=True, on_delete=models.CASCADE,
+                                 related_name="share_tokens")
+    event = models.ForeignKey("MedicalEvent", null=True, blank=True, on_delete=models.CASCADE,
+                              related_name="share_tokens")
     patient = models.ForeignKey("PatientProfile", on_delete=models.CASCADE, related_name="share_tokens")
     allow_download = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
@@ -340,3 +278,55 @@ class ShareToken(models.Model):
 
     def __str__(self):
         return f"{self.scope}:{self.token}"
+
+
+class UiLabel(TranslatableModel):
+    slug = models.SlugField(unique=True)
+    translations = TranslatedFields(
+        text=models.CharField(max_length=200)
+    )
+
+    def __str__(self):
+        return f"{self.slug}"
+
+
+@receiver(post_save, sender=Document)
+def _document_post_save(sender, instance: Document, created, **kwargs):
+    if created:
+        if not instance.sha256 and instance.file:
+            try:
+                instance.sha256 = instance.compute_sha256()
+                Document.objects.filter(pk=instance.pk).update(sha256=instance.sha256)
+            except Exception:
+                pass
+
+        event_tag_ids = EventTag.objects.filter(event=instance.medical_event).values_list("tag_id", flat=True)
+        bulk = []
+        for tag_id in event_tag_ids:
+            if not DocumentTag.objects.filter(document=instance, tag_id=tag_id).exists():
+                bulk.append(DocumentTag(document=instance, tag_id=tag_id, is_inherited=True))
+        if bulk:
+            DocumentTag.objects.bulk_create(bulk)
+
+
+@receiver(m2m_changed, sender=EventTag)
+def _event_tags_changed(sender, instance, action, reverse, model, pk_set, **kwargs):
+    if action not in {"post_add", "post_remove"} or reverse or not pk_set:
+        return
+    if not isinstance(instance, MedicalEvent):
+        return
+    doc_qs = instance.documents.all().only("id")
+    tag_ids = list(pk_set)
+    if action == "post_add":
+        bulk = []
+        for doc in doc_qs:
+            existing = set(
+                DocumentTag.objects.filter(document=doc, tag_id__in=tag_ids).values_list("tag_id", flat=True))
+            for tag_id in tag_ids:
+                if tag_id not in existing:
+                    bulk.append(DocumentTag(document=doc, tag_id=tag_id, is_inherited=True))
+        if bulk:
+            DocumentTag.objects.bulk_create(bulk)
+    elif action == "post_remove":
+        for doc in doc_qs:
+            DocumentTag.objects.filter(document=doc, tag_id__in=tag_ids, is_inherited=True).delete()

@@ -1,78 +1,83 @@
-{% load static i18n %}
+{% load static i18n tailwind_tags %}
 <!DOCTYPE html>
-<html lang="{{ request.LANGUAGE_CODE }}">
+<html lang="{% get_current_language as LANGUAGE_CODE %}{{ LANGUAGE_CODE }}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}MedJ{% endblock %}</title>
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/dist/output.css' %}">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{% block title %}MedJ{% endblock %}</title>
+  {% tailwind_css %}
+  {% block head_extra %}{% endblock %}
 </head>
-<body class="bg-site-background text-gray-900 min-h-screen flex flex-col">
-  <nav class="bg-button-blue">
-    <div class="max-w-screen-xl mx-auto p-4 flex items-center">
-      <div class="flex items-center gap-3">
-        <button type="button" data-dropdown-toggle="language-dropdown-menu" class="inline-flex items-center font-medium justify-center px-3 py-2 text-sm text-white rounded-xl hover:bg-navbar-button-blue">
-          <svg class="w-6 h-6 rounded-full me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3900 3900"><path fill="#b22234" d="M0 0h7410v3900H0z"/><path d="M0 450h7410m0 600H0m0 600h7410m0 600H0m0 600h7410m0 600H0" stroke="#fff" stroke-width="300"/><path fill="#3c3b6e" d="M0 0h2964v2100H0z"/></svg>
-          <span class="uppercase">{{ request.LANGUAGE_CODE|default:'bg' }}</span>
-          <i class="fa-solid fa-chevron-down text-xs ml-2"></i>
-        </button>
-        <div id="language-dropdown-menu" class="z-50 hidden my-2 w-48 text-base list-none bg-white divide-y divide-gray-100 rounded-xl shadow">
-          <ul class="py-2 font-medium" role="none">
-            <li>
-              <form action="{% url 'set_language' %}" method="post" class="block">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="{{ request.path }}">
-                <button type="submit" name="language" value="bg" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">🇧🇬 Български</button>
-              </form>
-            </li>
-            <li>
-              <form action="{% url 'set_language' %}" method="post" class="block">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="{{ request.path }}">
-                <button type="submit" name="language" value="en" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">🇬🇧 English</button>
-              </form>
-            </li>
-          </ul>
-        </div>
-        <a href="{% url 'medj:landing' %}" class="text-white text-2xl font-semibold">MedJ</a>
-      </div>
-      <ul class="ml-8 hidden lg:flex items-center gap-6 text-white font-semibold">
-        <li><a href="{% url 'medj:dashboard' %}" class="px-4 py-2 rounded-xl hover:bg-navbar-button-blue">{% trans "Табло" %}</a></li>
-        <li><a href="{% url 'medj:casefiles' %}" class="px-4 py-2 rounded-xl hover:bg-navbar-button-blue">{% trans "Досие" %}</a></li>
-        <li><a href="{% url 'medj:personal_card' %}" class="px-4 py-2 rounded-xl hover:bg-navbar-button-blue">{% trans "Л.Картон" %}</a></li>
-        <li><a href="{% url 'medj:documents' %}" class="px-4 py-2 rounded-xl hover:bg-navbar-button-blue">{% trans "Документи" %}</a></li>
-        <li><a href="{% url 'medj:upload' %}" class="px-4 py-2 rounded-xl bg-navbar-button-blue">{% trans "Качи" %}</a></li>
-        <li><a href="{% url 'medj:share' %}" class="px-4 py-2 rounded-xl bg-checkmark-green text-white">{% trans "Сподели" %}</a></li>
-      </ul>
-      <div class="ml-auto flex items-center gap-2">
-        <div class="relative">
-          <button type="button" data-dropdown-toggle="profile-dropdown" class="inline-flex items-center font-medium justify-center px-4 py-2 text-sm text-white rounded-xl hover:bg-navbar-button-blue">
-            <span class="mr-1">{% firstof request.user.first_name request.user.username "Профил" %}</span>
-            <i class="fa-solid fa-chevron-down text-xs"></i>
-          </button>
-          <div id="profile-dropdown" class="z-50 hidden my-2 w-48 text-base list-none bg-white divide-y divide-gray-100 rounded-xl shadow">
-            <ul class="py-2 font-medium" role="none">
-              <li><a href="{% url 'medj:profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{% trans "Профил" %}</a></li>
-              <li><a href="{% url 'medj:upload_history' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{% trans "История на качване" %}</a></li>
-              <li>
-                <form action="{% url 'logout' %}" method="post" class="block">
-                  {% csrf_token %}
-                  <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{% trans "Изход" %}</button>
-                </form>
-              </li>
-            </ul>
+<body class="min-h-dvh antialiased
+             bg-gradient-to-br from-cyan-50 via-white to-cyan-100
+             dark:from-slate-900 dark:via-slate-900 dark:to-slate-950">
+
+  <!-- NAVBAR (cyan, rounded lower corners) -->
+  <header class="sticky top-0 z-50">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <nav class="mt-3 rounded-b-2xl shadow-lg ring-1 ring-black/5
+                  bg-cyan-600/90 supports-[backdrop-filter]:bg-cyan-600/70 backdrop-blur">
+        <div class="flex items-center justify-between px-4 py-3">
+
+          <!-- Brand -->
+          <div class="flex items-center gap-3">
+            {% url 'medj:landingpage' as landing_url %}
+            <a href="{{ landing_url|default:'/' }}" class="flex items-center gap-2">
+              <img src="{% static 'images/logo.svg' %}" alt="MedJ" class="h-8 w-auto"
+                   onerror="this.style.display='none'">
+              <span class="text-white font-semibold tracking-wide">MedJ</span>
+            </a>
+          </div>
+
+          <!-- Right side: (child templates can inject buttons here) + Language -->
+          <div class="flex items-center gap-2">
+            {% block nav_actions %}{% endblock %}
+
+            <!-- Language dropdown -->
+            <form method="post" action="{% url 'set_language' %}" class="ml-1">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              {% get_current_language as LANGUAGE_CODE %}
+              {% get_available_languages as languages %}
+              <label for="lang" class="sr-only">{% trans "Language" %}</label>
+              <select id="lang" name="language"
+                      class="rounded-md bg-white/90 text-slate-800 text-sm px-2 py-1
+                             outline outline-1 -outline-offset-1 outline-white/30
+                             hover:bg-white focus:outline-2 focus:-outline-offset-2 focus:outline-white">
+                {% for code,name in languages %}
+                  <option value="{{ code }}" {% if code == LANGUAGE_CODE %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+              </select>
+            </form>
           </div>
         </div>
-      </div>
+      </nav>
     </div>
-  </nav>
-  <main class="flex-grow">
+  </header>
+
+  <!-- Content wrapper -->
+  <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+    {% if messages %}
+      <div class="space-y-2 mb-6">
+        {% for message in messages %}
+          <div class="rounded-md px-4 py-3 text-sm
+                      {% if message.tags == 'error' %}bg-red-50 text-red-700 ring-1 ring-red-200
+                      {% elif message.tags == 'warning' %}bg-amber-50 text-amber-800 ring-1 ring-amber-200
+                      {% elif message.tags == 'success' %}bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200
+                      {% else %}bg-slate-50 text-slate-700 ring-1 ring-slate-200{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
     {% block content %}{% endblock %}
   </main>
-  {% block scripts %}
-  <script src="{% static 'js/bootstrap.min.js' %}"></script>
-  {% endblock %}
+
+  <footer class="py-10 text-center text-xs text-slate-500">
+    © <span id="y">{{ now|date:"Y" }}</span> MedJ
+  </footer>
+
+  {% block body_end %}{% endblock %}
 </body>
 </html>

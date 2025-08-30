@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MedJ\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-31 16:28+0300\n"
-"PO-Revision-Date: 2025-07-31 16:39+0300\n"
+"POT-Creation-Date: 2025-08-30 11:55+0300\n"
+"PO-Revision-Date: 2025-08-30 11:15+0300\n"
 "Last-Translator: Gemini Assistant\n"
 "Language-Team: English <en@example.com>\n"
 "Language: en\n"
@@ -12,848 +12,883 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: records\templates\basetemplates\base_app.html:9
-msgid "MedJ - Персонален здравен дневник"
-msgstr "MedJ - Personal Health Diary"
+#: medj/settings/base.py:76
+msgid "Bulgarian"
+msgstr "Bulgarian"
 
-#: records\templates\basetemplates\base_app.html:59
-msgid "ТАБЛО"
-msgstr "DASHBOARD"
+#: records/templates/auth/login.html:4 records/templates/auth/login.html:27
+#: records/templates/auth/register.html:34
+msgid "Sign in"
+msgstr "Sign in"
 
-#: records\templates\basetemplates\base_app.html:60
-msgid "ДОСИЕ"
-msgstr "CASEFILES"
+#: records/templates/auth/login.html:8
+msgid "Sign in to your account"
+msgstr "Sign in to your account"
 
-#: records\templates\basetemplates\base_app.html:61
-msgid "Л.КАРТОН"
-msgstr "P.CARD"
+#: records/templates/auth/login.html:16 records/templates/auth/register.html:12
+msgid "Username"
+msgstr "Username"
 
-#: records\templates\basetemplates\base_app.html:62
-msgid "ДОКУМЕНТИ"
-msgstr "DOCUMENTS"
+#: records/templates/auth/login.html:22 records/templates/auth/register.html:22
+msgid "Password"
+msgstr "Password"
 
-#: records\templates\basetemplates\base_app.html:67
+#: records/templates/auth/login.html:30
+msgid "Don't have an account?"
+msgstr "Don't have an account?"
+
+#: records/templates/auth/login.html:31
+msgid "Register now"
+msgstr "Register now"
+
+#: records/templates/auth/register.html:3
+#: records/templates/auth/register.html:31
+msgid "Create account"
+msgstr "Create account"
+
+#: records/templates/auth/register.html:5
+msgid "Create your account"
+msgstr "Create your account"
+
+#: records/templates/auth/register.html:17
+msgid "Email address"
+msgstr "Email address"
+
+#: records/templates/auth/register.html:27
+msgid "Confirm password"
+msgstr "Confirm password"
+
+#: records/templates/auth/register.html:34
+msgid "Already have an account?"
+msgstr "Already have an account?"
+
+#: records/templates/basetemplates/base_app.html:19
+msgid "Табло"
+msgstr "Dashboard"
+
+#: records/templates/basetemplates/base_app.html:20
+msgid "Досие"
+msgstr "Casefiles"
+
+#: records/templates/basetemplates/base_app.html:21
+msgid "Л.Картон"
+msgstr "P. Card"
+
+#: records/templates/basetemplates/base_app.html:22
+#: records/templates/subpages/event_detail.html:55
+#: records/templates/subpages/event_export_pdf.html:82
+msgid "Документи"
+msgstr "Documents"
+
+#: records/templates/basetemplates/base_app.html:27
+#: records/templates/main/upload.html:56
+msgid "Качи"
+msgstr "Upload"
+
+#: records/templates/basetemplates/base_app.html:28
+#: records/templates/subpages/document_detail.html:49
 msgid "Сподели"
 msgstr "Share"
 
-#: records\templates\basetemplates\base_app.html:80
+#: records/templates/basetemplates/base_app.html:37
 msgid "Профил"
 msgstr "Profile"
 
-#: records\templates\basetemplates\base_app.html:81
+#: records/templates/basetemplates/base_app.html:38
 msgid "История на качване"
 msgstr "Upload History"
 
-#: records\templates\basetemplates\base_app.html:82
+#: records/templates/basetemplates/base_app.html:42
 msgid "Изход"
 msgstr "Logout"
 
-#: records\templates\basetemplates\base_app.html:96
-msgid "Всички права запазени."
-msgstr "All rights reserved."
+#: records/templates/basetemplates/base_public.html:25
+msgid "Български"
+msgstr "Bulgarian"
 
-#: records\templates\basetemplates\base_public.html:9
-msgid "Добре дошли в MedJ"
-msgstr "Welcome to MedJ"
+#: records/templates/basetemplates/base_public.html:33
+msgid "English (US)"
+msgstr "English (US)"
 
-#: records\templates\basetemplates\base_public.html:62
-#: records\templates\registration\login.html:55
-#: records\templates\registration\register.html:127
-msgid "Вход"
-msgstr "Login"
+#: records/templates/basetemplates/base_public.html:70
+msgid "ВХОД"
+msgstr "LOGIN"
 
-#: records\templates\basetemplates\base_public.html:65
-#: records\templates\registration\register.html:11
-#: records\templates\registration\register.html:120
+#: records/templates/basetemplates/base_public.html:71
 msgid "Регистрация"
 msgstr "Register"
 
-#: records\templates\basetemplates\landingpage.html:5
-msgid "Добре дошли в records-main - Персонален здравен дневник"
-msgstr "Welcome to MedJ - Personal Health Diary"
+#: records/templates/basetemplates/landingpage.html:9
+msgid ""
+"Организирате,следвате и споделяте цялата Ви медицинска информация на едно "
+"място."
+msgstr "Organize, track, and share all your medical information in one place."
 
-#: records\templates\basetemplates\landingpage.html:12
-msgid "Започнете сега"
+#: records/templates/basetemplates/landingpage.html:13
+msgid "Започни сега"
 msgstr "Get Started Now"
 
-#: records\templates\basetemplates\landingpage.html:16
-msgid "Организирайте, проследявайте и анализирайте медицинските си данни лесно и сигурно."
-msgstr "Organize, track, and analyze your medical data easily and securely."
-
-#: records\templates\main\casefiles.html:9
+#: records/templates/main/casefiles.html:9
 msgid "Досиета"
 msgstr "Casefiles"
 
-#: records\templates\main\casefiles.html:12
+#: records/templates/main/casefiles.html:12
 msgid "Преглед на историята на медицинските събития."
 msgstr "Review the history of medical events."
 
-#: records\templates\main\casefiles.html:20
+#: records/templates/main/casefiles.html:20
 msgid "Филтри"
 msgstr "Filters"
 
-#: records\templates\main\casefiles.html:24
-#: records\templates\main\share.html:25
-#: records\templates\main\share.html:56
-#: records\templates\main\upload.html:98
-#: records\templates\subpages\event_history.html:39
-#: records\templates\subpages\medical_event_form.html:62
+#: records/templates/main/casefiles.html:24
+#: records/templates/main/share.html:25 records/templates/main/share.html:56
+#: records/templates/subpages/event_history.html:37
+#: records/templates/subpages/medical_event_form.html:62
 msgid "Категория"
 msgstr "Category"
 
-#: records\templates\main\casefiles.html:27
-#: records\templates\main\casefiles.html:121
-#: records\templates\main\history.html:57
-#: records\templates\subpages\event_history.html:64
+#: records/templates/main/casefiles.html:27
+#: records/templates/main/casefiles.html:121
+#: records/templates/main/history.html:57
+#: records/templates/subpages/document_detail.html:23
+#: records/templates/subpages/event_history.html:58
 msgid "Преглед"
 msgstr "View"
 
-#: records\templates\main\casefiles.html:31
+#: records/templates/main/casefiles.html:31
 msgid "Рецепта"
 msgstr "Prescription"
 
-#: records\templates\main\casefiles.html:35
+#: records/templates/main/casefiles.html:35
 msgid "Ваксинация"
 msgstr "Vaccination"
 
-#: records\templates\main\casefiles.html:39
+#: records/templates/main/casefiles.html:39
 msgid "Кръвни изсл."
 msgstr "Blood tests"
 
-#: records\templates\main\casefiles.html:43
+#: records/templates/main/casefiles.html:43
 msgid "Рентгенография"
 msgstr "Radiography"
 
-#: records\templates\main\casefiles.html:47
+#: records/templates/main/casefiles.html:47
 msgid "Болничен прест."
 msgstr "Sick leave"
 
-#: records\templates\main\casefiles.html:54
-#: records\templates\subpages\event_detail.html:34
+#: records/templates/main/casefiles.html:54
 msgid "Специалист"
 msgstr "Specialist"
 
-#: records\templates\main\casefiles.html:57
-#: records\templates\main\personalcard.html:59
+#: records/templates/main/casefiles.html:57
+#: records/templates/main/personalcard.html:59
 msgid "Личен лекар"
 msgstr "Family doctor"
 
-#: records\templates\main\casefiles.html:61
+#: records/templates/main/casefiles.html:61
 msgid "Ендокринолог"
 msgstr "Endocrinologist"
 
-#: records\templates\main\casefiles.html:65
+#: records/templates/main/casefiles.html:65
 msgid "Кардиолог"
 msgstr "Cardiologist"
 
-#: records\templates\main\casefiles.html:69
+#: records/templates/main/casefiles.html:69
 msgid "Гастроентеролог"
 msgstr "Gastroenterologist"
 
-#: records\templates\main\casefiles.html:77
+#: records/templates/main/casefiles.html:77
 msgid "пр. Холестерол, Ендокринолог"
 msgstr "e.g. Cholesterol, Endocrinologist"
 
-#: records\templates\main\casefiles.html:88
-#: records\templates\subpages\event_detail.html:26
-#: records\templates\subpages\event_history.html:45
-#: records\templates\subpages\upload_history.html:42
+#: records/templates/main/casefiles.html:88
+#: records/templates/subpages/document_detail.html:11
+#: records/templates/subpages/event_export_pdf.html:23
+#: records/templates/subpages/event_export_pdf.html:37
+#: records/templates/subpages/event_export_pdf.html:84
+#: records/templates/subpages/event_export_pdf.html:103
+#: records/templates/subpages/event_history.html:39
+#: records/templates/subpages/share_view.html:58
+#: records/templates/subpages/share_view.html:68
+#: records/templates/subpages/upload_history.html:39
 msgid "Дата"
 msgstr "Date"
 
-#: records\templates\main\casefiles.html:104
+#: records/templates/main/casefiles.html:104
 msgid "Септември, 2000"
 msgstr "September, 2000"
 
-#: records\templates\main\casefiles.html:116
+#: records/templates/main/casefiles.html:116
 msgid "Януари, 2000"
 msgstr "January, 2000"
 
-#: records\templates\main\casefiles.html:122
+#: records/templates/main/casefiles.html:122
 msgid "Първичен преглед"
 msgstr "Initial examination"
 
-#: records\templates\main\casefiles.html:123
+#: records/templates/main/casefiles.html:123
 msgid "Д-р Иван Иванов, Ендокринолог"
 msgstr "Dr. Ivan Ivanov, Endocrinologist"
 
-#: records\templates\main\dashboard.html:9
+#: records/templates/main/dashboard.html:9
 msgid "Табло за управление"
 msgstr "Dashboard"
 
-#: records\templates\main\dashboard.html:12
+#: records/templates/main/dashboard.html:12
 #, python-format
 msgid "Добре дошъл,%(user.username)s!"
 msgstr "Welcome, %(user.username)s!"
 
-#: records\templates\main\dashboard.html:19
+#: records/templates/main/dashboard.html:19
 msgid "Текущи показатели"
 msgstr "Current Indicators"
 
-#: records\templates\main\dashboard.html:25
+#: records/templates/main/dashboard.html:25
 msgid "Предстоящи прегледи"
 msgstr "Upcoming Appointments"
 
-#: records\templates\main\dashboard.html:34
+#: records/templates/main/dashboard.html:34
 msgid "Рецепти за изпълнение"
 msgstr "Prescriptions to Fill"
 
-#: records\templates\main\dashboard.html:49
+#: records/templates/main/dashboard.html:49
 msgid "Приемани медикаменти"
 msgstr "Current Medications"
 
-#: records\templates\main\history.html:10
-#: records\templates\subpages\upload_history.html:10
+#: records/templates/main/history.html:10
+#: records/templates/subpages/upload_history.html:9
 msgid "История на качените документи"
 msgstr "Uploaded Documents History"
 
-#: records\templates\main\history.html:13
-#: records\templates\subpages\upload_history.html:13
+#: records/templates/main/history.html:13
+#: records/templates/subpages/upload_history.html:10
 msgid "Преглед на всички документи, които сте качили."
 msgstr "Review all the documents you have uploaded."
 
-#: records\templates\main\history.html:19
-#: records\templates\subpages\upload_history.html:19
+#: records/templates/main/history.html:19
 msgid "Търсене по име на документ или таг..."
 msgstr "Search by document name or tag..."
 
-#: records\templates\main\history.html:30
+#: records/templates/main/history.html:30
 msgid "Дата на качване"
 msgstr "Upload Date"
 
-#: records\templates\main\history.html:32
+#: records/templates/main/history.html:32
 msgid "Име на файл"
 msgstr "File Name"
 
-#: records\templates\main\history.html:33
+#: records/templates/main/history.html:33
+#: records/templates/subpages/document_detail.html:59
+#: records/templates/subpages/document_export_pdf.html:25
+#: records/templates/subpages/event_detail.html:61
 msgid "Тип документ"
 msgstr "Document Type"
 
-#: records\templates\main\history.html:34
-#: records\templates\subpages\event_detail.html:114
-#: records\templates\subpages\medical_event_form.html:78
+#: records/templates/main/history.html:34
+#: records/templates/subpages/document_detail.html:71
+#: records/templates/subpages/document_export_pdf.html:49
+#: records/templates/subpages/medical_event_form.html:78
 msgid "Тагове"
 msgstr "Tags"
 
-#: records\templates\main\history.html:35
-#: records\templates\subpages\event_history.html:47
-#: records\templates\subpages\upload_history.html:44
+#: records/templates/main/history.html:35
+#: records/templates/subpages/event_detail.html:64
+#: records/templates/subpages/event_history.html:40
+#: records/templates/subpages/share_view.html:69
+#: records/templates/subpages/upload_history.html:40
 msgid "Действия"
 msgstr "Actions"
 
-#: records\templates\main\history.html:49
+#: records/templates/main/history.html:49
+#: records/templates/subpages/event_detail.html:37
 msgid "Няма тагове"
 msgstr "No tags"
 
-#: records\templates\main\history.html:54
+#: records/templates/main/history.html:54
+#: records/templates/subpages/document_detail.html:33
+#: records/templates/subpages/share_view.html:41
 msgid "Изтегли"
 msgstr "Download"
 
-#: records\templates\main\history.html:65
-#: records\templates\subpages\upload_history.html:85
+#: records/templates/main/history.html:65
+#: records/templates/subpages/upload_history.html:83
 msgid "Все още нямате качени документи."
 msgstr "You haven't uploaded any documents yet."
 
-#: records\templates\main\history.html:65
-#: records\templates\subpages\event_history.html:75
-#: records\templates\subpages\upload_history.html:85
+#: records/templates/main/history.html:65
 msgid "Качете първия си документ от тук"
 msgstr "Upload your first document from here"
 
-#: records\templates\main\personalcard.html:10
+#: records/templates/main/personalcard.html:10
 msgid "Личен картон"
 msgstr "Personal Card"
 
-#: records\templates\main\personalcard.html:13
+#: records/templates/main/personalcard.html:13
 msgid "Вашата лична медицинска и контактна информация."
 msgstr "Your personal medical and contact information."
 
-#: records\templates\main\personalcard.html:18
-#: records\templates\subpages\event_detail.html:18
+#: records/templates/main/personalcard.html:18
+#: records/templates/subpages/event_detail.html:19
 msgid "Основна информация"
 msgstr "Basic Information"
 
-#: records\templates\main\personalcard.html:22
-#: records\templates\main\personalcard.html:62
-#: records\templates\subpages\doctors.html:26
+#: records/templates/main/personalcard.html:22
+#: records/templates/main/personalcard.html:62
+#: records/templates/subpages/doctors.html:19
+#: records/templates/subpages/event_export_pdf.html:84
+#: records/templates/subpages/share_view.html:67
 msgid "Име"
 msgstr "Name"
 
-#: records\templates\main\personalcard.html:26
+#: records/templates/main/personalcard.html:26
 msgid "Години"
 msgstr "Age"
 
-#: records\templates\main\personalcard.html:27
+#: records/templates/main/personalcard.html:27
 msgid "г."
 msgstr "y."
 
-#: records\templates\main\personalcard.html:30
-#: records\templates\subpages\profile.html:48
+#: records/templates/main/personalcard.html:30
+#: records/templates/subpages/profile.html:48
 msgid "Пол"
 msgstr "Gender"
 
-#: records\templates\main\personalcard.html:31
-#: records\templates\subpages\profile.html:51
+#: records/templates/main/personalcard.html:31
+#: records/templates/subpages/profile.html:51
 msgid "Мъж"
 msgstr "Male"
 
-#: records\templates\main\personalcard.html:37
+#: records/templates/main/personalcard.html:37
 msgid "Височина"
 msgstr "Height"
 
-#: records\templates\main\personalcard.html:38
+#: records/templates/main/personalcard.html:38
 msgid "см"
 msgstr "cm"
 
-#: records\templates\main\personalcard.html:41
+#: records/templates/main/personalcard.html:41
 msgid "Тегло"
 msgstr "Weight"
 
-#: records\templates\main\personalcard.html:42
+#: records/templates/main/personalcard.html:42
 msgid "кг"
 msgstr "kg"
 
-#: records\templates\main\personalcard.html:45
+#: records/templates/main/personalcard.html:45
 msgid "Кръвна група"
 msgstr "Blood Type"
 
-#: records\templates\main\personalcard.html:49
-#: records\templates\main\personalcard.html:66
+#: records/templates/main/personalcard.html:49
+#: records/templates/main/personalcard.html:66
 msgid "Телефон"
 msgstr "Phone"
 
-#: records\templates\main\personalcard.html:53
-#: records\templates\main\personalcard.html:70
-#: records\templates\subpages\doctors.html:34
-#: records\templates\subpages\profile.html:61
+#: records/templates/main/personalcard.html:53
+#: records/templates/main/personalcard.html:70
+#: records/templates/subpages/profile.html:61
 msgid "Адрес"
 msgstr "Address"
 
-#: records\templates\main\personalcard.html:54
-#: records\templates\main\personalcard.html:75
+#: records/templates/main/personalcard.html:54
+#: records/templates/main/personalcard.html:75
 msgid "гр. София"
 msgstr "Sofia"
 
-#: records\templates\main\personalcard.html:71
+#: records/templates/main/personalcard.html:71
 msgid "гр. София, 1345"
 msgstr "Sofia, 1345"
 
-#: records\templates\main\personalcard.html:74
+#: records/templates/main/personalcard.html:74
 msgid "РЗОК"
 msgstr "RHIF"
 
-#: records\templates\main\personalcard.html:82
+#: records/templates/main/personalcard.html:82
 msgid "Редактирай профил"
 msgstr "Edit Profile"
 
-#: records\templates\main\share.html:5
+#: records/templates/main/share.html:5
 msgid "Сподели медицинско събитие"
 msgstr "Share Medical Event"
 
-#: records\templates\main\share.html:10
+#: records/templates/main/share.html:10
 msgid "Сподели медицински данни"
 msgstr "Share Medical Data"
 
-#: records\templates\main\share.html:15
+#: records/templates/main/share.html:15
 msgid "Включи в споделянето"
 msgstr "Include in Sharing"
 
-#: records\templates\main\share.html:20
-#: records\templates\main\share.html:51
-#: records\templates\subpages\doctors.html:29
-#: records\templates\subpages\event_history.html:42
-#: records\templates\subpages\medical_event_form.html:66
+#: records/templates/main/share.html:20 records/templates/main/share.html:51
+#: records/templates/main/upload.html:16
+#: records/templates/subpages/doctors.html:20
+#: records/templates/subpages/document_move.html:15
+#: records/templates/subpages/event_export_pdf.html:22
+#: records/templates/subpages/event_history.html:38
+#: records/templates/subpages/medical_event_form.html:66
+#: records/templates/subpages/share_view.html:54
 msgid "Специалност"
 msgstr "Specialty"
 
-#: records\templates\main\share.html:30
-#: records\templates\main\share.html:61
-#: records\templates\subpages\event_detail.html:22
+#: records/templates/main/share.html:30 records/templates/main/share.html:61
+#: records/templates/subpages/document_detail.html:14
+#: records/templates/subpages/document_export_pdf.html:41
+#: records/templates/subpages/share_view.html:51
 msgid "Събитие"
 msgstr "Event"
 
-#: records\templates\main\share.html:35
-#: records\templates\main\share.html:66
-#: records\templates\subpages\doctors.html:10
+#: records/templates/main/share.html:35 records/templates/main/share.html:66
+#: records/templates/subpages/doctors.html:7
 msgid "Лекари"
 msgstr "Doctors"
 
-#: records\templates\main\share.html:41
+#: records/templates/main/share.html:41
 msgid "Избери данни за споделяне"
 msgstr "Select Data to Share"
 
-#: records\templates\main\share.html:43
+#: records/templates/main/share.html:43
 msgid "Период (от - до)"
 msgstr "Period (from - to)"
 
-#: records\templates\main\share.html:74
+#: records/templates/main/share.html:74
 msgid "Покажи ми как ще изглежда..."
 msgstr "Show me how it will look..."
 
-#: records\templates\main\share.html:77
+#: records/templates/main/share.html:77
 msgid "Сподели линк"
 msgstr "Share Link"
 
-#: records\templates\main\share.html:83
+#: records/templates/main/share.html:83
 msgid "Хронологичен доклад"
 msgstr "Chronological Report"
 
-#: records\templates\main\share.html:86
+#: records/templates/main/share.html:86
 msgid "В период:"
 msgstr "In period:"
 
-#: records\templates\main\share.html:87
+#: records/templates/main/share.html:87
+#: records/templates/subpages/event_detail.html:24
 msgid "Специалност:"
 msgstr "Specialty:"
 
-#: records\templates\main\share.html:96
+#: records/templates/main/share.html:96
 msgid "Назад към избора"
 msgstr "Back to Selection"
 
-#: records\templates\main\share.html:99
+#: records/templates/main/share.html:99
 msgid "Сподели този доклад"
 msgstr "Share This Report"
 
-#: records\templates\main\share.html:104
+#: records/templates/main/share.html:104
 msgid "Сканирайте за споделяне"
 msgstr "Scan to Share"
 
-#: records\templates\main\share.html:107
+#: records/templates/main/share.html:107
 msgid "Този линк е временен и може да има ограничен достъп."
 msgstr "This link is temporary and may have limited access."
 
-#: records\templates\main\share.html:216
+#: records/templates/main/share.html:216
 msgid "Избери..."
 msgstr "Select..."
 
-#: records\templates\main\share.html:224
+#: records/templates/main/share.html:224
 msgid "Няма налични опции"
 msgstr "No available options"
 
-#: records\templates\main\share.html:299
+#: records/templates/main/share.html:299
 msgid "Всички"
 msgstr "All"
 
-#: records\templates\main\share.html:308
-#: records\templates\subpages\event_detail.html:93
+#: records/templates/main/share.html:308
+#: records/templates/subpages/event_detail.html:21
 msgid "Дата:"
 msgstr "Date:"
 
-#: records\templates\main\share.html:309
+#: records/templates/main/share.html:309
 msgid "Събитие:"
 msgstr "Event:"
 
-#: records\templates\main\share.html:310
+#: records/templates/main/share.html:310
 msgid "Обобщение:"
 msgstr "Summary:"
 
-#: records\templates\main\share.html:315
+#: records/templates/main/share.html:315
 msgid "Няма намерени събития за избраните критерии."
 msgstr "No events found for the selected criteria."
 
-#: records\templates\main\upload.html:7
-msgid "Качване на нов медицински документ"
-msgstr "Upload New Medical Document"
+#: records/templates/main/upload.html:7
+msgid "Качване на документ"
+msgstr "Upload Document"
 
-#: records\templates\main\upload.html:11
-msgid "Грешка!"
-msgstr "Error!"
+#: records/templates/main/upload.html:8
+msgid ""
+"Изберете специалност и вид документ. По желание изберете лекар и "
+"съществуващо събитие."
+msgstr ""
+"Select a specialty and document type. Optionally, choose a doctor and an "
+"existing event."
 
-#: records\templates\main\upload.html:23
-msgid "Тип на събитието"
-msgstr "Event Type"
+#: records/templates/main/upload.html:22
+#: records/templates/subpages/document_edit.html:14
+msgid "Вид документ"
+msgstr "Document Type"
 
-#: records\templates\main\upload.html:25
-#: records\templates\main\upload.html:363
-#: records\templates\main\upload.html:393
-msgid "Изберете..."
-msgstr "Select..."
+#: records/templates/main/upload.html:26
+#: records/templates/subpages/document_detail.html:67
+#: records/templates/subpages/document_edit.html:22
+#: records/templates/subpages/document_export_pdf.html:37
+#: records/templates/subpages/event_detail.html:63
+#: records/templates/subpages/event_export_pdf.html:84
+msgid "Лекар"
+msgstr "Doctor"
 
-#: records\templates\main\upload.html:32
-msgid "Медицинска категория"
-msgstr "Medical Category"
+#: records/templates/main/upload.html:33
+#: records/templates/subpages/document_detail.html:63
+#: records/templates/subpages/document_edit.html:18
+#: records/templates/subpages/document_export_pdf.html:29
+msgid "Дата на документа"
+msgstr "Document Date"
 
-#: records\templates\main\upload.html:34
-#: records\templates\main\upload.html:399
-msgid "Първо изберете тип събитие"
-msgstr "First select an event type"
+#: records/templates/main/upload.html:37
+msgid "Прикачи към събитие"
+msgstr "Attach to Event"
 
-#: records\templates\main\upload.html:41
-#: records\templates\main\upload.html:99
-msgid "Специалност/Изследване"
-msgstr "Specialty/Test"
+#: records/templates/main/upload.html:39
+msgid "Оставете празно, за да се създаде ново събитие на избраната дата."
+msgstr "Leave empty to create a new event on the selected date."
 
-#: records\templates\main\upload.html:43
-#: records\templates\main\upload.html:382
-msgid "Първо изберете категория"
-msgstr "First select a category"
+#: records/templates/main/upload.html:44
+#: records/templates/subpages/document_export_pdf.html:33
+#: records/templates/subpages/event_detail.html:60
+msgid "Файл"
+msgstr "File"
 
-#: records\templates\main\upload.html:51
-msgid "Изберете лекар (незадължително)"
-msgstr "Select a doctor (optional)"
-
-#: records\templates\main\upload.html:53
-msgid "Без избран лекар"
-msgstr "No doctor selected"
-
-#: records\templates\main\upload.html:65
-msgid "Избери файл от компютъра"
-msgstr "Choose a file from your computer"
-
-#: records\templates\main\upload.html:67
-#: records\templates\main\upload.html:349
-#: records\templates\main\upload.html:413
-msgid "Все още не е избран файл"
-msgstr "No file chosen yet"
-
-#: records\templates\main\upload.html:70
-msgid "Тип на файла"
-msgstr "File Type"
-
-#: records\templates\main\upload.html:72
-msgid "Посочете тип на файла..."
-msgstr "Specify file type..."
-
-#: records\templates\main\upload.html:73
-msgid "Изображение (JPG, PNG)"
-msgstr "Image (JPG, PNG)"
-
-#: records\templates\main\upload.html:74
-msgid "PDF Документ"
-msgstr "PDF Document"
-
-#: records\templates\main\upload.html:86
-msgid "Качи и анализирай документа"
-msgstr "Upload and Analyze Document"
-
-#: records\templates\main\upload.html:93
-msgid "Преглед и одобрение на разчетен текст"
-msgstr "Review and Approve Extracted Text"
-
-#: records\templates\main\upload.html:95
-msgid "Избрани параметри:"
-msgstr "Selected parameters:"
-
-#: records\templates\main\upload.html:97
-#: records\templates\subpages\medical_event_form.html:54
-msgid "Тип събитие"
-msgstr "Event Type"
-
-#: records\templates\main\upload.html:100
-msgid "Избран лекар"
-msgstr "Selected Doctor"
-
-#: records\templates\main\upload.html:106
-msgid "Визуализация на документа"
-msgstr "Document Preview"
-
-#: records\templates\main\upload.html:107
-#: records\templates\subpages\medical_event_form.html:27
-msgid "Изображение на документ"
-msgstr "Document Image"
-
-#: records\templates\main\upload.html:109
-msgid "Визуализация на документа ще се появи тук"
-msgstr "Document preview will appear here"
-
-#: records\templates\main\upload.html:110
-#: records\templates\subpages\medical_event_form.html:35
-msgid "Преглед в цял размер"
-msgstr "View Full Size"
-
-#: records\templates\main\upload.html:114
-msgid "Разчетен текст (можете да редактирате):"
-msgstr "Extracted Text (you can edit):"
-
-#: records\templates\main\upload.html:117
-msgid "Моля внимателно проверявайте текста преди одобрение"
-msgstr "Please carefully check the text before approval"
-
-#: records\templates\main\upload.html:126
-msgid "Одобри и анализирай с AI"
-msgstr "Approve and Analyze with AI"
-
-#: records\templates\main\upload.html:129
-msgid "Назад"
-msgstr "Back"
-
-#: records\templates\main\upload.html:138
-msgid "Резултати от анализа"
-msgstr "Analysis Results"
-
-#: records\templates\main\upload.html:143
-msgid "Виж медицинско събитие"
-msgstr "View Medical Event"
-
-#: records\templates\main\upload.html:146
-msgid "Качи нов документ"
-msgstr "Upload New Document"
-
-#: records\templates\main\upload.html:356
-msgid "Зареждане..."
-msgstr "Loading..."
-
-#: records\templates\main\upload.html:365
-msgid "Няма специалности"
-msgstr "No specialties"
-
-#: records\templates\main\upload.html:376
-msgid "Грешка"
-msgstr "Error"
-
-#: records\templates\main\upload.html:406
-msgid "Избран файл"
-msgstr "Selected file"
-
-#: records\templates\registration\login.html:5
-msgid "Вход в records-main"
-msgstr "Login to MedJ"
-
-#: records\templates\registration\login.html:11
-msgid "Добре дошли"
-msgstr "Welcome"
-
-#: records\templates\registration\login.html:18
-#: records\templates\registration\login.html:25
-#: records\templates\registration\register.html:26
-#: records\templates\registration\register.html:33
-#: records\templates\subpages\profile.html:22
-msgid "Потребителско име"
-msgstr "Username"
-
-#: records\templates\registration\login.html:30
-#: records\templates\registration\login.html:37
-#: records\templates\registration\register.html:64
-#: records\templates\registration\register.html:71
-msgid "Парола"
-msgstr "Password"
-
-#: records\templates\registration\login.html:61
-msgid "Нямаш акаунт?"
-msgstr "Don't have an account?"
-
-#: records\templates\registration\login.html:62
-msgid "Регистрирай се"
-msgstr "Sign up"
-
-#: records\templates\registration\register.html:5
-msgid "Регистрация в records-main"
-msgstr "Register for MedJ"
-
-#: records\templates\registration\register.html:45
-#: records\templates\registration\register.html:52
-#: records\templates\subpages\profile.html:26
-msgid "Имейл"
-msgstr "Email"
-
-#: records\templates\registration\register.html:86
-#: records\templates\registration\register.html:93
-msgid "Повторете паролата"
-msgstr "Repeat Password"
-
-#: records\templates\registration\register.html:108
-#: records\templates\subpages\profile.html:30
-msgid "Тип потребител"
-msgstr "User Type"
-
-#: records\templates\registration\register.html:126
-msgid "Вече имаш акаунт?"
-msgstr "Already have an account?"
-
-#: records\templates\subpages\doctors.html:13
+#: records/templates/subpages/doctors.html:8
 msgid "Преглед на медицинските специалисти."
 msgstr "Review the medical specialists."
 
-#: records\templates\subpages\doctors.html:19
+#: records/templates/subpages/doctors.html:13
 msgid "Списък с лекари"
 msgstr "List of Doctors"
 
-#: records\templates\subpages\doctors.html:32
-msgid "Дата на добавяне"
-msgstr "Date Added"
+#: records/templates/subpages/doctors.html:21
+#: records/templates/subpages/document_detail.html:11
+#: records/templates/subpages/event_export_pdf.html:84
+#: records/templates/subpages/share_view.html:66
+msgid "Тип"
+msgstr "Type"
 
-#: records\templates\subpages\event_detail.html:10
-msgid "Детайли на медицинско събитие"
-msgstr "Medical Event Details"
+#: records/templates/subpages/document_detail.html:9
+msgid "Детайли за документ"
+msgstr "Document Details"
 
-#: records\templates\subpages\event_detail.html:13
-msgid "Подробна информация за медицинско събитие."
-msgstr "Detailed information about the medical event."
+#: records/templates/subpages/document_detail.html:47
+msgid "Изтегляне"
+msgstr "Download"
 
-#: records\templates\subpages\event_detail.html:30
-msgid "Документ"
-msgstr "Document"
+#: records/templates/subpages/document_detail.html:56
+msgid "Подробности"
+msgstr "Details"
 
-#: records\templates\subpages\event_detail.html:40
-#: records\templates\subpages\event_history.html:36
-msgid "Обобщение"
-msgstr "Summary"
+#: records/templates/subpages/document_detail.html:81
+msgid "Редактирай тагове"
+msgstr "Edit Tags"
 
-#: records\templates\subpages\event_detail.html:46
-#: records\templates\subpages\labtests.html:10
-msgid "Лабораторни показатели"
-msgstr "Lab Indicators"
+#: records/templates/subpages/document_detail.html:84
+msgid "Редактирай документ"
+msgstr "Edit Document"
 
-#: records\templates\subpages\event_detail.html:51
-#: records\templates\subpages\labtests.html:34
-msgid "Показател"
-msgstr "Indicator"
+#: records/templates/subpages/document_detail.html:90
+#: records/templates/subpages/document_move.html:34
+msgid "Премести"
+msgstr "Move"
 
-#: records\templates\subpages\event_detail.html:52
-msgid "Стойност"
-msgstr "Value"
+#: records/templates/subpages/document_detail.html:93
+msgid "Към събитието"
+msgstr "To the Event"
 
-#: records\templates\subpages\event_detail.html:53
-msgid "Мерна единица"
-msgstr "Unit"
+#: records/templates/subpages/document_detail.html:102
+#: records/templates/subpages/document_export_pdf.html:60
+msgid "OCR текст"
+msgstr "OCR Text"
 
-#: records\templates\subpages\event_detail.html:54
-msgid "Референтни граници"
-msgstr "Reference Range"
+#: records/templates/subpages/document_edit.html:7
+msgid "Редакция на документ"
+msgstr "Edit Document"
 
-#: records\templates\subpages\event_detail.html:55
-msgid "Абнормен"
-msgstr "Abnormal"
+#: records/templates/subpages/document_edit.html:31
+#: records/templates/subpages/document_edit_tags.html:16
+#: records/templates/subpages/event_edit_tags.html:16
+msgid "Запази"
+msgstr "Save"
 
-#: records\templates\subpages\event_detail.html:76
-msgid "Наративни секции"
-msgstr "Narrative Sections"
+#: records/templates/subpages/document_edit.html:32
+#: records/templates/subpages/document_edit_tags.html:17
+#: records/templates/subpages/document_move.html:35
+#: records/templates/subpages/event_edit_tags.html:17
+#: records/templates/subpages/medical_event_confirm_delete.html:22
+#: records/templates/subpages/medical_event_form.html:98
+msgid "Отказ"
+msgstr "Cancel"
 
-#: records\templates\subpages\event_detail.html:88
+#: records/templates/subpages/document_edit_tags.html:7
+msgid "Редакция на тагове за документ"
+msgstr "Edit Tags for Document"
+
+#: records/templates/subpages/document_export_pdf.html:6
+#: records/templates/subpages/document_export_pdf.html:19
+msgid "Обобщение на документ"
+msgstr "Document Summary"
+
+#: records/templates/subpages/document_export_pdf.html:21
+msgid "Основни данни"
+msgstr "Basic Data"
+
+#: records/templates/subpages/document_move.html:7
+msgid "Преместване на документ"
+msgstr "Move Document"
+
+#: records/templates/subpages/document_move.html:19
+msgid "Прикачи към съществуващо събитие"
+msgstr "Attach to an existing event"
+
+#: records/templates/subpages/document_move.html:21
+msgid "или"
+msgstr "or"
+
+#: records/templates/subpages/document_move.html:24
+msgid "Създай ново събитие на дата"
+msgstr "Create a new event on date"
+
+#: records/templates/subpages/event_detail.html:11
+msgid "Детайли за събитие"
+msgstr "Event Details"
+
+#: records/templates/subpages/event_detail.html:14
+msgid ""
+"Преглед и управление на медицинското събитие и свързаните с него документи."
+msgstr "Review and manage the medical event and its related documents."
+
+#: records/templates/subpages/event_detail.html:22
+msgid "Тип:"
+msgstr "Type:"
+
+#: records/templates/subpages/event_detail.html:23
+msgid "Категория:"
+msgstr "Category:"
+
+#: records/templates/subpages/event_detail.html:25
+msgid "Пациент:"
+msgstr "Patient:"
+
+#: records/templates/subpages/event_detail.html:26
+msgid "Лекари:"
+msgstr "Doctors:"
+
+#: records/templates/subpages/event_detail.html:30
+msgid "Няма избрани лекари"
+msgstr "No doctors selected"
+
+#: records/templates/subpages/event_detail.html:33
+msgid "Тагове:"
+msgstr "Tags:"
+
+#: records/templates/subpages/event_detail.html:43
+msgid "Редактирай"
+msgstr "Edit"
+
+#: records/templates/subpages/event_detail.html:46
+msgid "Експорт PDF (събитие)"
+msgstr "Export PDF (event)"
+
+#: records/templates/subpages/event_detail.html:49
+msgid "Назад към списъка"
+msgstr "Back to list"
+
+#: records/templates/subpages/event_detail.html:62
+msgid "Качен на"
+msgstr "Uploaded on"
+
+#: records/templates/subpages/event_detail.html:77
+msgid "Не е указан"
+msgstr "Not specified"
+
+#: records/templates/subpages/event_detail.html:92
+msgid "Няма качени документи за това събитие."
+msgstr "No documents uploaded for this event."
+
+#: records/templates/subpages/event_edit_tags.html:7
+msgid "Редакция на тагове за събитие"
+msgstr "Edit Tags for Event"
+
+#: records/templates/subpages/event_export_pdf.html:6
+#: records/templates/subpages/event_export_pdf.html:20
+msgid "Обобщение на събитие"
+msgstr "Event Summary"
+
+#: records/templates/subpages/event_export_pdf.html:35
 msgid "Диагнози"
 msgstr "Diagnoses"
 
-#: records\templates\subpages\event_detail.html:92
-msgid "МКБ-10:"
-msgstr "ICD-10:"
+#: records/templates/subpages/event_export_pdf.html:37
+msgid "Диагноза"
+msgstr "Diagnosis"
 
-#: records\templates\subpages\event_detail.html:101
+#: records/templates/subpages/event_export_pdf.html:37
+msgid "МКБ-10"
+msgstr "ICD-10"
+
+#: records/templates/subpages/event_export_pdf.html:51
 msgid "Планове за лечение"
 msgstr "Treatment Plans"
 
-#: records\templates\subpages\event_detail.html:105
-msgid "Лекарства:"
-msgstr "Medications:"
+#: records/templates/subpages/event_export_pdf.html:53
+msgid "План"
+msgstr "Plan"
 
-#: records\templates\subpages\event_detail.html:106
-msgid "Период:"
-msgstr "Period:"
+#: records/templates/subpages/event_export_pdf.html:53
+msgid "Лекарства"
+msgstr "Medications"
 
-#: records\templates\subpages\event_detail.html:125
-#: records\templates\subpages\medical_event_form.html:23
-msgid "Прикачен документ"
-msgstr "Attached Document"
+#: records/templates/subpages/event_export_pdf.html:53
+msgid "Период"
+msgstr "Period"
 
-#: records\templates\subpages\event_detail.html:127
-msgid "Име на файла:"
-msgstr "File name:"
+#: records/templates/subpages/event_export_pdf.html:67
+msgid "Наративни секции"
+msgstr "Narrative Sections"
 
-#: records\templates\subpages\event_detail.html:130
-msgid "Тип на документа:"
-msgstr "Document type:"
+#: records/templates/subpages/event_export_pdf.html:69
+msgid "Секция"
+msgstr "Section"
 
-#: records\templates\subpages\event_detail.html:134
-msgid "Разчетен текст:"
-msgstr "Extracted text:"
+#: records/templates/subpages/event_export_pdf.html:69
+msgid "Съдържание"
+msgstr "Content"
 
-#: records\templates\subpages\event_detail.html:142
-msgid "Споделяне на документа"
-msgstr "Share Document"
+#: records/templates/subpages/event_export_pdf.html:99
+#: records/templates/subpages/labtests.html:9
+msgid "Лабораторни показатели"
+msgstr "Lab Indicators"
 
-#: records\templates\subpages\event_detail.html:143
-msgid "Сканирайте QR кода или използвайте линка, за да изтеглите документа."
-msgstr "Scan the QR code or use the link to download the document."
+#: records/templates/subpages/event_export_pdf.html:104
+msgid "Показател"
+msgstr "Indicator"
 
-#: records\templates\subpages\event_detail.html:158
-msgid "Редактирай събитие"
-msgstr "Edit Event"
+#: records/templates/subpages/event_export_pdf.html:105
+msgid "Стойност"
+msgstr "Value"
 
-#: records\templates\subpages\event_detail.html:161
-msgid "Изтрий събитие"
-msgstr "Delete Event"
+#: records/templates/subpages/event_export_pdf.html:106
+msgid "Единица"
+msgstr "Unit"
 
-#: records\templates\subpages\event_detail.html:164
-msgid "Редактирай показатели"
-msgstr "Edit Indicators"
+#: records/templates/subpages/event_export_pdf.html:107
+msgid "Референтни"
+msgstr "Reference"
 
-#: records\templates\subpages\event_history.html:10
+#: records/templates/subpages/event_export_pdf.html:108
+msgid "Абн."
+msgstr "Abn."
+
+#: records/templates/subpages/event_history.html:9
 msgid "История на медицинските събития"
 msgstr "Medical Event History"
 
-#: records\templates\subpages\event_history.html:13
+#: records/templates/subpages/event_history.html:10
 msgid "Преглед на всички медицински събития."
 msgstr "Review all medical events."
 
-#: records\templates\subpages\event_history.html:19
-msgid "Търсене по име на събитие, обобщение, таг..."
-msgstr "Search by event name, summary, tag..."
+#: records/templates/subpages/event_history.html:16
+msgid "Търсене по резюме, таг, специалност..."
+msgstr "Search by summary, tag, specialty..."
 
-#: records\templates\subpages\event_history.html:33
+#: records/templates/subpages/event_history.html:23
+#: records/templates/subpages/upload_history.html:23
+msgid "Добави таг..."
+msgstr "Add tag..."
+
+#: records/templates/subpages/event_history.html:24
+#: records/templates/subpages/upload_history.html:24
+msgid "Добави"
+msgstr "Add"
+
+#: records/templates/subpages/event_history.html:35
 msgid "Име на събитие"
 msgstr "Event Name"
 
-#: records\templates\subpages\event_history.html:67
-msgid "Експорт"
-msgstr "Export"
+#: records/templates/subpages/event_history.html:36
+msgid "Обобщение"
+msgstr "Summary"
 
-#: records\templates\subpages\event_history.html:75
+#: records/templates/subpages/event_history.html:66
 msgid "Все още няма добавени медицински събития."
 msgstr "No medical events have been added yet."
 
-#: records\templates\subpages\labtest_edit.html:13
+#: records/templates/subpages/labtest_edit.html:13
 msgid "Редакция на кръвни показатели"
 msgstr "Edit Blood Indicators"
 
-#: records\templates\subpages\labtest_edit.html:16
+#: records/templates/subpages/labtest_edit.html:16
 msgid "Преглед и редактиране на стойностите на лабораторните показатели."
 msgstr "Review and edit the values of the lab indicators."
 
-#: records\templates\subpages\labtest_edit.html:22
+#: records/templates/subpages/labtest_edit.html:22
 msgid "Стойности на показателите"
 msgstr "Indicator Values"
 
-#: records\templates\subpages\labtest_edit.html:24
-#: records\templates\subpages\labtests.html:20
+#: records/templates/subpages/labtest_edit.html:24
+#: records/templates/subpages/labtests.html:17
 msgid "ЗАПИШИ"
 msgstr "SAVE"
 
-#: records\templates\subpages\labtest_edit.html:45
+#: records/templates/subpages/labtest_edit.html:45
 msgid "Хемоглобин"
 msgstr "Hemoglobin"
 
-#: records\templates\subpages\labtest_edit.html:50
+#: records/templates/subpages/labtest_edit.html:50
 msgid "Триглицериди"
 msgstr "Triglycerides"
 
-#: records\templates\subpages\labtests.html:13
+#: records/templates/subpages/labtests.html:10
 msgid "Визуализация на кръвни изследвания и други показатели."
 msgstr "Visualization of blood tests and other indicators."
 
-#: records\templates\subpages\labtests.html:25
-msgid "Дата филтри"
-msgstr "Date Filters"
+#: records/templates/subpages/labtests.html:28
+msgid "Филтър по дата"
+msgstr "Filter by date"
 
-#: records\templates\subpages\labtests.html:36
-msgid "Изберете показател..."
-msgstr "Select an indicator..."
+#: records/templates/subpages/labtests.html:31
+msgid "От"
+msgstr "From"
 
-#: records\templates\subpages\labtests.html:57
+#: records/templates/subpages/labtests.html:35
+msgid "До"
+msgstr "To"
+
+#: records/templates/subpages/labtests.html:42
+msgid "Показатели"
+msgstr "Indicators"
+
+#: records/templates/subpages/labtests.html:62
 msgid "Инсулин"
 msgstr "Insulin"
 
-#: records\templates\subpages\labtests.html:64
+#: records/templates/subpages/labtests.html:69
+msgid "Експорт CSV"
+msgstr "Export CSV"
+
+#: records/templates/subpages/labtests.html:77
 msgid "Графика на показателите"
 msgstr "Indicator Graph"
 
-#: records\templates\subpages\labtests.html:68
+#: records/templates/subpages/labtests.html:81
 msgid "Тук ще се появи интерактивна графика."
 msgstr "An interactive graph will appear here."
 
-#: records\templates\subpages\medical_event_confirm_delete.html:8
+#: records/templates/subpages/medical_event_confirm_delete.html:8
 msgid "Потвърждение за изтриване"
 msgstr "Confirm Deletion"
 
-#: records\templates\subpages\medical_event_confirm_delete.html:10
+#: records/templates/subpages/medical_event_confirm_delete.html:10
 #, python-format
 msgid ""
 "Сигурни ли сте, че искате да изтриете медицинско събитие:\n"
@@ -868,172 +903,234 @@ msgstr ""
 "(%(medical_event.event_date|date:\"d.m.Y\")s)</span>\n"
 "            for patient %(medical_event.patient.user.username)s?"
 
-#: records\templates\subpages\medical_event_confirm_delete.html:14
+#: records/templates/subpages/medical_event_confirm_delete.html:14
 msgid "Тази операция не може да бъде отменена."
 msgstr "This operation cannot be undone."
 
-#: records\templates\subpages\medical_event_confirm_delete.html:19
+#: records/templates/subpages/medical_event_confirm_delete.html:19
 msgid "Изтрий"
 msgstr "Delete"
 
-#: records\templates\subpages\medical_event_confirm_delete.html:22
-#: records\templates\subpages\medical_event_form.html:98
-msgid "Отказ"
-msgstr "Cancel"
-
-#: records\templates\subpages\medical_event_form.html:10
+#: records/templates/subpages/medical_event_form.html:10
 msgid "Редакция на медицинско събитие"
 msgstr "Edit Medical Event"
 
-#: records\templates\subpages\medical_event_form.html:10
+#: records/templates/subpages/medical_event_form.html:10
 msgid "Създаване на ново медицинско събитие"
 msgstr "Create New Medical Event"
 
-#: records\templates\subpages\medical_event_form.html:13
+#: records/templates/subpages/medical_event_form.html:13
 msgid "Редактирайте подробностите за това медицинско събитие."
 msgstr "Edit the details for this medical event."
 
-#: records\templates\subpages\medical_event_form.html:13
+#: records/templates/subpages/medical_event_form.html:13
 msgid "Въведете подробности за новото медицинско събитие."
 msgstr "Enter the details for the new medical event."
 
-#: records\templates\subpages\medical_event_form.html:30
-msgid "Забележка: PDF визуализацията може да изглежда различно в зависимост от браузъра."
+#: records/templates/subpages/medical_event_form.html:23
+msgid "Прикачен документ"
+msgstr "Attached Document"
+
+#: records/templates/subpages/medical_event_form.html:27
+msgid "Изображение на документ"
+msgstr "Document Image"
+
+#: records/templates/subpages/medical_event_form.html:30
+msgid ""
+"Забележка: PDF визуализацията може да изглежда различно в зависимост от "
+"браузъра."
 msgstr "Note: The PDF preview may look different depending on the browser."
 
-#: records\templates\subpages\medical_event_form.html:32
+#: records/templates/subpages/medical_event_form.html:32
 msgid "Няма визуализация за този тип файл."
 msgstr "No preview for this file type."
 
-#: records\templates\subpages\medical_event_form.html:37
+#: records/templates/subpages/medical_event_form.html:35
+msgid "Преглед в цял размер"
+msgstr "View Full Size"
+
+#: records/templates/subpages/medical_event_form.html:37
 msgid "Няма прикачен документ."
 msgstr "No attached document."
 
-#: records\templates\subpages\medical_event_form.html:43
+#: records/templates/subpages/medical_event_form.html:43
 msgid "Детайли на събитието"
 msgstr "Event Details"
 
-#: records\templates\subpages\medical_event_form.html:48
+#: records/templates/subpages/medical_event_form.html:48
 msgid "Пациент"
 msgstr "Patient"
 
-#: records\templates\subpages\medical_event_form.html:58
+#: records/templates/subpages/medical_event_form.html:54
+msgid "Тип събитие"
+msgstr "Event Type"
+
+#: records/templates/subpages/medical_event_form.html:58
 msgid "Дата на събитието"
 msgstr "Event Date"
 
-#: records\templates\subpages\medical_event_form.html:70
+#: records/templates/subpages/medical_event_form.html:70
 msgid "Резюме"
 msgstr "Summary"
 
-#: records\templates\subpages\medical_event_form.html:74
+#: records/templates/subpages/medical_event_form.html:74
 msgid "Практикуващи лекари"
 msgstr "Practitioners"
 
-#: records\templates\subpages\medical_event_form.html:95
-#: records\templates\subpages\profile.html:34
-#: records\templates\subpages\profile.html:65
+#: records/templates/subpages/medical_event_form.html:95
+#: records/templates/subpages/profile.html:34
+#: records/templates/subpages/profile.html:65
 msgid "Запази промените"
 msgstr "Save Changes"
 
-#: records\templates\subpages\medical_event_form.html:95
+#: records/templates/subpages/medical_event_form.html:95
 msgid "Създай събитие"
 msgstr "Create Event"
 
-#: records\templates\subpages\profile.html:10
+#: records/templates/subpages/profile.html:10
 msgid "Потребителски профил"
 msgstr "User Profile"
 
-#: records\templates\subpages\profile.html:13
+#: records/templates/subpages/profile.html:13
 msgid "Редактирайте своята информация и настройки."
 msgstr "Edit your information and settings."
 
-#: records\templates\subpages\profile.html:18
+#: records/templates/subpages/profile.html:18
 msgid "Обща информация"
 msgstr "General Information"
 
-#: records\templates\subpages\profile.html:40
+#: records/templates/subpages/profile.html:22
+msgid "Потребителско име"
+msgstr "Username"
+
+#: records/templates/subpages/profile.html:26
+msgid "Имейл"
+msgstr "Email"
+
+#: records/templates/subpages/profile.html:30
+msgid "Тип потребител"
+msgstr "User Type"
+
+#: records/templates/subpages/profile.html:40
 msgid "Личен профил"
 msgstr "Personal Profile"
 
-#: records\templates\subpages\profile.html:44
+#: records/templates/subpages/profile.html:44
 msgid "Дата на раждане"
 msgstr "Date of Birth"
 
-#: records\templates\subpages\profile.html:50
+#: records/templates/subpages/profile.html:50
 msgid "Изберете пол"
 msgstr "Select gender"
 
-#: records\templates\subpages\profile.html:52
+#: records/templates/subpages/profile.html:52
 msgid "Жена"
 msgstr "Female"
 
-#: records\templates\subpages\profile.html:53
+#: records/templates/subpages/profile.html:53
 msgid "Друг"
 msgstr "Other"
 
-#: records\templates\subpages\profile.html:57
+#: records/templates/subpages/profile.html:57
 msgid "Телефонен номер"
 msgstr "Phone Number"
 
-#: records\templates\subpages\profile.html:58
+#: records/templates/subpages/profile.html:58
 msgid "Въведете телефонен номер"
 msgstr "Enter phone number"
 
-#: records\templates\subpages\profile.html:62
+#: records/templates/subpages/profile.html:62
 msgid "Въведете адрес"
 msgstr "Enter address"
 
-#: records\templates\subpages\profile.html:71
+#: records/templates/subpages/profile.html:71
 msgid "Промяна на парола"
 msgstr "Change Password"
 
-#: records\templates\subpages\profile.html:75
-#: records\templates\subpages\profile.html:82
+#: records/templates/subpages/profile.html:75
+#: records/templates/subpages/profile.html:82
 msgid "Текуща парола"
 msgstr "Current Password"
 
-#: records\templates\subpages\profile.html:89
-#: records\templates\subpages\profile.html:96
+#: records/templates/subpages/profile.html:89
+#: records/templates/subpages/profile.html:96
 msgid "Нова парола"
 msgstr "New Password"
 
-#: records\templates\subpages\profile.html:103
-#: records\templates\subpages\profile.html:110
+#: records/templates/subpages/profile.html:103
+#: records/templates/subpages/profile.html:110
 msgid "Повторете новата парола"
 msgstr "Repeat New Password"
 
-#: records\templates\subpages\profile.html:117
+#: records/templates/subpages/profile.html:117
 msgid "Промени паролата"
 msgstr "Change Password"
 
-#: records\templates\subpages\profile.html:123
+#: records/templates/subpages/profile.html:123
 msgid "Настройки за език"
 msgstr "Language Settings"
 
-#: records\templates\subpages\profile.html:128
+#: records/templates/subpages/profile.html:128
 msgid "Изберете език"
 msgstr "Select Language"
 
-#: records\templates\subpages\profile.html:141
+#: records/templates/subpages/profile.html:141
 msgid "Запази език"
 msgstr "Save Language"
 
-#: records\templates\subpages\upload_history.html:33
+#: records/templates/subpages/share_view.html:10
+msgid "Споделен документ"
+msgstr "Shared Document"
+
+#: records/templates/subpages/share_view.html:10
+msgid "Споделено събитие"
+msgstr "Shared Event"
+
+#: records/templates/subpages/share_view.html:13
+msgid "Валиден до:"
+msgstr "Valid until:"
+
+#: records/templates/subpages/share_view.html:21
+msgid "Отмени линка"
+msgstr "Revoke Link"
+
+#: records/templates/subpages/share_view.html:30
+msgid "Документ"
+msgstr "Document"
+
+#: records/templates/subpages/share_view.html:46
+#: records/templates/subpages/share_view.html:92
+msgid "Сканирайте за отваряне на тази страница."
+msgstr "Scan to open this page."
+
+#: records/templates/subpages/share_view.html:108
+msgid "Изтекъл"
+msgstr "Expired"
+
+#: records/templates/subpages/upload_history.html:16
+msgid "Търсене по име на документ, тип, таг..."
+msgstr "Search by document name, type, tag..."
+
+#: records/templates/subpages/upload_history.html:36
 msgid "Вид"
 msgstr "Kind"
 
-#: records\templates\subpages\upload_history.html:36
+#: records/templates/subpages/upload_history.html:37
 msgid "Наименование"
-msgstr "Name"
+msgstr "Title"
 
-#: records\templates\subpages\upload_history.html:39
+#: records/templates/subpages/upload_history.html:38
 msgid "Специалист / Тип документ"
 msgstr "Specialist / Document Type"
 
-#: records\templates\subpages\upload_history.html:66
+#: records/templates/subpages/upload_history.html:66
 msgid "Няма информация"
 msgstr "No information"
 
-#: records/forms.py:12
-msgid "Практикуващ лекар"
-msgstr "Practitioner"
+#: records/views.py:136
+msgid "Документът е качен успешно."
+msgstr "The document was uploaded successfully."
+
+#: records/views.py:353
+msgid "Линкът за споделяне е деактивиран."
+msgstr "The sharing link has been deactivated."

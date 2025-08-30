@@ -1,34 +1,34 @@
 {% extends "basetemplates/base_public.html" %}
-{% load i18n %}
+{% load i18n widget_tweaks %}
 
-{% block title %}{% trans "Вход" %}{% endblock %}
+{% block title %}{% trans "Sign in" %}{% endblock %}
 
 {% block content %}
-<div class="flex items-center justify-center min-h-screen bg-brand-background">
-    <div class="bg-brand-cream rounded-2xl shadow-card p-8 w-full max-w-sm">
-        <h1 class="text-2xl font-bold text-center mb-6 text-brand-text">{% trans "Вход" %}</h1>
-
+<div class="max-w-md mx-auto">
+    <h2 class="text-center text-2xl font-bold text-brand-blue">{% trans "Sign in to your account" %}</h2>
+    <form method="post" class="mt-8 space-y-6 bg-brand-cream p-8 rounded-2xl shadow-soft">
+        {% csrf_token %}
         {% if form.non_field_errors %}
-            <div class="bg-brand-red/10 text-brand-red p-3 rounded mb-4">{{ form.non_field_errors }}</div>
+          <div class="p-3 rounded bg-red-100 text-red-800 text-sm">{{ form.non_field_errors }}</div>
         {% endif %}
 
-        <form method="post" class="space-y-4">
-            {% csrf_token %}
+        <div>
+            <label class="block text-sm font-medium mb-1" for="{{ form.username.id_for_label }}">{% trans "Username" %}</label>
+            {% render_field form.username class="block w-full rounded-md bg-white px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-blue" %}
+            {{ form.username.errors }}
+        </div>
 
-            {% for field in form %}
-                <div>
-                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-brand-text">{{ field.label }}</label>
-                    {{ field }}
-                    {% if field.errors %}
-                        <div class="text-brand-red text-sm mt-1">{{ field.errors }}</div>
-                    {% endif %}
-                </div>
-            {% endfor %}
+        <div>
+            <label class="block text-sm font-medium mb-1" for="{{ form.password.id_for_label }}">{% trans "Password" %}</label>
+            {% render_field form.password class="block w-full rounded-md bg-white px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-blue" %}
+            {{ form.password.errors }}
+        </div>
 
-            <button type="submit" class="w-full py-2 px-4 rounded-md font-semibold text-lg bg-brand-blue text-brand-cream hover:bg-brand-cyan transition-colors">
-                {% trans "Вход" %}
-            </button>
-        </form>
-    </div>
+        <button type="submit" class="w-full mt-2 rounded-full bg-brand-cyan px-4 py-3 font-semibold text-white hover:bg-brand-blue transition-colors">{% trans "Sign in" %}</button>
+    </form>
+    <p class="mt-6 text-center text-sm text-gray-600">
+        {% trans "Don't have an account?" %}
+        <a href="{% url 'medj:register' %}" class="font-medium text-brand-blue hover:underline">{% trans "Register now" %}</a>
+    </p>
 </div>
 {% endblock %}

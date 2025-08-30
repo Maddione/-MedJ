@@ -7,6 +7,7 @@ requests==2.32.3
 django-parler==2.3
 django-tailwind==4.2.0
 django-browser-reload==1.18.0
+django-widget-tweaks==1.5.0
 qrcode==7.4.2
 Pillow==10.4.0
 WeasyPrint==61.2

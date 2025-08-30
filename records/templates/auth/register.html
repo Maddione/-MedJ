@@ -1,34 +1,36 @@
-{% extends "basetemplates/base_public.html" %}
+{% extends "basetemplates/base_auth.html" %}
 {% load i18n %}
-
-{% block title %}{% trans "Регистрация" %}{% endblock %}
-
+{% block title %}{% trans "Create account" %}{% endblock %}
 {% block content %}
-<div class="flex items-center justify-center min-h-screen bg-brand-background">
-    <div class="bg-brand-cream rounded-2xl shadow-card p-8 w-full max-w-sm">
-        <h1 class="text-2xl font-bold text-center mb-6 text-brand-text">{% trans "Регистрация" %}</h1>
-
-        {% if form.non_field_errors %}
-            <div class="bg-brand-red/10 text-brand-red p-3 rounded mb-4">{{ form.non_field_errors }}</div>
-        {% endif %}
-
-        <form method="post" action="" class="space-y-4">
-            {% csrf_token %}
-
-            {% for field in form %}
-                <div>
-                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-brand-text">{{ field.label }}</label>
-                    {{ field }}
-                    {% if field.errors %}
-                        <div class="text-brand-red text-sm mt-1">{{ field.errors }}</div>
-                    {% endif %}
-                </div>
-            {% endfor %}
-
-            <button type="submit" class="w-full py-2 px-4 rounded-md font-semibold text-lg bg-brand-blue text-brand-cream hover:bg-brand-cyan transition-colors">
-                {% trans "Създай акаунт" %}
-            </button>
-        </form>
-    </div>
-</div>
+<h2 class="text-center text-2xl font-bold text-button-blue">{% trans "Create your account" %}</h2>
+<form method="post" class="mt-8 space-y-6">
+  {% csrf_token %}
+  {% if form.non_field_errors %}
+    <div class="p-3 rounded bg-brand-red/10 text-brand-red text-sm">{{ form.non_field_errors }}</div>
+  {% endif %}
+  <div>
+    <label class="block text-sm font-medium mb-1" for="{{ form.username.id_for_label }}">{% trans "Username" %}</label>
+    {{ form.username|as_widget(attrs={'class':'block w-full rounded-md bg-white px-3 py-2 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-nav-cyan'}) }}
+    {{ form.username.errors }}
+  </div>
+  <div>
+    <label class="block text-sm font-medium mb-1" for="{{ form.email.id_for_label }}">{% trans "Email address" %}</label>
+    {{ form.email|as_widget(attrs={'class':'block w-full rounded-md bg-white px-3 py-2 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-nav-cyan'}) }}
+    {{ form.email.errors }}
+  </div>
+  <div>
+    <label class="block text-sm font-medium mb-1" for="{{ form.password1.id_for_label }}">{% trans "Password" %}</label>
+    {{ form.password1|as_widget(attrs={'class':'block w-full rounded-md bg-white px-3 py-2 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-nav-cyan'}) }}
+    {{ form.password1.errors }}
+  </div>
+  <div>
+    <label class="block text-sm font-medium mb-1" for="{{ form.password2.id_for_label }}">{% trans "Confirm password" %}</label>
+    {{ form.password2|as_widget(attrs={'class':'block w-full rounded-md bg-white px-3 py-2 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-nav-cyan'}) }}
+    {{ form.password2.errors }}
+  </div>
+  <button type="submit" class="w-full mt-2 rounded-md bg-button-blue px-4 py-2 font-semibold text-white hover:bg-nav-cyan">{% trans "Create account" %}</button>
+</form>
+<p class="mt-6 text-center text-sm text-gray-600">
+  {% trans "Already have an account?" %} <a href="{% url 'medj:login' %}" class="text-nav-cyan hover:underline">{% trans "Sign in" %}</a>
+</p>
 {% endblock %}
