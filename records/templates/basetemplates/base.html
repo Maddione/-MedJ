@@ -1,61 +1,71 @@
 {% load static i18n %}
+{% get_current_language as CURRENT_LANG %}
 <!DOCTYPE html>
-<html lang="{{ LANGUAGE_CODE|default:'en' }}">
+<html lang="{{ CURRENT_LANG|default:'bg' }}">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}MedJ{% endblock %}</title>
-  <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
-  {% block extra_head %}{% endblock %}
+  <link href="{% static 'css/dist/output.css' %}" rel="stylesheet">
+  <link href="{% static 'fontawesome/css/all.min.css' %}" rel="stylesheet">
+  <link rel="icon" href="{% static 'images/logo.svg' %}">
 </head>
-<body class="min-h-screen bg-brand-cream">
-  <header class="m-4">
-    <div class="mx-auto max-w-6xl bg-nav-cyan rounded-b-3xl shadow-soft">
-      <div class="px-6 py-3 flex items-center justify-between">
-        <a href="{% url 'medj:landingpage' %}" class="flex items-center gap-3">
-          <span class="text-white text-2xl font-semibold tracking-wide">MedJ</span>
-        </a>
-        <div class="flex items-center gap-4">
-          <div class="relative" x-data x-cloak>
-            <button id="lang-toggle" type="button" class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 focus:outline-none">
-              {% get_current_language as LANGUAGE_CODE %}
-              {% if LANGUAGE_CODE == 'bg' %}
-              <svg class="w-5 h-5 rounded-full" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="170.7" y="0" fill="#fff"/><rect width="512" height="170.7" y="170.7" fill="#00966E"/><rect width="512" height="170.7" y="341.3" fill="#D62612"/></svg>
-              <span>Български</span>
-              {% else %}
-              <svg class="w-5 h-5 rounded-full" viewBox="0 0 3900 3900" aria-hidden="true"><path fill="#b22234" d="M0 0h7410v3900H0z"/><path d="M0 450h7410m0 600H0m0 600h7410m0 600H0m0 600h7410m0 600H0" stroke="#fff" stroke-width="300"/><path fill="#3c3b6e" d="M0 0h2964v2100H0z"/></svg>
-              <span>English</span>
-              {% endif %}
-            </button>
-            <div id="lang-menu" class="hidden absolute right-0 mt-2 w-44 rounded-lg bg-white shadow-sm ring-1 ring-black/5">
-              <form method="post" action="{% url 'set_language' %}" class="py-2">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="{{ request.path }}">
-                <button name="language" value="en" class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2">
-                  <svg class="h-3.5 w-3.5 rounded-full" viewBox="0 0 3900 3900" aria-hidden="true"><path fill="#b22234" d="M0 0h7410v3900H0z"/><path d="M0 450h7410m0 600H0m0 600h7410m0 600H0m0 600h7410m0 600H0" stroke="#fff" stroke-width="300"/><path fill="#3c3b6e" d="M0 0h2964v2100H0z"/></svg>
-                  English
-                </button>
-                <button name="language" value="bg" class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center gap-2">
-                  <svg class="h-3.5 w-3.5 rounded-full" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="170.7" y="0" fill="#fff"/><rect width="512" height="170.7" y="170.7" fill="#00966E"/><rect width="512" height="170.7" y="341.3" fill="#D62612"/></svg>
-                  Български
-                </button>
-              </form>
-            </div>
+<body class="min-h-screen" style="background-color:#EAEBDA">
+  <header class="pt-3">
+    <div class="px-6 flex items-center justify-between rounded-b-[50px] mx-auto" style="background-color:#43B8CF;height:7.6vh;width:98%;">
+      <div class="flex items-center gap-3 h-full">
+        <div class="relative flex items-center h-full">
+          <button type="button" id="langBtn" class="flex items-center justify-center">
+            <img id="langIcon" src="{% static 'images/languageicon.png' %}" alt="language">
+          </button>
+          <div id="langMenu" class="hidden absolute mt-2 w-56 z-50 rounded-lg shadow-md" style="background-color:#FDFEE9">
+            <form method="post" action="{% url 'set_language' %}" class="p-2">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <button type="submit" name="language" value="bg" class="block w-full text-left px-4 py-2 rounded" style="color:#0A4E75">Български</button>
+              <button type="submit" name="language" value="en-us" class="block w-full text-left px-4 py-2 rounded" style="color:#0A4E75">English (US)</button>
+            </form>
           </div>
-          {% block nav_actions %}{% endblock %}
         </div>
+        <a href="{% if user.is_authenticated %}{% url 'medj:dashboard' %}{% else %}{% url 'medj:landingpage' %}{% endif %}" id="medjText" class="text-white text-xl font-bold flex items-center">
+          MedJ
+        </a>
       </div>
+      <nav class="flex items-center gap-2">
+        {% block nav_buttons %}{% endblock %}
+      </nav>
     </div>
   </header>
-
-  <main class="mx-auto max-w-6xl px-6 py-8">
+  <main class="mx-[2.5%] mt-6">
     {% block content %}{% endblock %}
   </main>
-
-  {% block scripts %}{% endblock %}
+  {% block extra_js %}{% endblock %}
   <script>
-    const t=document.getElementById('lang-toggle');const m=document.getElementById('lang-menu');
-    if(t&&m){t.addEventListener('click',()=>m.classList.toggle('hidden'));document.addEventListener('click',e=>{if(!t.contains(e.target)&&!m.contains(e.target))m.classList.add('hidden')})}
+    // Dropdown езиково меню
+    const b=document.getElementById('langBtn');const m=document.getElementById('langMenu');
+    if(b&&m){
+      b.addEventListener('click',e=>{
+        e.stopPropagation();
+        m.classList.toggle('hidden');
+      });
+      document.addEventListener('click',()=>{
+        if(!m.classList.contains('hidden')) m.classList.add('hidden');
+      });
+    }
+
+    // Синхронизация: езиковата икона е 80% от ширината на MedJ, с височина ~79.2% от тази ширина
+    function resizeLangIcon(){
+      const medj=document.getElementById("medjText");
+      const icon=document.getElementById("langIcon");
+      if(medj && icon){
+        const targetWidth = medj.offsetWidth * 0.8;
+        const targetHeight = targetWidth * 0.79;
+        icon.style.width = targetWidth+"px";
+        icon.style.height = targetHeight+"px";
+      }
+    }
+    window.addEventListener("load",resizeLangIcon);
+    window.addEventListener("resize",resizeLangIcon);
   </script>
 </body>
 </html>
