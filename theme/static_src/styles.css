@@ -1,51 +1,17 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@layer base {
-  body {
-    background-color: theme('colors.brand-background');
-    color: theme('colors.brand-text');
-    @apply font-sans antialiased;
-  }
-}
+@source "../../records/templates/**/*.html";
+@source "../../medj/templates/**/*.html";
+@source "../../templates/**/*.html";
+@source "../../static/js/**/*.js";
+@source "../../records/**/*.js";
 
-@layer components {
-  .topbar {
-    @apply bg-white shadow-md;
-  }
-  .topbar-inner {
-    @apply container mx-auto px-6 py-3;
-  }
-  .brand {
-    @apply flex items-center;
-  }
-  .brand-text {
-    color: theme('colors.brand-blue');
-    @apply text-2xl font-bold;
-  }
+/* Бранд utilities – стабилни имена, които ползваме в шаблоните */
+@utility bg-site-background { background-color: #EAEBDA; }
+@utility bg-block-background { background-color: #FDFEE9; }
+@utility bg-button-blue { background-color: #43B8CF; }
+@utility bg-navbar-button-blue { background-color: #0A4E75; }
+@utility border-error-red { border-color: #D84137; }
 
-  .nav-btn {
-    @apply px-4 py-2 rounded-full font-semibold transition-colors duration-200;
-  }
-  .nav-btn--primary {
-    background-color: theme('colors.brand-blue');
-    @apply text-white hover:bg-opacity-90;
-  }
-
-  .lang-dropdown {
-    @apply relative;
-  }
-  .lang-btn {
-    @apply flex items-center gap-2 text-sm font-semibold text-gray-600;
-  }
-  .lang-menu {
-    @apply absolute top-full mt-2 w-40 bg-white rounded-lg shadow-lg py-1 z-10 hidden;
-  }
-  .lang-menu.open {
-    @apply block;
-  }
-  .lang-item {
-    @apply flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left;
-  }
-}
+/* Базов фон/цвят на текста за цялата страница */
+body { background-color: #EAEBDA; color: #0A4E75; }
