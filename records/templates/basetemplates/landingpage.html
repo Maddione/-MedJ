@@ -1,2 +1,21 @@
-{% extends "basetemplates/base_public.html" %}
+{% extends 'basetemplates/base_public.html' %}
 {% load static i18n %}
+
+{% block title %}{% trans "Начало" %} - MedJ{% endblock %}
+
+{% block public_content %}
+<div class="text-center">
+    <div class="flex flex-col items-center justify-center mb-6">
+        <img src="{% static 'images/logo.svg' %}" alt="MedJ Logo" class="h-fit w-auto">
+    </div>
+
+    <h1 class="text-4xl font-bold text-primaryDark mb-4">{% trans "Добре дошли в MedJ" %}</h1>
+    <p class="text-lg text-primaryDark/80">{% trans "Вашето дигитално здравно досие. Сигурно, достъпно и лесно за управление." %}</p>
+
+    <div class="mt-8">
+        <a href="{% url 'medj:register' %}" class="inline-block bg-primaryDark text-blockbg font-semibold py-3 px-8 rounded-lg shadow-lg hover:opacity-90 transition-transform transform hover:scale-105 duration-300">
+            {% trans "Създай своето досие сега" %}
+        </a>
+    </div>
+</div>
+{% endblock %}

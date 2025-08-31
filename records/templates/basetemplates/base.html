@@ -10,24 +10,24 @@
   <link href="{% static 'fontawesome/css/all.min.css' %}" rel="stylesheet">
   <link rel="icon" href="{% static 'images/logo.svg' %}">
 </head>
-<body class="min-h-screen" style="background-color:#EAEBDA">
-  <header class="pt">
-    <div class="px-6 flex items-center justify-between rounded-b-[50px] mx-auto" style="background-color:#43B8CF;height:7.6vh;width:98%;">
+<body class="min-h-screen bg-sitebg flex flex-col">
+  <header>
+    <div class="bg-primary h-[7.6vh] w-[98%] mx-auto px-6 flex items-center justify-between rounded-b-3xl">
       <div class="flex items-center gap-3 h-full">
         <div class="relative flex items-center h-full">
           <button type="button" id="langBtn" class="flex items-center justify-center">
             <img id="langIcon" src="{% static 'images/languageicon.png' %}" alt="language">
           </button>
-          <div id="langMenu" class="hidden absolute mt-2 w-56 z-50 rounded-lg shadow-md" style="background-color:#FDFEE9">
+          <div id="langMenu" class="hidden absolute top-full mt-2 w-56 z-50 rounded-lg shadow-md bg-blockbg py-1">
             <form method="post" action="{% url 'set_language' %}" class="p-2">
               {% csrf_token %}
               <input type="hidden" name="next" value="{{ request.get_full_path }}">
-              <button type="submit" name="language" value="bg" class="block w-full text-left px-4 py-2 rounded" style="color:#0A4E75">Български</button>
-              <button type="submit" name="language" value="en-us" class="block w-full text-left px-4 py-2 rounded" style="color:#0A4E75">English (US)</button>
+              <button type="submit" name="language" value="bg" class="block w-full text-left px-4 py-2 rounded text-primaryDark hover:bg-sitebg">{% trans "Български" %}</button>
+              <button type="submit" name="language" value="en-us" class="block w-full text-left px-4 py-2 rounded text-primaryDark hover:bg-sitebg">{% trans "English (US)" %}</button>
             </form>
           </div>
         </div>
-        <a href="{% if user.is_authenticated %}{% url 'medj:dashboard' %}{% else %}{% url 'medj:landingpage' %}{% endif %}" id="medjText" class="text-white text-xl font-bold flex items-center">
+        <a href="{% if user.is_authenticated %}{% url 'medj:dashboard' %}{% else %}{% url 'medj:landingpage' %}{% endif %}" id="medjText" class="text-blockbg text-xl font-bold flex items-center">
           MedJ
         </a>
       </div>
@@ -36,36 +36,39 @@
       </nav>
     </div>
   </header>
-  <main class="mx-[2.5%] mt-6">
-    {% block content %}{% endblock %}
-  </main>
-  {% block extra_js %}{% endblock %}
-  <script>
 
-    const b=document.getElementById('langBtn');const m=document.getElementById('langMenu');
-    if(b&&m){
-      b.addEventListener('click',e=>{
+  <main class="w-full flex-grow flex flex-col pb-6">
+    {% block body_content %}{% endblock %}
+  </main>
+
+  <script>
+    const langBtn = document.getElementById('langBtn');
+    const langMenu = document.getElementById('langMenu');
+    if (langBtn && langMenu) {
+      langBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        m.classList.toggle('hidden');
+        langMenu.classList.toggle('hidden');
       });
-      document.addEventListener('click',()=>{
-        if(!m.classList.contains('hidden')) m.classList.add('hidden');
+      document.addEventListener('click', () => {
+        if (!langMenu.classList.contains('hidden')) {
+            langMenu.classList.add('hidden');
+        }
       });
     }
 
-
-    function resizeLangIcon(){
-      const medj=document.getElementById("medjText");
-      const icon=document.getElementById("langIcon");
-      if(medj && icon){
+    function resizeLangIcon() {
+      const medj = document.getElementById("medjText");
+      const icon = document.getElementById("langIcon");
+      if (medj && icon) {
         const targetWidth = medj.offsetWidth * 0.8;
         const targetHeight = targetWidth * 0.79;
-        icon.style.width = targetWidth+"px";
-        icon.style.height = targetHeight+"px";
+        icon.style.width = targetWidth + "px";
+        icon.style.height = targetHeight + "px";
       }
     }
-    window.addEventListener("load",resizeLangIcon);
-    window.addEventListener("resize",resizeLangIcon);
+    window.addEventListener("load", resizeLangIcon);
+    window.addEventListener("resize", resizeLangIcon);
   </script>
+  {% block scripts_extra %}{% endblock %}
 </body>
 </html>

@@ -1,14 +1,21 @@
-{% extends "basetemplates/base.html" %}
+{% extends 'basetemplates/base.html' %}
 {% load i18n %}
 
 {% block nav_buttons %}
-  <a href="{% url 'medj:login' %}"
-     class="text-white bg-primaryDark hover:brightness-110 focus:outline-none focus:ring-4 focus:ring-primaryDark/30 font-medium rounded-full text-sm px-5 py-2.5 me-2 mb-2">
+  <a href="{% url 'medj:login' %}" class="bg-primaryDark text-blockbg hover:opacity-90 font-semibold px-5 py-2 rounded-lg transition-colors duration-300">
     {% trans "Вход" %}
   </a>
-
-  <a href="{% url 'medj:register' %}"
-     class="text-white bg-primaryDark hover:brightness-110 focus:outline-none focus:ring-4 focus:ring-primaryDark/30 font-medium rounded-full text-sm px-5 py-2.5 mb-2">
+  <a href="{% url 'medj:register' %}" class="bg-blockbg text-primaryDark hover:bg-sitebg font-semibold px-5 py-2 rounded-lg transition-colors duration-300">
     {% trans "Регистрация" %}
   </a>
+{% endblock %}
+
+{% block body_content %}
+<div class="w-[98%] mx-auto bg-blockbg rounded-3xl shadow-md flex-grow flex items-center justify-center p-7">
+    <div class="w-full max-w-md">
+        {% block public_content %}
+        
+        {% endblock %}
+    </div>
+</div>
 {% endblock %}
