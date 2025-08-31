@@ -1,11 +1,17 @@
 module.exports = {
   content: [
     "./records/templates/**/*.html",
+    "./records/templates/main/*.html",
+    "./records/templates/basetemplates/*.html",
+    "./records/templates/auth/*.html",
+    "./records/templates/subpages/*.html",
     "./medj/templates/**/*.html",
     "./templates/**/*.html",
     "./records/**/*.js",
     "./static/js/**/*.js",
-    "./theme/static_src/**/*.js"
+    "./theme/static_src/**/*.js",
+    "./records/**/*.py",
+    "./theme/static_src/**/*.css",
   ],
   theme: {
     extend: {

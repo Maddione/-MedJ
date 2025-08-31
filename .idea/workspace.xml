@@ -1,34 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AnalysisUIOptions">
+    <option name="SPLITTER_PROPORTION" value="0.3309266" />
+  </component>
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c486bb59-c79b-4440-8fcc-e0c5e6eda3dc" name="Changes" comment="2.1">
-      <change afterPath="$PROJECT_DIR$/records/signals.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/basetemplates/base.html" afterDir="false" />
+    <list default="true" id="c486bb59-c79b-4440-8fcc-e0c5e6eda3dc" name="Changes" comment="perfect, DO NOT TOUCH AGAIN">
+      <change beforePath="$PROJECT_DIR$/.gitattributes" beforeDir="false" afterPath="$PROJECT_DIR$/.gitattributes" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docker-compose.dev.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.dev.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/locale/bg/LC_MESSAGES/django.po" beforeDir="false" afterPath="$PROJECT_DIR$/locale/bg/LC_MESSAGES/django.po" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/locale/en/LC_MESSAGES/django.po" beforeDir="false" afterPath="$PROJECT_DIR$/locale/en/LC_MESSAGES/django.po" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/entrypoint.dev.sh" beforeDir="false" afterPath="$PROJECT_DIR$/entrypoint.dev.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/medj/settings/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/settings/base.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/medj/settings/dev.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/settings/dev.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/apps.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/apps.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ocrapi/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/ocrapi/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ocrapi/dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/ocrapi/dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ocrapi/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ocrapi/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/forms.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/auth/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/auth/login.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/auth/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/auth/register.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base_app.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_app.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base_auth.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_auth.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base_public.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_public.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/landingpage.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/landingpage.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templatetags/medj_filters.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/templatetags/medj_filters.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/theme/static/src/styles.css" beforeDir="false" afterPath="$PROJECT_DIR$/theme/static/src/styles.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/theme/tailwind.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/theme/tailwind.config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/theme/static_src/styles.css" beforeDir="false" afterPath="$PROJECT_DIR$/theme/static_src/styles.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/theme/static_src/tailwind.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/theme/static_src/tailwind.config.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -76,35 +76,35 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
-    &quot;Django Server.MedJ.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;Node.js.styles.css.executor&quot;: &quot;Debug&quot;,
-    &quot;Node.js.styles.ts.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.manage.executor&quot;: &quot;Run&quot;,
-    &quot;Python.urls.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenDjangoStructureViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.pycharm.django.structure.promotion.once.per.project&quot;: &quot;true&quot;,
-    &quot;SHELLCHECK.PATH&quot;: &quot;C:\\Users\\444\\AppData\\Roaming\\JetBrains\\PyCharm2025.1\\plugins\\Shell Script\\shellcheck.exe&quot;,
-    &quot;django.template.preview.state&quot;: &quot;SHOW_EDITOR_AND_PREVIEW&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.intellij.python.django.customization.DjangoModulesConfigurable&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;D:\\programi\\PyCharm 2025.1.3.1\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "DefaultHtmlFileTemplate": "HTML File",
+    "Django Server.MedJ.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Node.js.styles.css.executor": "Debug",
+    "Node.js.styles.ts.executor": "Debug",
+    "Python.manage.executor": "Run",
+    "Python.urls.executor": "Run",
+    "RunOnceActivity.OpenDjangoStructureViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.pycharm.django.structure.promotion.once.per.project": "true",
+    "SHELLCHECK.PATH": "C:\\Users\\444\\AppData\\Roaming\\JetBrains\\PyCharm2025.1\\plugins\\Shell Script\\shellcheck.exe",
+    "django.template.preview.state": "SHOW_EDITOR_AND_PREVIEW",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "aDefault",
+    "settings.editor.selected.configurable": "project.propVCSSupport.Mappings",
+    "ts.external.directory.path": "D:\\programi\\PyCharm 2025.1.3.1\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\444\PychamProjects\MedJ2.1\theme\static\js" />
@@ -187,6 +187,9 @@
       </set>
     </attachedChunks>
   </component>
+  <component name="SvnConfiguration">
+    <configuration>C:\Users\444\AppData\Roaming\Subversion</configuration>
+  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="c486bb59-c79b-4440-8fcc-e0c5e6eda3dc" name="Changes" comment="" />
@@ -209,7 +212,7 @@
       <workItem from="1756288885922" duration="27135000" />
       <workItem from="1756417141876" duration="17279000" />
       <workItem from="1756438043941" duration="2764000" />
-      <workItem from="1756441345921" duration="37390000" />
+      <workItem from="1756441345921" duration="94792000" />
     </task>
     <task id="LOCAL-00001" summary="2.1">
       <option name="closed" value="true" />
@@ -235,7 +238,31 @@
       <option name="project" value="LOCAL" />
       <updated>1756450605543</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="2.1">
+      <option name="closed" value="true" />
+      <created>1756551584339</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1756551584339</updated>
+    </task>
+    <task id="LOCAL-00005" summary="2.1">
+      <option name="closed" value="true" />
+      <created>1756551657056</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1756551657056</updated>
+    </task>
+    <task id="LOCAL-00006" summary="perfect, DO NOT TOUCH AGAIN">
+      <option name="closed" value="true" />
+      <created>1756619954473</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1756619954473</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -254,7 +281,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="2.1" />
-    <option name="LAST_COMMIT_MESSAGE" value="2.1" />
+    <MESSAGE value="perfect, DO NOT TOUCH AGAIN" />
+    <option name="LAST_COMMIT_MESSAGE" value="perfect, DO NOT TOUCH AGAIN" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

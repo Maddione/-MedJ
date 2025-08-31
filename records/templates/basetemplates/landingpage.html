@@ -1,7 +1,2 @@
 {% extends "basetemplates/base_public.html" %}
-{% load i18n %}
-
-{% block nav_items %}
-  <a href="{% url 'medj:login' %}" class="px-5 py-2 rounded-lg bg-button-blue text-white font-semibold hover:opacity-90">{% trans "ВХОД" %}</a>
-  <a href="{% url 'medj:register' %}" class="px-5 py-2 rounded-lg bg-button-blue text-white font-semibold hover:opacity-90">{% trans "Регистрация" %}</a>
-{% endblock %}
+{% load static i18n %}

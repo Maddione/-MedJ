@@ -6,7 +6,6 @@ from .models import (
     Document,
     MedicalSpecialty,
     DocumentType,
-    PractitionerProfile,
     MedicalEvent,
     Tag,
 )
@@ -38,24 +37,23 @@ class RegisterForm(UserCreationForm):
 class DocumentUploadForm(forms.ModelForm):
     specialty = forms.ModelChoiceField(queryset=MedicalSpecialty.objects.all(), label=_l("Специалност"))
     doc_type = forms.ModelChoiceField(queryset=DocumentType.objects.filter(is_active=True), label=_l("Вид документ"))
-    practitioner = forms.ModelChoiceField(queryset=PractitionerProfile.objects.all(), required=False, label=_l("Лекар"))
     document_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}), label=_l("Дата на документа"))
     attach_to_event = forms.ModelChoiceField(queryset=MedicalEvent.objects.none(), required=False, label=_l("Прикачи към събитие"))
     file = forms.FileField(label=_l("Файл"))
 
     class Meta:
         model = Document
-        fields = ["file", "doc_type", "document_date", "practitioner"]
+        fields = ["file", "doc_type", "document_date"]
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
         self.fields["attach_to_event"].queryset = MedicalEvent.objects.none()
-        if "specialty" in self.data and user and hasattr(user, "patient_profile"):
+        if "specialty" in self.data and user and hasattr(user, "patientprofile"):
             try:
                 spec_id = int(self.data.get("specialty"))
                 self.fields["attach_to_event"].queryset = MedicalEvent.objects.filter(
-                    patient=user.patient_profile, specialty_id=spec_id
+                    patient=user.patientprofile, specialty_id=spec_id
                 ).order_by("-event_date")
             except (TypeError, ValueError):
                 self.fields["attach_to_event"].queryset = MedicalEvent.objects.none()
@@ -91,11 +89,11 @@ class MoveDocumentForm(forms.Form):
         super().__init__(*args, **kwargs)
         if initial_specialty:
             self.fields["specialty"].initial = initial_specialty.pk if hasattr(initial_specialty, "pk") else initial_specialty
-        if "specialty" in self.data and user and hasattr(user, "patient_profile"):
+        if "specialty" in self.data and user and hasattr(user, "patientprofile"):
             try:
                 spec_id = int(self.data.get("specialty"))
                 self.fields["target_event"].queryset = MedicalEvent.objects.filter(
-                    patient=user.patient_profile, specialty_id=spec_id
+                    patient=user.patientprofile, specialty_id=spec_id
                 ).order_by("-event_date")
             except (TypeError, ValueError):
                 self.fields["target_event"].queryset = MedicalEvent.objects.none()
@@ -111,11 +109,6 @@ class MoveDocumentForm(forms.Form):
         return cleaned
 
 class DocumentEditForm(forms.ModelForm):
-    practitioner = forms.ModelChoiceField(
-        queryset=PractitionerProfile.objects.all(),
-        required=False,
-        label=_l("Лекар"),
-    )
     doc_type = forms.ModelChoiceField(
         queryset=DocumentType.objects.filter(is_active=True),
         label=_l("Вид документ"),
@@ -127,4 +120,4 @@ class DocumentEditForm(forms.ModelForm):
 
     class Meta:
         model = Document
-        fields = ["doc_type", "document_date", "practitioner"]
+        fields = ["doc_type", "document_date"]

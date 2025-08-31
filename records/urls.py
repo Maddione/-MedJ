@@ -32,7 +32,6 @@ urlpatterns = [
     path("share/<str:token>/revoke/", views.share_revoke, name="share_revoke"),
     path("ajax/events-by-specialty/", views.events_by_specialty, name="events_by_specialty"),
     path("ajax/tags-autocomplete/", views.tags_autocomplete, name="tags_autocomplete"),
-    path("ajax/practitioners/", views.practitioners_list, name="practitioners_list"),
     path("ajax/documents/<int:document_id>/delete/", views.delete_document, name="delete_document"),
     path("ajax/documents/add-medication-tag/", views.add_medication_tag, name="add_medication_tag"),
     path("files/<uuid:file_uuid>/", views.serve_file_by_uuid, name="serve_file_by_uuid"),

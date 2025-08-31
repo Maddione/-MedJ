@@ -1,9 +1,14 @@
 {% extends "basetemplates/base.html" %}
 {% load i18n %}
 
-{% block title %}{% block page_title %}MedJ – Welcome{% endblock %}{% endblock %}
+{% block nav_buttons %}
+  <a href="{% url 'medj:login' %}"
+     class="text-white bg-primaryDark hover:brightness-110 focus:outline-none focus:ring-4 focus:ring-primaryDark/30 font-medium rounded-full text-sm px-5 py-2.5 me-2 mb-2">
+    {% trans "Вход" %}
+  </a>
 
-{% block nav_left_extra %}{% endblock %}
-{% block nav_right %}{% endblock %}
-
-{% block content %}{% endblock %}
+  <a href="{% url 'medj:register' %}"
+     class="text-white bg-primaryDark hover:brightness-110 focus:outline-none focus:ring-4 focus:ring-primaryDark/30 font-medium rounded-full text-sm px-5 py-2.5 mb-2">
+    {% trans "Регистрация" %}
+  </a>
+{% endblock %}

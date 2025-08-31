@@ -1,40 +1,47 @@
 #!/usr/bin/env sh
-set -e
+set -euo pipefail
 
-DB_HOST="${DB_HOST:-db}"
-DB_PORT="${DB_PORT:-5432}"
-DB_NAME="${POSTGRES_DB:-medj}"
-DB_USER="${POSTGRES_USER:-medj}"
-DB_PASSWORD="${POSTGRES_PASSWORD:-}"
+log() { printf "\033[1;36m[entrypoint]\033[0m %s\n" "$*"; }
 
-python - <<'PY'
-import os, time, sys
-try:
-    import psycopg
-except Exception:
-    sys.exit(0)
-host=os.getenv("DB_HOST","db")
-port=int(os.getenv("DB_PORT","5432"))
-user=os.getenv("POSTGRES_USER","medj")
-password=os.getenv("POSTGRES_PASSWORD","")
-db=os.getenv("POSTGRES_DB","medj")
-for _ in range(60):
-    try:
-        with psycopg.connect(host=host, port=port, user=user, password=password, dbname=db, connect_timeout=3):
-            sys.exit(0)
-    except Exception:
-        time.sleep(1)
-print("DB not reachable", file=sys.stderr)
-sys.exit(1)
-PY
+APP_DIR="/app"
+IN="theme/static_src/styles.css"
+OUT_DIR="theme/static/css/dist"
+OUT="$OUT_DIR/output.css"
 
-mkdir -p /app/theme/static/css/dist
+log "Node: $(node -v 2>/dev/null || echo 'missing') | npm: $(npm -v 2>/dev/null || echo 'missing')"
+log "Tailwind CLI: $(tailwindcss -v 2>/dev/null || echo 'missing')"
 
-if [ "${TAILWIND_WATCH}" = "1" ]; then
-  /usr/local/bin/tailwindcss -i /app/theme/static_src/styles.css -o /app/theme/static/css/dist/output.css --watch --poll &
-else
-  /usr/local/bin/tailwindcss -i /app/theme/static_src/styles.css -o /app/theme/static/css/dist/output.css
+# Увери се, че входният файл съществува
+if [ ! -f "$IN" ]; then
+  log "ERROR: липсва входен файл $IN. Провери мапинга/пътя."
+  exit 1
 fi
 
-python manage.py migrate --noinput
-exec python manage.py runserver 0.0.0.0:8000
+# Директория за изхода
+mkdir -p "$OUT_DIR"
+
+# Билд на Tailwind
+if command -v tailwindcss >/dev/null 2>&1; then
+  log "Билдвам Tailwind → $OUT"
+  tailwindcss -i "$IN" -o "$OUT" --minify
+else
+  log "ERROR: липсва tailwindcss CLI. Инсталирай го в image-а."
+  exit 1
+fi
+
+# collectstatic → да попадне в /staticfiles
+log "Събирам static файловете"
+python manage.py collectstatic --noinput
+
+# миграции (по избор – няма да прекъсне при грешка)
+python manage.py migrate --noinput || true
+
+# По желание: watch режим (за dev)
+if [ "${TAILWIND_WATCH:-0}" = "1" ]; then
+  log "Пускам Tailwind в --watch (bg)"
+  tailwindcss -i "$IN" -o "$OUT" --watch --minify &
+fi
+
+# Django dev server
+log "Стартирам Django на 0.0.0.0:8000"
+python manage.py runserver 0.0.0.0:8000

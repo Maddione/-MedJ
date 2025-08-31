@@ -1,17 +1,26 @@
+/* theme/static_src/styles.css */
 @import "tailwindcss";
 
-@source "../../records/templates/**/*.html";
-@source "../../medj/templates/**/*.html";
-@source "../../templates/**/*.html";
-@source "../../static/js/**/*.js";
-@source "../../records/**/*.js";
+/* Кажи на Tailwind къде са темплейтите, за да не purge-не класовете */
+@source "../../records/templates/**/*.html" "../../medj/templates/**/*.html" "../../templates/**/*.html" "../../records/**/*.js" "../../static/js/**/*.js";
 
-/* Бранд utilities – стабилни имена, които ползваме в шаблоните */
-@utility bg-site-background { background-color: #EAEBDA; }
-@utility bg-block-background { background-color: #FDFEE9; }
-@utility bg-button-blue { background-color: #43B8CF; }
-@utility bg-navbar-button-blue { background-color: #0A4E75; }
-@utility border-error-red { border-color: #D84137; }
+/* Дефинирай v4 темата – така се появяват bg-sitebg, text-primary и пр. */
+@theme {
+  --color-sitebg: #EAEBDA;
+  --color-blockbg: #FDFEE9;
+  --color-primary: #43B8CF;
+  --color-primaryDark: #0A4E75;
+  --color-success: #15BC11;
+  --color-danger: #D84137;
+}
 
-/* Базов фон/цвят на текста за цялата страница */
-body { background-color: #EAEBDA; color: #0A4E75; }
+/* (по желание) малко утилити-класове за бутони */
+@utility btn {
+  @apply inline-flex items-center justify-center rounded-lg px-5 py-2.5 font-medium transition-colors;
+}
+@utility btn-primary {
+  @apply text-white bg-primary hover:brightness-110 focus:outline-none focus:ring-4 ring-primary/30;
+}
+@utility btn-alt {
+  @apply text-primaryDark bg-white border border-primary/20 hover:bg-blockbg focus:outline-none focus:ring-4 ring-primary/20;
+}

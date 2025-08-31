@@ -27,7 +27,7 @@ class PatientProfile(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="patientprofile"  # Corrected placement and name
+        related_name="patientprofile"
     )
     date_of_birth = models.DateField(null=True, blank=True)
     gender = models.CharField(max_length=10, null=True, blank=True)
@@ -309,7 +309,7 @@ def _document_post_save(sender, instance: Document, created, **kwargs):
             DocumentTag.objects.bulk_create(bulk)
 
 
-@receiver(m2m_changed, sender=EventTag)
+@receiver(m2m_changed, sender=MedicalEvent.tags.through)
 def _event_tags_changed(sender, instance, action, reverse, model, pk_set, **kwargs):
     if action not in {"post_add", "post_remove"} or reverse or not pk_set:
         return

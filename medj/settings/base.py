@@ -1,6 +1,6 @@
 ﻿from pathlib import Path
 import os
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext_lazy as _l
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -42,6 +42,7 @@ MIDDLEWARE = [
     "django_browser_reload.middleware.BrowserReloadMiddleware",
 ]
 ROOT_URLCONF = "medj.urls"
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -57,6 +58,9 @@ TEMPLATES = [
         },
     },
 ]
+
+
+
 WSGI_APPLICATION = "medj.wsgi.application"
 ASGI_APPLICATION = "medj.asgi.application"
 DATABASES = {
@@ -73,7 +77,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 LANGUAGE_CODE = "bg"
 LANGUAGES = [
-    ("bg", _("Bulgarian")),
+    ("bg", _l("Bulgarian")),
     ("en", "English"),
 ]
 LOCALE_PATHS = [os.path.join(BASE_DIR, "locale")]
@@ -82,19 +86,18 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 AUTH_USER_MODEL = "records.User"
+
 STATIC_URL = "/static/"
-STATICFILES_DIRS = []
-_static = BASE_DIR / "theme" / "static"
-if _static.exists():
-    STATICFILES_DIRS.append(_static)
-STATIC_ROOT = BASE_DIR / "staticfiles_collected"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [BASE_DIR / "theme" / "static"]
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 TAILWIND_APP_NAME = "theme"
 LOGIN_URL = "medj:login"
 LOGIN_REDIRECT_URL = "medj:dashboard"
-LOGOUT_REDIRECT_URL = "medj:landing"
+LOGOUT_REDIRECT_URL = "medj:landingpage"
 
 PARLER_LANGUAGES = {
     None: (

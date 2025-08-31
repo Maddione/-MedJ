@@ -31,7 +31,6 @@ except Exception:
     class DocumentUploadForm(forms.Form):
         specialty = forms.CharField(required=False)
         doc_type = forms.CharField(required=False)
-        practitioner = forms.CharField(required=False)
         document_date = forms.DateField(required=False)
         attach_to_event = forms.IntegerField(required=False)
         file = forms.FileField(required=False)
@@ -55,11 +54,10 @@ try:
         DocumentTag,
         LabIndicator,
         LabTestMeasurement,
-        Practitioner,
         ShareToken,
     )
 except Exception:
-    PatientProfile = MedicalEvent = MedicalSpecialty = Document = Tag = DocumentTag = LabIndicator = LabTestMeasurement = Practitioner = ShareToken = object
+    PatientProfile = MedicalEvent = MedicalSpecialty = Document = Tag = DocumentTag = LabIndicator = LabTestMeasurement = ShareToken = object
 
 
 def _get_or_create_patient_profile(user):
@@ -110,7 +108,7 @@ def register_view(request: HttpRequest) -> HttpResponse:
 
 def logout_view(request: HttpRequest) -> HttpResponse:
     logout(request)
-    return redirect("medj:landing")
+    return redirect("medj:landingpage")
 
 
 @login_required
@@ -148,7 +146,7 @@ def upload_history(request: HttpRequest) -> HttpResponse:
     docs = []
     if Document is not object:
         qs = Document.objects.filter(medical_event__patient=patient).select_related(
-            "medical_event", "doc_type", "practitioner"
+            "medical_event", "doc_type"
         )
         if hasattr(Document, "created_at"):
             qs = qs.order_by("-created_at")
@@ -167,7 +165,7 @@ def documents(request: HttpRequest) -> HttpResponse:
     if Document is not object:
         qs = (
             Document.objects.filter(medical_event__patient=patient)
-            .select_related("medical_event", "doc_type", "practitioner")
+            .select_related("medical_event", "doc_type")
             .order_by("-document_date", "-id")
         )
     return render(request, "subpages/upload_history.html", {"documents": qs})
@@ -230,7 +228,7 @@ def document_detail(request: HttpRequest, pk: int) -> HttpResponse:
     doc = None
     if Document is not object:
         doc = get_object_or_404(
-            Document.objects.select_related("medical_event", "doc_type", "practitioner"),
+            Document.objects.select_related("medical_event", "doc_type"),
             pk=pk,
             medical_event__patient=patient,
         )
@@ -401,18 +399,6 @@ def tags_autocomplete(request: HttpRequest) -> JsonResponse:
     if Tag is not object and q:
         for t in Tag.objects.filter(name__icontains=q).order_by("name")[:20]:
             data.append({"id": t.id, "name": t.name})
-    return JsonResponse({"results": data})
-
-
-@login_required
-def practitioners_list(request: HttpRequest) -> JsonResponse:
-    q = request.GET.get("q") or ""
-    data = []
-    if Practitioner is not object:
-        qs = Practitioner.objects.all()
-        if q:
-            qs = qs.filter(full_name__icontains=q)
-        data = [{"id": p.id, "name": getattr(p, "full_name", str(p))} for p in qs[:20]]
     return JsonResponse({"results": data})
 
 
