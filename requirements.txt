@@ -11,4 +11,11 @@ django-widget-tweaks==1.5.0
 qrcode==7.4.2
 Pillow==10.4.0
 WeasyPrint==61.2
+psycopg2-binary==2.9.9
+reportlab==4.2.0
+PyPDF2
+xhtml2pdf
+
+
+
 

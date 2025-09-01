@@ -1,0 +1,33 @@
+{% extends "basetemplates/base_app.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Печат от CSV" %}{% endblock %}
+
+{% block app_content %}
+<main class="max-w-3xl mx-auto bg-[#FDFEE9] rounded-2xl p-6 shadow">
+  <h1 class="text-2xl font-bold mb-4" style="color:#0A4E75">{% trans "Печат от CSV" %}</h1>
+  <form action="{% url 'medj:csv_print_to_pdf' %}" method="post" enctype="multipart/form-data" class="space-y-4">
+    {% csrf_token %}
+    <div>
+      <label class="block mb-1 font-semibold" style="color:#0A4E75">{% trans "Режим" %}</label>
+      <select name="kind" class="w-full rounded-lg p-2" style="background:#EAEBDA; color:#0A4E75">
+        <option value="events">{% trans "Доклад (събития)" %}</option>
+        <option value="labs">{% trans "Лабораторни" %}</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="block mb-1 font-semibold" style="color:#0A4E75">{% trans "CSV файл" %}</label>
+      <input type="file" name="csv" accept=".csv,text/csv" class="w-full rounded-lg p-2" style="background:#EAEBDA; color:#0A4E75" required>
+      <p class="text-sm text-gray-600 mt-1">
+        <b>events</b>: <code>date,category,specialty,summary</code><br/>
+        <b>labs</b>: <code>indicator,YYYY-MM-DD,YYYY-MM-DD,...</code>
+      </p>
+    </div>
+
+    <button class="px-4 py-2 rounded-lg font-semibold" style="background:#43B8CF; color:#FDFEE9">
+      {% trans "Генерирай PDF" %}
+    </button>
+  </form>
+</main>
+{% endblock %}

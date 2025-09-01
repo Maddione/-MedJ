@@ -1,170 +1,27 @@
-{% extends 'basetemplates/base_app.html' %}
-{% load static %}
-{% load i18n %}
+{% extends "basetemplates/base_app.html" %}
+{% load i18n static %}
+{% block app_content %}
+<div class="bg-[#FDFEE9] rounded-2xl p-4">
+  <div class="grid grid-cols-12 font-semibold mb-2" style="color:#FDFEE9">
+    <div class="col-span-2 rounded-lg px-3 py-2" style="background:#0A4E75">{% trans "Вид" %}</div>
+    <div class="col-span-4 rounded-lg px-3 py-2" style="background:#0A4E75">{% trans "Наименование" %}</div>
+    <div class="col-span-3 rounded-lg px-3 py-2" style="background:#0A4E75">{% trans "Специалист" %}</div>
+    <div class="col-span-2 rounded-lg px-3 py-2" style="background:#0A4E75">{% trans "Дата" %}</div>
+    <div class="col-span-1"></div>
+  </div>
 
-{% block content %}
-<main class="bg-site-background min-h-screen p-4 md:p-8">
-  <div class="container mx-auto max-w-7xl">
-    <div class="bg-block-background p-6 rounded-3xl shadow-lg mb-8">
-      <h1 class="text-3xl font-bold text-gray-800">{% trans "История на качените документи" %}</h1>
-      <p class="mt-2 text-gray-600">{% trans "Преглед на всички документи, които сте качили." %}</p>
-    </div>
-
-    <div class="bg-block-background p-6 rounded-3xl shadow-lg">
-      <form method="get" class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div class="md:col-span-2 flex">
-          <input type="text" name="q" value="{{ search_query|default:'' }}" placeholder="{% trans 'Търсене по име на документ, тип, таг...' %}" class="flex-grow p-3 border border-gray-300 rounded-l-lg shadow-sm focus:outline-none focus:ring-button-blue focus:border-button-blue">
-          <button class="px-4 py-3 bg-button-blue text-white rounded-r-lg shadow-sm hover:bg-navbar-button-blue transition-colors">
-            <i class="fa-solid fa-magnifying-glass"></i>
-          </button>
-        </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <input id="tagInput" type="text" placeholder="{% trans 'Добави таг...' %}" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm">
-            <button type="button" id="addTag" class="px-4 py-3 bg-white text-button-blue border rounded-lg shadow-sm hover:bg-gray-50">{% trans "Добави" %}</button>
-          </div>
-          <input type="hidden" name="tags" id="tagsField" value="{{ tags_query|default:'' }}">
-          <div id="chips" class="mt-2 flex flex-wrap gap-2"></div>
-        </div>
-      </form>
-
-      <div class="overflow-x-auto">
-        <table class="min-w-full text-sm text-gray-700">
-          <thead>
-            <tr class="bg-navbar-button-blue text-white">
-              <th class="py-3 px-4 text-left font-semibold"><i class="fa-solid fa-file-alt"></i></th>
-              <th class="py-3 px-4 text-left font-semibold">{% trans "Вид" %}</th>
-              <th class="py-3 px-4 text-left font-semibold">{% trans "Наименование" %}</th>
-              <th class="py-3 px-4 text-left font-semibold">{% trans "Специалист / Тип документ" %}</th>
-              <th class="py-3 px-4 text-left font-semibold">{% trans "Дата" %}</th>
-              <th class="py-3 px-4 text-center font-semibold">{% trans "Действия" %}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% if documents %}
-              {% for doc in documents %}
-                <tr class="bg-creamy-main-content border-b border-button-blue hover:bg-gray-50">
-                  <td class="py-3 px-4">
-                    {% if doc.doc_kind == 'image' %}
-                      <i class="fa-solid fa-file-image text-button-blue text-xl"></i>
-                    {% elif doc.doc_kind == 'pdf' %}
-                      <i class="fa-solid fa-file-pdf text-error-red text-xl"></i>
-                    {% else %}
-                      <i class="fa-solid fa-file text-gray-500 text-xl"></i>
-                    {% endif %}
-                  </td>
-                  <td class="py-3 px-4">{{ doc.get_doc_kind_display }}</td>
-                  <td class="py-3 px-4">
-                    <a href="{% url 'medj:document_detail' pk=doc.id %}" class="text-button-blue hover:underline">
-                      {{ doc.file.name|cut:"documents/" }}
-                    </a>
-                  </td>
-                  <td class="py-3 px-4">
-                    {% if doc.medical_event and doc.medical_event.specialty %}
-                      {{ doc.medical_event.specialty.name }}
-                    {% else %}
-                      {% trans "Няма информация" %}
-                    {% endif %}
-                  </td>
-                  <td class="py-3 px-4 whitespace-nowrap">{{ doc.uploaded_at|date:"d.m.Y" }}</td>
-                  <td class="py-3 px-4 text-center">
-                    <a href="{{ doc.file.url }}" target="_blank" class="text-checkmark-green hover:underline mr-2">
-                      <i class="fa-solid fa-download"></i>
-                    </a>
-                    <a href="{% url 'medj:document_detail' pk=doc.id %}" class="text-button-blue hover:underline">
-                      <i class="fa-solid fa-eye"></i>
-                    </a>
-                  </td>
-                </tr>
-              {% endfor %}
-            {% else %}
-              <tr class="bg-creamy-main-content">
-                <td colspan="6" class="py-4 px-4 text-center text-gray-500">
-                  {% trans "Все още нямате качени документи." %}
-                </td>
-              </tr>
-            {% endif %}
-          </tbody>
-        </table>
-      </div>
+  {% for d in docs %}
+  <div class="grid grid-cols-12 items-center py-3 border-b" style="border-color:#43B8CF; color:#0A4E75">
+    <div class="col-span-2 px-3">{{ d.doc_type }}</div>
+    <div class="col-span-4 px-3">{{ d.title }}</div>
+    <div class="col-span-3 px-3">{{ d.medical_event.specialty }}</div>
+    <div class="col-span-2 px-3">{{ d.medical_event.event_date|date:"d.m.Y" }}</div>
+    <div class="col-span-1 px-3 text-right">
+      {% if d.file %}<a href="{{ d.file.url }}" download title="{% trans 'Свали' %}">⬇</a>{% endif %}
     </div>
   </div>
-</main>
-
-<script>
-const tagsField = document.getElementById('tagsField');
-const chips = document.getElementById('chips');
-const input = document.getElementById('tagInput');
-const addBtn = document.getElementById('addTag');
-
-function renderChips() {
-  chips.innerHTML = '';
-  const items = (tagsField.value || '').split(',').map(s => s.trim()).filter(Boolean);
-  items.forEach(name => {
-    const chip = document.createElement('span');
-    chip.className = 'px-2 py-1 bg-button-blue text-white rounded-full text-xs flex items-center gap-2';
-    chip.textContent = '#' + name;
-    const x = document.createElement('button');
-    x.type = 'button';
-    x.textContent = '×';
-    x.className = 'ml-1 bg-white/20 px-1 rounded';
-    x.onclick = () => {
-      const rest = items.filter(i => i !== name);
-      tagsField.value = rest.join(',');
-      renderChips();
-    };
-    chip.appendChild(x);
-    chips.appendChild(chip);
-  });
-}
-
-addBtn.addEventListener('click', () => {
-  const v = input.value.trim();
-  if (!v) return;
-  const set = new Set((tagsField.value || '').split(',').map(s => s.trim()).filter(Boolean));
-  set.add(v);
-  tagsField.value = Array.from(set).join(',');
-  input.value = '';
-  renderChips();
-});
-
-let lastQ = '';
-input.addEventListener('input', async () => {
-  const q = input.value.trim();
-  if (q === lastQ || q.length < 1) return;
-  lastQ = q;
-  const res = await fetch("{% url 'medj:tags_autocomplete' %}?q=" + encodeURIComponent(q));
-  const data = await res.json();
-  if (!Array.isArray(data)) return;
-  const best = data.slice(0, 6);
-  const list = document.createElement('div');
-  list.className = 'absolute z-10 bg-white border rounded-lg shadow mt-1 w-64';
-  list.style.position = 'absolute';
-  const rect = input.getBoundingClientRect();
-  list.style.left = rect.left + 'px';
-  list.style.top = (rect.bottom + window.scrollY) + 'px';
-  best.forEach(item => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'block w-full text-left px-3 py-2 hover:bg-gray-100';
-    btn.textContent = item.name;
-    btn.onclick = () => {
-      const set = new Set((tagsField.value || '').split(',').map(s => s.trim()).filter(Boolean));
-      set.add(item.name);
-      tagsField.value = Array.from(set).join(',');
-      renderChips();
-      document.body.removeChild(list);
-      input.value = '';
-    };
-    list.appendChild(btn);
-  });
-  document.body.querySelectorAll('.autocomplete-list').forEach(e => e.remove());
-  list.classList.add('autocomplete-list');
-  document.body.appendChild(list);
-  const cleaner = () => { if (document.body.contains(list)) document.body.removeChild(list); document.removeEventListener('click', cleaner); };
-  setTimeout(() => document.addEventListener('click', cleaner), 0);
-});
-
-renderChips();
-</script>
+  {% empty %}
+  <div class="text-center py-10" style="color:#0A4E75">{% trans "Няма качени документи." %}</div>
+  {% endfor %}
+</div>
 {% endblock %}

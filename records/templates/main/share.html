@@ -1,381 +1,199 @@
-{% extends 'basetemplates/base_public.html' %}
-{% load static %}
+{% extends "basetemplates/base_app.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Сподели медицинско събитие" %}{% endblock %}
+{% block title %}{% trans "Споделяне / Експорт" %}{% endblock %}
 
-{% block content %}
-<main class="flex items-center justify-center min-h-[calc(100vh-160px)] p-4 md:p-8">
-    <div class="bg-block-background p-8 rounded-3xl shadow-lg max-w-4xl w-full">
-        <h1 class="text-3xl font-bold text-navbar-button-blue mb-6 text-center">{% trans "Сподели медицински данни" %}</h1>
+{% block app_content %}
+<main class="max-w-6xl mx-auto grid md:grid-cols-12 gap-6">
 
-        <div id="selection-interface">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                <div class="lg:col-span-1 bg-creamy-main-content p-6 rounded-2xl shadow-md">
-                    <h2 class="text-xl font-semibold text-gray-700 mb-4">{% trans "Включи в споделянето" %}</h2>
-                    <div class="space-y-3">
-                        <label class="flex items-center space-x-2 text-gray-700 font-medium">
-                            <input type="checkbox" class="form-checkbox text-button-blue rounded-full" data-filter-target="specialty-filter">
-                            <i class="fa-solid fa-circle text-gray-500 toggle-icon"></i>
-                            <span>{% trans "Специалност" %}</span>
-                        </label>
-                        <label class="flex items-center space-x-2 text-gray-700 font-medium">
-                            <input type="checkbox" class="form-checkbox text-button-blue rounded-full" data-filter-target="category-filter">
-                            <i class="fa-solid fa-circle text-gray-500 toggle-icon"></i>
-                            <span>{% trans "Категория" %}</span>
-                        </label>
-                        <label class="flex items-center space-x-2 text-gray-700 font-medium">
-                            <input type="checkbox" class="form-checkbox text-button-blue rounded-full" data-filter-target="event-filter">
-                            <i class="fa-solid fa-circle text-gray-500 toggle-icon"></i>
-                            <span>{% trans "Събитие" %}</span>
-                        </label>
-                        <label class="flex items-center space-x-2 text-gray-700 font-medium">
-                            <input type="checkbox" class="form-checkbox text-button-blue rounded-full" data-filter-target="doctor-filter">
-                            <i class="fa-solid fa-circle text-gray-500 toggle-icon"></i>
-                            <span>{% trans "Лекари" %}</span>
-                        </label>
-                    </div>
-                </div>
+  <section class="md:col-span-8 bg-[#FDFEE9] rounded-2xl shadow p-4">
+    <h1 class="text-2xl font-bold mb-3" style="color:#0A4E75">{% trans "Филтър" %}</h1>
 
-                <div class="lg:col-span-2 bg-creamy-main-content p-6 rounded-2xl shadow-md space-y-4">
-                    <h2 class="text-xl font-semibold text-gray-700 mb-4">{% trans "Избери данни за споделяне" %}</h2>
-                    <div>
-                        <label for="period-start-date" class="block text-sm font-medium text-gray-700 mb-2">{% trans "Период (от - до)" %}</label>
-                        <div class="flex space-x-2">
-                            <input type="date" id="period-start-date" class="block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-                            <input type="date" id="period-end-date" class="block w-full p-2 border border-gray-300 rounded-md shadow-sm">
-                        </div>
-                    </div>
+    <form id="share-filters" class="space-y-4">
+      {% csrf_token %}
 
-                    <div id="specialty-filter-container" class="filter-container opacity-50 pointer-events-none">
-                        <label for="specialty-select" class="block text-sm font-medium text-gray-700 mb-2">{% trans "Специалност" %}</label>
-                        <select id="specialty-select" multiple class="block w-full p-2 border border-gray-300 rounded-md shadow-sm"></select>
-                    </div>
-
-                    <div id="category-filter-container" class="filter-container opacity-50 pointer-events-none">
-                        <label for="category-select" class="block text-sm font-medium text-gray-700 mb-2">{% trans "Категория" %}</label>
-                        <select id="category-select" multiple class="block w-full p-2 border border-gray-300 rounded-md shadow-sm"></select>
-                    </div>
-
-                    <div id="event-filter-container" class="filter-container opacity-50 pointer-events-none">
-                        <label for="event-select" class="block text-sm font-medium text-gray-700 mb-2">{% trans "Събитие" %}</label>
-                        <select id="event-select" multiple class="block w-full p-2 border border-gray-300 rounded-md shadow-sm"></select>
-                    </div>
-
-                    <div id="doctor-filter-container" class="filter-container opacity-50 pointer-events-none">
-                        <label for="doctor-select" class="block text-sm font-medium text-gray-700 mb-2">{% trans "Лекари" %}</label>
-                        <select id="doctor-select" multiple class="block w-full p-2 border border-gray-300 rounded-md shadow-sm"></select>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex justify-center space-x-4 mt-8">
-                <button id="show-preview-button" class="px-8 py-4 bg-button-blue text-white font-bold rounded-lg shadow-md hover:bg-navbar-button-blue transition-colors" disabled>
-                    {% trans "Покажи ми как ще изглежда..." %}
-                </button>
-                <button id="share-link-button" class="px-8 py-4 bg-checkmark-green text-white font-bold rounded-lg shadow-md hover:bg-green-700 transition-colors" disabled>
-                    {% trans "Сподели линк" %}
-                </button>
-            </div>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold mb-1" style="color:#0A4E75">{% trans "От дата" %}</label>
+          <input type="date" name="start_date" class="w-full rounded-lg p-2" style="background:#EAEBDA; color:#0A4E75">
         </div>
-
-        <div id="generated-report-section" class="hidden bg-creamy-main-content p-8 rounded-3xl shadow-lg mt-8">
-            <h2 class="text-2xl font-bold text-navbar-button-blue mb-6 text-center">{% trans "Хронологичен доклад" %}</h2>
-
-            <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700 text-lg">
-                <p><strong>{% trans "В период:" %}</strong> <span id="report-period"></span></p>
-                <p><strong>{% trans "Специалност:" %}</strong> <span id="report-specialty"></span></p>
-            </div>
-
-            <div id="report-events-list" class="space-y-6">
-
-            </div>
-
-            <div class="flex justify-center space-x-4 mt-8">
-                <button id="back-to-selection-button" class="px-6 py-3 bg-gray-200 text-gray-700 font-bold rounded-lg shadow-md hover:bg-gray-300 transition-colors">
-                    {% trans "Назад към избора" %}
-                </button>
-                <button id="final-share-button" class="px-6 py-3 bg-checkmark-green text-white font-bold rounded-lg shadow-md hover:bg-green-700 transition-colors">
-                    {% trans "Сподели този доклад" %}
-                </button>
-            </div>
-
-            <div id="qr-code-display" class="hidden mt-8 p-4 bg-block-background rounded-lg shadow-inner text-center">
-                <h3 class="text-xl font-semibold text-gray-800 mb-3">{% trans "Сканирайте за споделяне" %}</h3>
-                <img id="report-qr-image" src="" alt="QR Code for Report" class="mx-auto w-48 h-48 border border-gray-300 p-2 rounded-lg mb-4">
-                <p id="report-share-link" class="text-button-blue hover:underline font-medium break-all"></p>
-                <p class="text-gray-600 text-sm mt-4">{% trans "Този линк е временен и може да има ограничен достъп." %}</p>
-            </div>
+        <div>
+          <label class="block text-sm font-semibold mb-1" style="color:#0A4E75">{% trans "До дата" %}</label>
+          <input type="date" name="end_date" class="w-full rounded-lg p-2" style="background:#EAEBDA; color:#0A4E75">
         </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1" style="color:#0A4E75">{% trans "Специалности" %}</label>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+          {% for s in specialties %}
+          <label class="inline-flex items-center gap-2 bg-[#EAEBDA] rounded-lg p-2">
+            <input type="checkbox" name="specialty" value="{{ s.id }}">
+            <span class="text-sm" style="color:#0A4E75">{{ s }}</span>
+          </label>
+          {% empty %}
+          <p class="text-sm text-gray-600">{% trans "Няма налични специалности." %}</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1" style="color:#0A4E75">{% trans "Категории" %}</label>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+          {% for c in categories %}
+          <label class="inline-flex items-center gap-2 bg-[#EAEBDA] rounded-lg p-2">
+            <input type="checkbox" name="category" value="{{ c.id }}">
+            <span class="text-sm" style="color:#0A4E75">{{ c }}</span>
+          </label>
+          {% empty %}
+          <p class="text-sm text-gray-600">{% trans "Няма налични категории." %}</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1" style="color:#0A4E75">{% trans "Лабораторни индикатори (по избор)" %}</label>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-60 overflow-auto pr-1">
+          {% for i in indicators %}
+          <label class="inline-flex items-center gap-2 bg-[#EAEBDA] rounded-lg p-2">
+            <input type="checkbox" name="indicator" value="{{ i.id }}">
+            <span class="text-sm" style="color:#0A4E75">{{ i.name }}</span>
+          </label>
+          {% empty %}
+          <p class="text-sm text-gray-600">{% trans "Няма индикатори." %}</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1" style="color:#0A4E75">{% trans "Конкретни събития (по избор)" %}</label>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-60 overflow-auto pr-1">
+          {% for e in events %}
+          <label class="inline-flex items-center gap-2 bg-[#EAEBDA] rounded-lg p-2">
+            <input type="checkbox" name="event" value="{{ e.id }}">
+            <span class="text-sm" style="color:#0A4E75">
+              {{ e.event_date|date:"Y-m-d" }} — {{ e.specialty }} / {{ e.category }}
+            </span>
+          </label>
+          {% empty %}
+          <p class="text-sm text-gray-600">{% trans "Нямате събития." %}</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3 pt-1">
+        <button id="gen-links" type="button" class="px-4 py-2 rounded-lg font-semibold" style="background:#43B8CF; color:#FDFEE9">
+          {% trans "Генерирай линкове" %}
+        </button>
+
+        <a id="btn-pdf-events" target="_blank" class="px-4 py-2 rounded-lg font-semibold opacity-50 pointer-events-none"
+           style="background:#0A4E75; color:#FDFEE9">{% trans "PDF Доклад" %}</a>
+
+        <a id="btn-pdf-labs" target="_blank" class="px-4 py-2 rounded-lg font-semibold opacity-50 pointer-events-none"
+           style="background:#0A4E75; color:#FDFEE9">{% trans "PDF Лабораторни" %}</a>
+
+        <a id="btn-csv" target="_blank" class="px-4 py-2 rounded-lg font-semibold opacity-50 pointer-events-none"
+           style="background:#0A4E75; color:#FDFEE9">CSV</a>
+      </div>
+    </form>
+  </section>
+
+  <aside class="md:col-span-4 bg-[#FDFEE9] rounded-2xl shadow p-4">
+    <h2 class="text-xl font-bold mb-3" style="color:#0A4E75">{% trans "Споделяне" %}</h2>
+
+    <div class="space-y-3">
+      <div>
+        <label class="block text-sm font-semibold mb-1" style="color:#0A4E75">{% trans "PDF Доклад (линк)" %}</label>
+        <input id="link-pdf-events" readonly class="w-full rounded-lg p-2 text-sm" style="background:#EAEBDA; color:#0A4E75">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold mb-1" style="color:#0A4E75">{% trans "PDF Лабораторни (линк)" %}</label>
+        <input id="link-pdf-labs" readonly class="w-full rounded-lg p-2 text-sm" style="background:#EAEBDA; color:#0A4E75">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold mb-1" style="color:#0A4E75">CSV</label>
+        <input id="link-csv" readonly class="w-full rounded-lg p-2 text-sm" style="background:#EAEBDA; color:#0A4E75">
+      </div>
+
+      <div class="pt-2">
+        <p class="text-sm font-semibold mb-1" style="color:#0A4E75">{% trans "QR към PDF Доклад" %}</p>
+        <img id="qr-img" alt="QR" class="w-40 h-40 bg-white rounded-md border border-[#0A4E75]/20">
+      </div>
+
+      <div class="pt-2">
+        <a href="{% url 'medj:csv_print' %}" class="underline text-sm" style="color:#0A4E75">
+          {% trans "Алтернатива: печат от CSV файл" %}
+        </a>
+      </div>
     </div>
+  </aside>
 </main>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const selectionInterface = document.getElementById('selection-interface');
-    const generatedReportSection = document.getElementById('generated-report-section');
-    const showPreviewButton = document.getElementById('show-preview-button');
-    const shareLinkButton = document.getElementById('share-link-button');
-    const backToSelectionButton = document.getElementById('back-to-selection-button');
-    const finalShareButton = document.getElementById('final-share-button');
-    const qrCodeDisplay = document.getElementById('qr-code-display');
-    const reportQrImage = document.getElementById('report-qr-image');
-    const reportShareLink = document.getElementById('report-share-link');
-    const reportEventsList = document.getElementById('report-events-list');
-
-    const periodStartDateInput = document.getElementById('period-start-date');
-    const periodEndDateInput = document.getElementById('period-end-date');
-
-    const filterCheckboxes = document.querySelectorAll('.filter-container input[type="checkbox"]');
-    const filterSelects = {
-        specialty: document.getElementById('specialty-select'),
-        category: document.getElementById('category-select'),
-        event: document.getElementById('event-select'),
-        doctor: document.getElementById('doctor-select')
+(function() {
+  const $ = (sel) => document.querySelector(sel);
+  function getValues(name) {
+    return Array.from(document.querySelectorAll('input[name="'+name+'"]:checked')).map(el => el.value);
+  }
+  function payloadFromForm(form) {
+    const fd = new FormData(form);
+    const start_date = fd.get("start_date") || "";
+    const end_date   = fd.get("end_date") || "";
+    const filters = {
+      specialty: getValues("specialty"),
+      category:  getValues("category"),
+      event:     getValues("event"),
+      indicator: getValues("indicator"),
     };
-    const filterContainers = document.querySelectorAll('.filter-container');
+    return { start_date, end_date, filters };
+  }
+  async function generateLinks() {
+    const form = document.getElementById("share-filters");
+    const payload = payloadFromForm(form);
 
-    const reportPeriodSpan = document.getElementById('report-period');
-    const reportSpecialtySpan = document.getElementById('report-specialty');
-
-    const generateQrUrlBase = "{% url 'medj:generate_qr' link='_PLACEHOLDER_' %}";
-    const getFilteredTagsUrl = "{% url 'medj:ajax_get_filtered_tags' %}";
-    const generateReportDataUrl = "{% url 'medj:ajax_generate_report_data' %}";
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-    function showSection(sectionIdToShow) {
-        selectionInterface.classList.add('hidden');
-        generatedReportSection.classList.add('hidden');
-        qrCodeDisplay.classList.add('hidden');
-
-        if (sectionIdToShow === 'selection') {
-            selectionInterface.classList.remove('hidden');
-        } else if (sectionIdToShow === 'report') {
-            generatedReportSection.classList.remove('hidden');
-        } else if (sectionIdToShow === 'qr') {
-            qrCodeDisplay.classList.remove('hidden');
-        }
-    }
-
-    function toggleFilterState(checkbox, selectElement, container) {
-        if (checkbox.checked) {
-            container.classList.remove('opacity-50', 'pointer-events-none');
-            checkbox.nextElementSibling.classList.remove('fa-circle', 'text-gray-500');
-            checkbox.nextElementSibling.classList.add('fa-check', 'text-checkmark-green');
-            selectElement.disabled = false;
-        } else {
-            container.classList.add('opacity-50', 'pointer-events-none');
-            checkbox.nextElementSibling.classList.remove('fa-check', 'text-checkmark-green');
-            checkbox.nextElementSibling.classList.add('fa-circle', 'text-gray-500');
-            selectElement.disabled = true;
-            Array.from(selectElement.options).forEach(option => option.selected = false);
-        }
-        checkMainButtonsValidity();
-    }
-
-    function checkMainButtonsValidity() {
-        const periodSelected = periodStartDateInput.value && periodEndDateInput.value;
-        showPreviewButton.disabled = !periodSelected;
-        shareLinkButton.disabled = !periodSelected;
-    }
-
-    async function fetchFilteredTags(currentFilterType, activeFilters) {
-        const payload = {
-            current_filter_type: currentFilterType,
-            active_filters: activeFilters,
-            start_date: periodStartDateInput.value,
-            end_date: periodEndDateInput.value,
-        };
-
-        try {
-            const response = await fetch(getFilteredTagsUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken
-                },
-                body: JSON.stringify(payload)
-            });
-            const data = await response.json();
-            if (response.ok) {
-                return data.tags;
-            } else {
-                console.error('Error fetching filtered tags:', data.message);
-                return [];
-            }
-        } catch (error) {
-            console.error('Network error fetching filtered tags:', error);
-            return [];
-        }
-    }
-
-    async function populateSelect(selectElement, tags) {
-        selectElement.innerHTML = '';
-        const defaultOption = document.createElement('option');
-        defaultOption.value = '';
-        defaultOption.textContent = '{% trans "Избери..." %}';
-        defaultOption.disabled = true;
-        defaultOption.selected = true;
-        selectElement.appendChild(defaultOption);
-
-        if (tags.length === 0) {
-            const noTagsOption = document.createElement('option');
-            noTagsOption.value = '';
-            noTagsOption.textContent = '{% trans "Няма налични опции" %}';
-            noTagsOption.disabled = true;
-            selectElement.appendChild(noTagsOption);
-        } else {
-            tags.forEach(tag => {
-                const option = document.createElement('option');
-                option.value = tag.id;
-                option.textContent = tag.name;
-                selectElement.appendChild(option);
-            });
-        }
-    }
-
-    async function updateAllFilters() {
-        const activeFilters = {};
-        const activeCheckboxes = Array.from(filterCheckboxes).filter(cb => cb.checked);
-
-        for (const checkbox of activeCheckboxes) {
-            const filterType = checkbox.dataset.filterTarget.replace('-filter', '');
-            const selectElement = filterSelects[filterType];
-            if (selectElement.value) {
-                activeFilters[filterType] = Array.from(selectElement.selectedOptions).map(option => option.value);
-            }
-        }
-
-        // Apply filters hierarchically based on the order of checked checkboxes
-        for (const checkbox of activeCheckboxes) {
-            const currentFilterType = checkbox.dataset.filterTarget.replace('-filter', '');
-            const selectElementToPopulate = filterSelects[currentFilterType];
-
-            // Reconstruct activeFilters for the current fetch, only including *previously* activated filters
-            const tempActiveFiltersForFetch = {};
-            for (const activeCb of activeCheckboxes) {
-                const type = activeCb.dataset.filterTarget.replace('-filter', '');
-                if (type === currentFilterType) break; // Stop at the current filter
-                if (filterSelects[type].value) {
-                    tempActiveFiltersForFetch[type] = Array.from(filterSelects[type].selectedOptions).map(option => option.value);
-                }
-            }
-
-            const tags = await fetchFilteredTags(currentFilterType, tempActiveFiltersForFetch);
-            populateSelect(selectElementToPopulate, tags);
-        }
-    }
-
-    async function generateReport(isPreview) {
-        const payload = {
-            start_date: periodStartDateInput.value,
-            end_date: periodEndDateInput.value,
-            filters: {}
-        };
-        filterCheckboxes.forEach(checkbox => {
-            const filterType = checkbox.dataset.filterTarget.replace('-filter', '');
-            if (checkbox.checked) {
-                const selectElement = filterSelects[filterType];
-                payload.filters[filterType] = Array.from(selectElement.selectedOptions).map(option => option.value);
-            }
-        });
-
-        try {
-            const response = await fetch(generateReportDataUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken
-                },
-                body: JSON.stringify(payload)
-            });
-            const data = await response.json();
-
-            if (response.ok && data.status === 'success') {
-                reportPeriodSpan.textContent = `${payload.start_date} - ${payload.end_date}`;
-
-                const selectedSpecialties = payload.filters.specialty ?
-                                            Array.from(filterSelects.specialty.selectedOptions).map(option => option.textContent).join(', ') :
-                                            '{% trans "Всички" %}';
-                reportSpecialtySpan.textContent = selectedSpecialties;
-
-                reportEventsList.innerHTML = '';
-                if (data.events && data.events.length > 0) {
-                    data.events.forEach(event => {
-                        const eventDiv = document.createElement('div');
-                        eventDiv.classList.add('bg-block-background', 'p-4', 'rounded-lg', 'shadow-sm');
-                        eventDiv.innerHTML = `
-                            <p class="text-lg font-bold text-navbar-button-blue mb-1">{% trans "Дата:" %} ${event.event_date}</p>
-                            <p class="text-md font-semibold text-gray-800 mb-1">{% trans "Събитие:" %} ${event.event_type_display}</p>
-                            <p class="text-gray-700">{% trans "Обобщение:" %} ${event.summary}</p>
-                        `;
-                        reportEventsList.appendChild(eventDiv);
-                    });
-                } else {
-                    reportEventsList.innerHTML = `<div class="bg-block-background p-4 rounded-lg shadow-sm text-center text-gray-500">{% trans "Няма намерени събития за избраните критерии." %}</div>`;
-                }
-
-                showSection('report');
-                if (!isPreview) {
-                    const finalShareLink = `${window.location.origin}/share/report/?${new URLSearchParams(payload).toString()}`;
-                    reportQrImage.src = generateQrUrlBase.replace('_PLACEHOLDER_', encodeURIComponent(finalShareLink));
-                    reportShareLink.textContent = finalShareLink;
-                    qrCodeDisplay.classList.remove('hidden');
-                } else {
-                    qrCodeDisplay.classList.add('hidden');
-                }
-
-            } else {
-                alert('Грешка при генериране на доклад: ' + (data.message || 'Неизвестна грешка.'));
-            }
-        } catch (error) {
-            console.error('Network error generating report:', error);
-            alert('Мрежова грешка при генериране на доклад.');
-        }
-    }
-
-    periodStartDateInput.addEventListener('change', checkMainButtonsValidity);
-    periodEndDateInput.addEventListener('change', checkMainButtonsValidity);
-
-    periodStartDateInput.addEventListener('change', updateAllFilters);
-    periodEndDateInput.addEventListener('change', updateAllFilters);
-
-    filterCheckboxes.forEach(checkbox => {
-        const filterType = checkbox.dataset.filterTarget.replace('-filter', '');
-        const selectElement = filterSelects[filterType];
-        const container = document.getElementById(`${filterType}-filter-container`);
-
-        toggleFilterState(checkbox, selectElement, container);
-
-        checkbox.addEventListener('change', function() {
-            toggleFilterState(this, selectElement, container);
-            updateAllFilters();
-        });
-
-        selectElement.addEventListener('change', updateAllFilters);
+    const resp = await fetch("{% url 'medj:create_download_links' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": form.querySelector('input[name=csrfmiddlewaretoken]').value
+      },
+      body: JSON.stringify(payload)
     });
+    if (!resp.ok) {
+      alert("Грешка при генериране на линкове.");
+      return;
+    }
+    const data = await resp.json();
 
-    showPreviewButton.addEventListener('click', function() {
-        if (!showPreviewButton.disabled) {
-            generateReport(true);
-        }
-    });
+    // Попълни полетата
+    $("#link-pdf-events").value = data.pdf_events_url || "";
+    $("#link-pdf-labs").value   = data.pdf_labs_url   || "";
+    $("#link-csv").value        = data.csv_url        || "";
 
-    shareLinkButton.addEventListener('click', function() {
-        if (!shareLinkButton.disabled) {
-            generateReport(false);
-        }
-    });
+    // Активирай бутоните
+    const btnEv = $("#btn-pdf-events");
+    const btnLb = $("#btn-pdf-labs");
+    const btnCs = $("#btn-csv");
+    if (data.pdf_events_url) {
+      btnEv.href = data.pdf_events_url;
+      btnEv.classList.remove("opacity-50","pointer-events-none");
+    }
+    if (data.pdf_labs_url) {
+      btnLb.href = data.pdf_labs_url;
+      btnLb.classList.remove("opacity-50","pointer-events-none");
+    }
+    if (data.csv_url) {
+      btnCs.href = data.csv_url;
+      btnCs.classList.remove("opacity-50","pointer-events-none");
+    }
 
-    backToSelectionButton.addEventListener('click', function() {
-        showSection('selection');
-    });
+    if (data.pdf_events_url) {
+      const qrUrl = "{% url 'medj:qr_for_url' %}?url=" + encodeURIComponent(data.pdf_events_url);
+      $("#qr-img").src = qrUrl;
+    }
+  }
 
-    finalShareButton.addEventListener('click', function() {
-        alert('Докладът е готов за споделяне!');
-        qrCodeDisplay.classList.remove('hidden');
-    });
-
-    checkMainButtonsValidity();
-    updateAllFilters();
-});
+  document.getElementById("gen-links").addEventListener("click", generateLinks);
+})();
+</script>
+{% endblock %}

@@ -1,55 +1,114 @@
-{% extends 'basetemplates/base_app.html' %}
-{% load static %}
-{% load i18n %}
+{% extends "basetemplates/base_app.html" %}
+{% load i18n static %}
 
-{% block content %}
-    <div class="container mx-auto max-w-7xl">
-        <div class="bg-block-background p-6 rounded-3xl shadow-lg mb-8">
-            <h1 class="text-3xl font-bold text-navbar-button-blue">
-                {% trans "Табло за управление" %}
-            </h1>
-            <p class="mt-2  text-navbar-button-blue">
-                {% blocktrans %}Добре дошъл,{{ user.username }}!{% endblocktrans %}
-            </p>
+{% block app_content %}
+<div class="space-y-6">
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+      {% for c in charts_data %}
+      <div class="bg-blockbg rounded-2xl p-4 shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+          <div class="text-sm text-primaryDark font-semibold">
+            {{ c.name }}{% if c.unit %}, {{ c.unit }}{% endif %}
+          </div>
         </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <div class="lg:col-span-1 bg-block-background p-6 rounded-3xl shadow-lg">
-                <div class="bg-block-background text-navbar-button-blue p-4 rounded-t-3xl -mx-6 -mt-6 mb-4">
-                    <h2 class="text-xl font-semibold">{% trans "Текущи показатели" %}</h2>
-                </div>
-            </div>
-
-            <div class="lg:col-span-1 bg-block-background p-6 rounded-3xl shadow-lg">
-                <div class="bg-block-background text-navbar-button-blue p-4 rounded-t-3xl -mx-6 -mt-6 mb-4">
-                    <h2 class="text-xl font-semibold">{% trans "Предстоящи прегледи" %}</h2>
-                </div>
-                <ul class="space-y-3 text-gray-700">
-
-                </ul>
-            </div>
-
-            <div class="lg:col-span-1 bg-block-background p-6 rounded-3xl shadow-lg">
-                <div class="bg-block-background text-navbar-button-blue p-4 rounded-t-3xl -mx-6 -mt-6 mb-4">
-                    <h2 class="text-xl font-semibold">{% trans "Рецепти за изпълнение" %}</h2>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full text-sm text-gray-700">
-                        <thead>
-                            <tr class="bg-creamy-main-content">
-                            </tr>
-                        </thead>
-                    </table>
-                </div>
-            </div>
+        <div class="h-40">
+          <svg class="w-full h-full" data-series='{{ c.series|safe }}' viewBox="0 0 400 160" preserveAspectRatio="none"></svg>
         </div>
-
-        <div class="bg-block-background p-6 rounded-3xl shadow-lg">
-            <div class="bg-block-background text-navbar-button-blue p-4 rounded-t-3xl -mx-6 -mt-6 mb-4">
-                <h2 class="text-xl font-semibold">{% trans "Приемани медикаменти" %}</h2>
-            </div>
-
-        </div>
+      </div>
+      {% empty %}
+      <div class="bg-blockbg rounded-2xl p-6 shadow-sm sm:col-span-2 text-primaryDark">{% trans "Няма достатъчно данни за кръвни показатели." %}</div>
+      {% endfor %}
     </div>
-</main>
+
+    <div class="space-y-6">
+      <div class="bg-blockbg rounded-2xl p-4 shadow-sm">
+        <div class="inline-block px-3 py-1 rounded-lg bg-primaryDark text-white text-sm font-semibold mb-3">{% trans "Предстоящи прегледи" %}</div>
+        <ul class="space-y-3 text-primaryDark">
+          {% for ev in upcoming_events %}
+          <li class="flex justify-between">
+            <span>{{ ev.event_date|date:"d.m.Y" }}</span>
+            <span class="font-semibold">{{ ev.title }}</span>
+          </li>
+          {% empty %}
+          <li class="text-primaryDark/70">{% trans "Няма насрочени прегледи." %}</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="bg-blockbg rounded-2xl p-4 shadow-sm">
+        <div class="inline-block px-3 py-1 rounded-lg bg-primaryDark text-white text-sm font-semibold mb-3">{% trans "Рецепти за изпълнение" %}</div>
+        <div class="space-y-4 text-primaryDark">
+          {% for r in prescriptions %}
+          <div class="grid grid-cols-2 gap-4">
+            <div>{{ r.created_at|date:"d.m.Y" }}</div>
+            <div>{{ r.title }}</div>
+          </div>
+          {% empty %}
+          <div class="text-primaryDark/70">{% trans "Няма активни рецепти." %}</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-blockbg rounded-2xl p-5">
+    <div class="inline-block px-4 py-2 rounded-lg bg-primaryDark text-white font-semibold mb-4">{% trans "Приемани медикаменти" %}</div>
+    <div id="meds-holder" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for m in medications %}
+      <div class="rounded-2xl border border-primary/30 p-4 bg-white">
+        <div class="h-28 bg-blockbg rounded-lg mb-3"></div>
+        <div class="text-primaryDark font-semibold mb-1">{{ m.name }}</div>
+        <div class="text-sm text-primaryDark/80">{{ m.subtitle }}</div>
+      </div>
+      {% empty %}
+      <div class="text-primaryDark/70">{% trans "Няма въведени медикаменти." %}</div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  function renderLine(svg, series){
+    if(!series || series.length === 0) return;
+    const w = 400, h = 160, pad = 12;
+    const xs = series.map(p=>new Date(p.x).getTime());
+    const ys = series.map(p=>Number(p.y)).filter(v=>isFinite(v));
+    const minX = Math.min.apply(null, xs);
+    const maxX = Math.max.apply(null, xs);
+    const minY = Math.min.apply(null, ys);
+    const maxY = Math.max.apply(null, ys);
+    const dx = maxX - minX || 1;
+    const dy = (maxY - minY) || 1;
+    function sx(x){ return pad + (w - 2*pad) * ((x - minX) / dx); }
+    function sy(y){ return h - pad - (h - 2*pad) * ((y - minY) / dy); }
+    const pts = series.map(p=>`${sx(new Date(p.x).getTime()).toFixed(1)},${sy(Number(p.y)).toFixed(1)}`).join(' ');
+    const pl = document.createElementNS('http://www.w3.org/2000/svg','polyline');
+    pl.setAttribute('fill','none');
+    pl.setAttribute('stroke','#0A4E75');
+    pl.setAttribute('stroke-width','3');
+    pl.setAttribute('points', pts);
+    svg.appendChild(pl);
+    for(const p of series){
+      const cx = sx(new Date(p.x).getTime());
+      const cy = sy(Number(p.y));
+      const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      dot.setAttribute('cx', cx);
+      dot.setAttribute('cy', cy);
+      dot.setAttribute('r', 3);
+      dot.setAttribute('fill', '#0A4E75');
+      svg.appendChild(dot);
+    }
+  }
+  document.querySelectorAll('svg[data-series]').forEach(svg=>{
+    try{
+      const series = JSON.parse(svg.getAttribute('data-series'));
+      renderLine(svg, series);
+    }catch(e){}
+  });
+})();
+</script>
 {% endblock %}

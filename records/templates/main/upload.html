@@ -1,86 +1,258 @@
-{% extends 'basetemplates/base_app.html' %}
-{% load i18n %}
-{% block content %}
-<main class="bg-site-background min-h-screen p-4 md:p-8">
-  <div class="container mx-auto max-w-4xl">
-    <div class="bg-block-background p-6 rounded-3xl shadow-lg mb-8">
-      <h1 class="text-3xl font-bold text-gray-800">{% trans "Качване на документ" %}</h1>
-      <p class="mt-2 text-gray-600">{% trans "Изберете специалност и вид документ. По желание изберете лекар и съществуващо събитие." %}</p>
+{% extends "basetemplates/base_app.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "Качи" %}{% endblock %}
+
+{% block app_content %}
+
+<!-- Топ лента с 3 drop-down-а на един хоризонтален ред -->
+<div class="rounded-3xl px-6 py-5 mb-8" style="background:#43B8CF;">
+  <div class="grid grid-cols-12 gap-4 items-center">
+    <!-- 1) Специалност -->
+    <div class="col-span-12 md:col-span-4">
+      <select id="sel_specialty"
+              class="w-full rounded-lg px-4 py-2 outline-none {% if form.errors.specialty %}ring-2 ring-[#D84137]{% endif %}"
+              style="background:#FDFEE9;color:#0A4E75">
+        <option value="" selected disabled>{% trans "Специалност" %}</option>
+        {% if specialties %}
+          {% for s in specialties %}
+            <option value="{{ s.id }}" {% if form.data.specialty|stringformat:"s" == s.id|stringformat:"s" %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        {% else %}
+          {% for s in form.fields.specialty.queryset %}
+            <option value="{{ s.id }}" {% if form.data.specialty|stringformat:"s" == s.id|stringformat:"s" %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        {% endif %}
+      </select>
+      {% if form.errors.specialty %}
+        <p class="mt-1 text-sm" style="color:#D84137">{{ form.errors.specialty.0 }}</p>
+      {% endif %}
     </div>
 
-    <div class="bg-block-background p-6 rounded-3xl shadow-lg">
-      <form method="post" enctype="multipart/form-data" id="upload-form" class="space-y-6">
-        {% csrf_token %}
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Специалност" %}</label>
-          {{ form.specialty }}
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Вид документ" %}</label>
-            {{ form.doc_type }}
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Лекар" %}</label>
-            {{ form.practitioner }}
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Дата на документа" %}</label>
-            {{ form.document_date }}
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Прикачи към събитие" %}</label>
-            {{ form.attach_to_event }}
-            <p class="text-sm text-gray-500 mt-1">{% trans "Оставете празно, за да се създаде ново събитие на избраната дата." %}</p>
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Файл" %}</label>
-          {{ form.file }}
-        </div>
-
-        {% if form.errors %}
-          <div class="bg-light-red-bg border border-error-red text-dark-red-text px-4 py-3 rounded-lg">
-            {% for field, errors in form.errors.items %}{% for error in errors %}<p>{{ error }}</p>{% endfor %}{% endfor %}
-          </div>
+    <!-- 2) Категория -->
+    <div class="col-span-12 md:col-span-4">
+      <select id="sel_category"
+              class="w-full rounded-lg px-4 py-2 outline-none {% if form.errors.category %}ring-2 ring-[#D84137]{% endif %}"
+              style="background:#FDFEE9;color:#0A4E75"
+              {% if not form.data.specialty %}disabled{% endif %}>
+        <option value="" selected disabled>{% trans "Категория" %}</option>
+        {% if categories %}
+          {% for c in categories %}
+            <option value="{{ c.id }}" {% if form.data.category|stringformat:"s" == c.id|stringformat:"s" %}selected{% endif %}>{{ c }}</option>
+          {% endfor %}
         {% endif %}
+      </select>
+      {% if form.errors.category %}
+        <p class="mt-1 text-sm" style="color:#D84137">{{ form.errors.category.0 }}</p>
+      {% endif %}
+    </div>
 
-        <div class="pt-4">
-          <button class="px-8 py-4 bg-button-blue text-white font-bold rounded-lg shadow-md hover:bg-navbar-button-blue transition-colors">
-            {% trans "Качи" %}
-          </button>
-        </div>
-      </form>
+    <!-- 3) Вид документ -->
+    <div class="col-span-12 md:col-span-4">
+      <select id="sel_doc_type"
+              class="w-full rounded-lg px-4 py-2 outline-none {% if form.errors.doc_type %}ring-2 ring-[#D84137]{% endif %}"
+              style="background:#FDFEE9;color:#0A4E75"
+              {% if not form.data.category %}disabled{% endif %}>
+        <option value="" selected disabled>{% trans "Вид документ" %}</option>
+        {% if doc_types %}
+          {% for d in doc_types %}
+            <option value="{{ d.id }}" {% if form.data.doc_type|stringformat:"s" == d.id|stringformat:"s" %}selected{% endif %}>{{ d }}</option>
+          {% endfor %}
+        {% else %}
+          {% for d in form.fields.doc_type.queryset %}
+            <option value="{{ d.id }}" {% if form.data.doc_type|stringformat:"s" == d.id|stringformat:"s" %}selected{% endif %}>{{ d }}</option>
+          {% endfor %}
+        {% endif %}
+      </select>
+      {% if form.errors.doc_type %}
+        <p class="mt-1 text-sm" style="color:#D84137">{{ form.errors.doc_type.0 }}</p>
+      {% endif %}
     </div>
   </div>
-</main>
+</div>
 
+<!-- Карта с формата за качване -->
+<div class="max-w-4xl mx-auto">
+  <div class="rounded-3xl p-6 shadow-sm" style="background:#FDFEE9; border:2px solid #43B8CF;">
+
+    {# Обобщение (по желание) #}
+    {% if form.errors or form.non_field_errors %}
+      <div class="mb-6 rounded-xl p-3" style="background:#FDECEA;border:1px solid #D84137;color:#D84137">
+        <ul class="list-disc pl-5">
+          {% for field, errs in form.errors.items %}
+            {% for e in errs %}
+              <li><strong>{{ form.fields[field].label|default:field }}:</strong> {{ e }}</li>
+            {% endfor %}
+          {% endfor %}
+          {% for e in form.non_field_errors %}
+            <li>{{ e }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <form id="uploadForm" action="{% url 'medj:upload_preview' %}" method="post" enctype="multipart/form-data" class="space-y-5">
+      {% csrf_token %}
+
+      <!-- Скрити реални полета за бекенда -->
+      <input type="hidden" name="specialty" id="id_specialty_hidden" value="{{ form.data.specialty }}">
+      <input type="hidden" name="category"  id="id_category_hidden"  value="{{ form.data.category }}">
+      <input type="hidden" name="doc_type"  id="id_doc_type_hidden"  value="{{ form.data.doc_type }}">
+
+      <!-- Файл -->
+      <div>
+        <label class="block text-sm font-semibold mb-1" style="color:#0A4E75">{% trans "Файл" %}</label>
+        <input type="file" name="file" accept=".pdf,.png,.jpg,.jpeg"
+               class="w-full rounded-lg border px-4 py-2 {% if form.errors.file %}ring-2 ring-[#D84137]{% endif %}"
+               style="border-color:#43B8CF;"/>
+        {% if form.errors.file %}
+          <p class="mt-1 text-sm" style="color:#D84137">{{ form.errors.file.0 }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Тип файл -->
+      <div>
+        <label class="block text-sm font-semibold mb-1" style="color:#0A4E75">{% trans "Изберете тип файл" %}</label>
+        <select name="file_kind" id="id_file_kind"
+                class="w-full rounded-lg border px-4 py-2 {% if form.errors.file_kind %}ring-2 ring-[#D84137]{% endif %}"
+                style="border-color:#43B8CF;">
+          <option value="" {% if not form.data.file_kind %}selected{% endif %} disabled>{% trans "тип (pdf / jpg / png)" %}</option>
+          <option value="pdf" {% if form.data.file_kind == 'pdf' %}selected{% endif %}>PDF</option>
+          <option value="jpg" {% if form.data.file_kind == 'jpg' %}selected{% endif %}>JPG</option>
+          <option value="png" {% if form.data.file_kind == 'png' %}selected{% endif %}>PNG</option>
+        </select>
+        {% if form.errors.file_kind %}
+          <p class="mt-1 text-sm" style="color:#D84137">{{ form.errors.file_kind.0 }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Нова дата на събитие + тагове -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="id_new_event_date" class="block text-sm font-semibold mb-1" style="color:#0A4E75">{% trans "Или създай ново събитие с дата" %}</label>
+          <input type="date" name="new_event_date" id="id_new_event_date"
+                 value="{{ form.data.new_event_date }}"
+                 class="w-full rounded-lg border px-4 py-2 {% if form.errors.new_event_date or form.non_field_errors %}ring-2 ring-[#D84137]{% endif %}"
+                 style="border-color:#43B8CF;">
+          {% if form.errors.new_event_date %}
+            <p class="mt-1 text-sm" style="color:#D84137">{{ form.errors.new_event_date.0 }}</p>
+          {% endif %}
+          {% if form.non_field_errors %}
+            <p class="mt-1 text-sm" style="color:#D84137">{{ form.non_field_errors.0 }}</p>
+          {% endif %}
+        </div>
+
+        <div>
+          <label for="id_tags" class="block text-sm font-semibold mb-1" style="color:#0A4E75">{% trans "Тагове" %}</label>
+          <input type="text" name="tags" id="id_tags"
+                 value="{{ form.data.tags }}"
+                 placeholder="{% trans 'напр. кръвна картина, профилактичен' %}"
+                 class="w-full rounded-lg border px-4 py-2"
+                 style="border-color:#43B8CF;">
+        </div>
+      </div>
+
+      <!-- Съществуващо събитие (по избор) -->
+      <div>
+        <label class="block text-sm font-semibold mb-1" style="color:#0A4E75">{% trans "Свържи със съществуващо събитие (по избор)" %}</label>
+        <select name="target_event" id="id_target_event"
+                class="w-full rounded-lg border px-4 py-2 {% if form.errors.target_event or form.non_field_errors %}ring-2 ring-[#D84137]{% endif %}"
+                style="border-color:#43B8CF;"
+                {% if not form.data.specialty %}disabled{% endif %}>
+          <option value="">{% trans "няма избрано" %}</option>
+          {# ако в изгледа подадеш events за избраната специалност, напълни ги тук #}
+        </select>
+        {% if form.errors.target_event %}
+          <p class="mt-1 text-sm" style="color:#D84137">{{ form.errors.target_event.0 }}</p>
+        {% endif %}
+        {% if form.non_field_errors %}
+          <p class="mt-1 text-sm" style="color:#D84137">{{ form.non_field_errors.0 }}</p>
+        {% endif %}
+        <p class="mt-1 text-xs" style="color:#0A4E75">{% trans "Списъкът се зарежда след избор на специалност" %}</p>
+      </div>
+
+      <!-- Бутон -->
+      <div class="pt-2">
+        <button id="btnUpload" type="submit" class="w-full rounded-xl py-3 font-semibold disabled:opacity-60"
+                style="background:#43B8CF;color:#FDFEE9"
+                {% if not (form.data.specialty and form.data.category and form.data.doc_type) %}disabled{% endif %}>
+          {% trans "Качи" %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- JS: последователно активиране и синхронизация към скритите полета -->
 <script>
-document.addEventListener('change', async (e) => {
-  if (e.target && e.target.id === 'id_specialty') {
-    const specId = e.target.value;
-    const url = "{% url 'medj:events_by_specialty' %}" + "?specialty=" + encodeURIComponent(specId);
-    const res = await fetch(url, {headers: {'X-Requested-With':'XMLHttpRequest'}});
-    const data = await res.json();
-    const select = document.getElementById("id_attach_to_event");
-    select.innerHTML = "";
-    const opt = document.createElement("option");
-    opt.value = "";
-    opt.textContent = "";
-    select.appendChild(opt);
-    data.results.forEach(r => {
-      const o = document.createElement("option");
-      o.value = r.id;
-      o.textContent = `${r.date}${r.summary ? ' — ' + r.summary : ''}`;
-      select.appendChild(o);
-    });
+(function() {
+  const selSpec = document.getElementById('sel_specialty');
+  const selCat  = document.getElementById('sel_category');
+  const selDoc  = document.getElementById('sel_doc_type');
+
+  const hidSpec = document.getElementById('id_specialty_hidden');
+  const hidCat  = document.getElementById('id_category_hidden');
+  const hidDoc  = document.getElementById('id_doc_type_hidden');
+
+  const targetEvent = document.getElementById('id_target_event');
+  const btnUpload   = document.getElementById('btnUpload');
+
+  function toggleButton() {
+    btnUpload.disabled = !(selSpec.value && selCat.value && selDoc.value);
   }
-});
+
+  selSpec.addEventListener('change', async function() {
+    hidSpec.value = selSpec.value || '';
+    selCat.disabled = !selSpec.value;
+    selCat.value = '';
+    hidCat.value = '';
+    selDoc.disabled = true;
+    selDoc.value = '';
+    hidDoc.value = '';
+    toggleButton();
+
+    // зареди събития за специалност (stub endpoint)
+    targetEvent.disabled = true;
+    targetEvent.innerHTML = '<option value="">{% trans "зареждане…" %}</option>';
+    try {
+      const url = "{% url 'medj:events_by_specialty' %}?specialty=" + encodeURIComponent(selSpec.value);
+      const res = await fetch(url);
+      const data = await res.json();
+      targetEvent.innerHTML = '<option value="">{% trans "няма избрано" %}</option>';
+      if (data && Array.isArray(data.events)) {
+        data.events.forEach(ev => {
+          const opt = document.createElement('option');
+          opt.value = ev.id;
+          opt.textContent = ev.label || (ev.date || '');
+          targetEvent.appendChild(opt);
+        });
+      }
+    } catch(e) {
+      targetEvent.innerHTML = '<option value="">{% trans "няма избрано" %}</option>';
+    }
+    targetEvent.disabled = false;
+  });
+
+  selCat.addEventListener('change', function() {
+    hidCat.value = selCat.value || '';
+    selDoc.disabled = !selCat.value;
+    selDoc.value = '';
+    hidDoc.value = '';
+    toggleButton();
+  });
+
+  selDoc.addEventListener('change', function() {
+    hidDoc.value = selDoc.value || '';
+    toggleButton();
+  });
+
+  // при load – синхронизирай състоянието
+  window.addEventListener('load', function() {
+    if (selSpec.value) selCat.disabled = false;
+    if (selSpec.value && selCat.value) selDoc.disabled = false;
+    toggleButton();
+  });
+})();
 </script>
+
 {% endblock %}

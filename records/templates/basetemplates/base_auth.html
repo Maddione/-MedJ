@@ -1,9 +1,0 @@
-{% extends "basetemplates/base.html" %}
-{% load i18n %}
-
-{% block nav_buttons %}
-  <a href="{% url 'medj:login' %}" class="px-4 py-2 rounded-2xl text-white" style="background-color:#0A4E75">{% trans "Вход" %}</a>
-  <a href="{% url 'medj:register' %}" class="px-4 py-2 rounded-2xl text-white" style="background-color:#0A4E75">{% trans "Регистрация" %}</a>
-{% endblock %}
-
-{% block content %}{% block auth_content %}{% endblock %}{% endblock %}

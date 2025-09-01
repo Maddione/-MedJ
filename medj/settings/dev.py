@@ -12,3 +12,7 @@ DATABASES = {
 }
 
 INTERNAL_IPS = ["127.0.0.1"]
+
+STATIC_URL = "/static/"
+
+OCR_API_URL = os.environ.get("OCR_API_URL", "http://ocrapi:5000/ocr")

@@ -1,13 +1,18 @@
 {% extends "basetemplates/base.html" %}
-{% load i18n %}
+{% load i18n static %}
 
 {% block nav_buttons %}
-  <a href="{% url 'medj:dashboard' %}" class="px-4 py-2 rounded-2xl text-white" style="background-color:#0A4E75">{% trans "Табло" %}</a>
-  <a href="{% url 'medj:medical_event_list' %}" class="px-4 py-2 rounded-2xl text-white" style="background-color:#0A4E75">{% trans "Документи" %}</a>
-  <a href="{% url 'medj:profile' %}" class="px-4 py-2 rounded-2xl text-white" style="background-color:#0A4E75">{% trans "Личен картон" %}</a>
-  <a href="{% url 'medj:upload_page' %}" class="px-4 py-2 rounded-2xl text-white" style="background-color:#0A4E75">{% trans "Качи" %}</a>
-  <a href="{% url 'medj:upload_history' %}" class="px-4 py-2 rounded-2xl text-white" style="background-color:#0A4E75">{% trans "История" %}</a>
-  <a href="{% url 'logout' %}" class="px-4 py-2 rounded-2xl text-white" style="background-color:#D84137">{% trans "Изход" %}</a>
+  <a href="{% url 'medj:dashboard' %}" class="text-white/90 hover:text-white font-semibold uppercase tracking-wide px-4 py-2 rounded-md transition-colors">{% translate "Табло" %}</a>
+  <a href="{% url 'medj:casefiles' %}" class="text-white/90 hover:text-white font-semibold uppercase tracking-wide px-4 py-2 rounded-md transition-colors">{% translate "Досие" %}</a>
+  <a href="{% url 'medj:personal_card' %}" class="text-white/90 hover:text-white font-semibold uppercase tracking-wide px-4 py-2 rounded-md transition-colors">{% translate "Л.Картон" %}</a>
+  <a href="{% url 'medj:documents' %}" class="text-white/90 hover:text-white font-semibold uppercase tracking-wide px-4 py-2 rounded-md transition-colors">{% translate "Документи" %}</a>
+
+  <a href="{% url 'medj:upload' %}" class="ml-2 bg-primaryDark hover:bg-blue-600 text-white font-bold uppercase px-5 py-2 rounded-lg transition-colors">{% translate "Качи" %}</a>
+  <a href="{% url 'medj:share_document_page' %}" class="ml-2 bg-green-600 hover:bg-green-700 text-white font-bold uppercase px-5 py-2 rounded-lg transition-colors">{% translate "Сподели" %}</a>
 {% endblock %}
 
-{% block content %}{% block app_content %}{% endblock %}{% endblock %}
+{% block body_content %}
+  <div class="w-[98%] mx-auto bg-blockbg rounded-3xl shadow-md flex-1 min-h-[calc(100vh-160px)] p-4">
+    {% block app_content %}{% endblock %}
+  </div>
+{% endblock %}

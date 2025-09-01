@@ -1,131 +1,173 @@
-{% extends 'basetemplates/base_app.html' %}
-{% load static %}
-{% load i18n %}
+{% extends "basetemplates/base_app.html" %}
+{% load i18n static %}
 
-{% block content %}
-    <div class="container mx-auto max-w-7xl">
-        <div class="bg-block-background p-6 rounded-3xl shadow-lg mb-8">
-            <h1 class="text-3xl font-bold text-gray-800">
-                {% trans "Досиета" %}
-            </h1>
-            <p class="mt-2 text-gray-600">
-                {% trans "Преглед на историята на медицинските събития." %}
-            </p>
+{% block app_content %}
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+  <aside class="lg:col-span-3">
+    <form id="filtersForm" method="get" action="{% url 'medj:casefiles' %}" class="space-y-4">
+
+      <div class="bg-blockbg rounded-2xl p-4 shadow-sm">
+        <div class="text-primaryDark font-bold mb-3">{% trans "Категория" %}</div>
+        <div class="space-y-2">
+          {% for c in categories %}
+            {% if c.count %}
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" name="category" value="{{ c.id }}" class="hidden"
+                     {% if c.id|stringformat:'s' in selected.category %}checked{% endif %}>
+              <span class="w-4 h-4 rounded-full border-2 border-[#0A4E75] flex items-center justify-center">
+                {% if c.id|stringformat:'s' in selected.category %}
+                <span class="w-3 h-3 rounded-full" style="background:#15BC11"></span>
+                {% endif %}
+              </span>
+              <span class="px-3 py-1 rounded-lg text-white" style="background:#43B8CF">{{ c.name }}</span>
+              <span class="ml-auto text-xs rounded-md px-2 py-0.5" style="background:#0A4E75; color:#FDFEE9">{{ c.count }}</span>
+            </label>
+            {% endif %}
+          {% endfor %}
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      </div>
 
-            <div class="lg:col-span-1 bg-block-background p-6 rounded-3xl shadow-lg">
-                <div class="bg-navbar-button-blue text-white p-4 rounded-t-3xl -mx-6 -mt-6 mb-4">
-                    <h2 class="text-xl font-semibold">{% trans "Филтри" %}</h2>
-                </div>
-
-                <div class="mb-6">
-                    <h3 class="text-lg font-semibold text-gray-700 mb-3">{% trans "Категория" %}</h3>
-                    <div class="space-y-2">
-                        <button class="w-full text-left px-4 py-2 rounded-full bg-button-blue text-white flex items-center justify-between shadow-sm">
-                            <span>{% trans "Преглед" %}</span>
-                            <i class="fa-solid fa-check text-checkmark-green"></i>
-                        </button>
-                        <button class="w-full text-left px-4 py-2 rounded-full bg-navbar-button-blue text-white opacity-70 flex items-center justify-between shadow-sm">
-                            <span>{% trans "Рецепта" %}</span>
-                            <i class="fa-solid fa-square text-white"></i>
-                        </button>
-                        <button class="w-full text-left px-4 py-2 rounded-full bg-button-blue text-white flex items-center justify-between shadow-sm">
-                            <span>{% trans "Ваксинация" %}</span>
-                            <i class="fa-solid fa-check text-checkmark-green"></i>
-                        </button>
-                        <button class="w-full text-left px-4 py-2 rounded-full bg-button-blue text-white flex items-center justify-between shadow-sm">
-                            <span>{% trans "Кръвни изсл." %}</span>
-                            <i class="fa-solid fa-check text-checkmark-green"></i>
-                        </button>
-                        <button class="w-full text-left px-4 py-2 rounded-full bg-navbar-button-blue text-white opacity-70 flex items-center justify-between shadow-sm">
-                            <span>{% trans "Рентгенография" %}</span>
-                            <i class="fa-solid fa-square text-white"></i>
-                        </button>
-                        <button class="w-full text-left px-4 py-2 rounded-full bg-navbar-button-blue text-white opacity-70 flex items-center justify-between shadow-sm">
-                            <span>{% trans "Болничен прест." %}</span>
-                            <i class="fa-solid fa-square text-white"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-700 mb-3">{% trans "Специалист" %}</h3>
-                    <div class="space-y-2">
-                        <button class="w-full text-left px-4 py-2 rounded-full bg-button-blue text-white flex items-center justify-between shadow-sm">
-                            <span>{% trans "Личен лекар" %}</span>
-                            <i class="fa-solid fa-check text-checkmark-green"></i>
-                        </button>
-                        <button class="w-full text-left px-4 py-2 rounded-full bg-button-blue text-white flex items-center justify-between shadow-sm">
-                            <span>{% trans "Ендокринолог" %}</span>
-                            <i class="fa-solid fa-check text-checkmark-green"></i>
-                        </button>
-                        <button class="w-full text-left px-4 py-2 rounded-full bg-navbar-button-blue text-white opacity-70 flex items-center justify-between shadow-sm">
-                            <span>{% trans "Кардиолог" %}</span>
-                            <i class="fa-solid fa-square text-white"></i>
-                        </button>
-                        <button class="w-full text-left px-4 py-2 rounded-full bg-navbar-button-blue text-white opacity-70 flex items-center justify-between shadow-sm">
-                            <span>{% trans "Гастроентеролог" %}</span>
-                            <i class="fa-solid fa-square text-white"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="lg:col-span-3 bg-block-background p-6 rounded-3xl shadow-lg">
-                <div class="flex items-center mb-6">
-                    <input type="text" placeholder="{% trans 'пр. Холестерол, Ендокринолог' %}" class="flex-grow p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-button-blue focus:border-button-blue">
-                    <button class="ml-3 px-4 py-3 bg-button-blue text-white rounded-lg shadow-sm hover:bg-navbar-button-blue transition-colors">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                    </button>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="min-w-full text-sm text-gray-700">
-                        <thead>
-                            <tr class="bg-creamy-main-content">
-                                <th class="py-3 px-4 text-left font-semibold cursor-pointer">
-                                    {% trans "Дата" %} <i class="fa-solid fa-sort ml-1"></i>
-                                </th>
-
-                            </tr>
-                        </thead>
-                        <tbody>
-
-                            <tr class="bg-creamy-main-content border-b border-gray-200 hover:bg-gray-50">
-
-                            </tr>
-                            <tr class="bg-creamy-main-content border-b border-gray-200 hover:bg-gray-50">
-
-                            </tr>
-
-                            <tr>
-                                <td colspan="4" class="py-4 px-4 text-lg font-bold text-navbar-button-blue">
-                                    {% trans "Септември, 2000" %}
-                                </td>
-                            </tr>
-                            <tr class="bg-creamy-main-content border-b border-gray-200 hover:bg-gray-50">
-
-                            </tr>
-                            <tr class="bg-creamy-main-content border-b border-gray-200 hover:bg-gray-50">
-
-                            </tr>
-
-                            <tr>
-                                <td colspan="4" class="py-4 px-4 text-lg font-bold text-navbar-button-blue">
-                                    {% trans "Януари, 2000" %}
-                                </td>
-                            </tr>
-                            <tr class="bg-creamy-main-content hover:bg-gray-50">
-                                <td class="py-3 px-4 whitespace-nowrap">01.01.2000</td>
-                                <td class="py-3 px-4">{% trans "Преглед" %}</td>
-                                <td class="py-3 px-4">{% trans "Първичен преглед" %}</td>
-                                <td class="py-3 px-4">{% trans "Д-р Иван Иванов, Ендокринолог" %}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+      <div class="bg-blockbg rounded-2xl p-4 shadow-sm">
+        <div class="text-primaryDark font-bold mb-3">{% trans "Специалист" %}</div>
+        <div class="space-y-2">
+          {% for s in specialties %}
+            {% if s.count %}
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" name="specialty" value="{{ s.id }}" class="hidden"
+                     {% if s.id|stringformat:'s' in selected.specialty %}checked{% endif %}>
+              <span class="w-4 h-4 rounded-full border-2 border-[#0A4E75] flex items-center justify-center">
+                {% if s.id|stringformat:'s' in selected.specialty %}
+                <span class="w-3 h-3 rounded-full" style="background:#15BC11"></span>
+                {% endif %}
+              </span>
+              <span class="px-3 py-1 rounded-lg text-white" style="background:#43B8CF">{{ s.name }}</span>
+              <span class="ml-auto text-xs rounded-md px-2 py-0.5" style="background:#0A4E75; color:#FDFEE9">{{ s.count }}</span>
+            </label>
+            {% endif %}
+          {% endfor %}
         </div>
+
+      </div>
+
+      <div class="bg-blockbg rounded-2xl p-4 shadow-sm">
+        <div class="text-primaryDark font-bold mb-3">{% trans "Тагове" %}</div>
+        <div class="flex flex-wrap gap-2">
+          {% for t in tags_all %}
+          <label class="inline-flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" name="tags" value="{{ t.id }}" class="hidden"
+                   {% if t.id|stringformat:'s' in selected.tags or t.name in selected.tags %}checked{% endif %}>
+            <span class="px-3 py-1 rounded-full text-xs text-white" style="background:#0A4E75">{{ t.name }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="bg-blockbg rounded-2xl p-4 shadow-sm">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block mb-1 text-sm text-primaryDark">{% trans "От дата" %}</label>
+            <input type="date" name="date_from" value="{{ selected.date_from }}" class="bg-white border border-gray-300 text-sm rounded-lg w-full p-2.5">
+          </div>
+          <div>
+            <label class="block mb-1 text-sm text-primaryDark">{% trans "До дата" %}</label>
+            <input type="date" name="date_to" value="{{ selected.date_to }}" class="bg-white border border-gray-300 text-sm rounded-lg w-full p-2.5">
+          </div>
+        </div>
+        <button type="submit" class="mt-4 w-full text-white font-semibold rounded-lg text-sm px-5 py-2.5" style="background:#43B8CF">
+          {% trans "Филтрирай" %}
+        </button>
+        <a href="{% url 'medj:casefiles' %}" class="block text-center mt-2 rounded-lg text-sm px-5 py-2.5" style="color:#0A4E75">
+          {% trans "Изчисти" %}
+        </a>
+      </div>
+
+    </form>
+  </aside>
+
+  <section class="lg:col-span-9 space-y-4">
+    <form method="get" action="{% url 'medj:casefiles' %}" class="bg-blockbg rounded-2xl p-3 shadow-sm">
+      {% for v in selected.category %}<input type="hidden" name="category" value="{{ v }}">{% endfor %}
+      {% for v in selected.specialty %}<input type="hidden" name="specialty" value="{{ v }}">{% endfor %}
+      {% for v in selected.tags %}<input type="hidden" name="tags" value="{{ v }}">{% endfor %}
+      {% if selected.date_from %}<input type="hidden" name="date_from" value="{{ selected.date_from }}">{% endif %}
+      {% if selected.date_to %}<input type="hidden" name="date_to" value="{{ selected.date_to }}">{% endif %}
+      {% if selected.sort %}<input type="hidden" name="sort" value="{{ selected.sort }}">{% endif %}
+
+      <div class="flex items-center gap-3">
+        <input type="text" name="q" value="{{ selected.q }}" placeholder="{% trans 'пр. Холестерол, Ендокринолог' %}"
+               class="flex-1 bg-white border border-gray-300 rounded-lg p-2.5 text-sm">
+        <button type="submit" class="rounded-full p-2.5" title="{% trans 'Търси' %}" style="background:#43B8CF">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="#FDFEE9"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.3-4.3M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0z"/></svg>
+        </button>
+      </div>
+    </form>
+
+{% if grouped %}
+<div class="bg-blockbg rounded-2xl p-2 shadow-sm">
+  <div class="flex items-center gap-2 px-2">
+    <div class="grid grid-cols-12 w-full text-primaryDark font-semibold">
+
+      <a href="{% url 'medj:casefiles' %}?{% for v in selected.category %}category={{v}}&{% endfor %}{% for v in selected.specialty %}specialty={{v}}&{% endfor %}{% for v in selected.tags %}tags={{v}}&{% endfor %}{% if selected.q %}q={{selected.q|urlencode}}&{% endif %}{% if selected.date_from %}date_from={{selected.date_from}}&{% endif %}{% if selected.date_to %}date_to={{selected.date_to}}&{% endif %}sort={% if selected.sort == 'date_desc' %}date_asc{% else %}date_desc{% endif %}"
+         class="col-span-3 px-3 py-2 rounded-lg inline-flex items-center gap-1" style="background:#0A4E75; color:#FDFEE9">
+        {% trans "Дата" %}{% if selected.sort == 'date_desc' %} ↑{% elif selected.sort == 'date_asc' %} ↓{% endif %}
+      </a>
+
+      <a href="{% url 'medj:casefiles' %}?{% for v in selected.category %}category={{v}}&{% endfor %}{% for v in selected.specialty %}specialty={{v}}&{% endfor %}{% for v in selected.tags %}tags={{v}}&{% endfor %}{% if selected.q %}q={{selected.q|urlencode}}&{% endif %}{% if selected.date_from %}date_from={{selected.date_from}}&{% endif %}{% if selected.date_to %}date_to={{selected.date_to}}&{% endif %}sort={% if selected.sort == 'type_desc' %}type_asc{% else %}type_desc{% endif %}"
+         class="col-span-2 px-3 py-2 rounded-lg inline-flex items-center gap-1" style="background:#0A4E75; color:#FDFEE9">
+        {% trans "Вид" %}{% if selected.sort == 'type_desc' %} ↑{% elif selected.sort == 'type_asc' %} ↓{% endif %}
+      </a>
+
+      <a href="{% url 'medj:casefiles' %}?{% for v in selected.category %}category={{v}}&{% endfor %}{% for v in selected.specialty %}specialty={{v}}&{% endfor %}{% for v in selected.tags %}tags={{v}}&{% endfor %}{% if selected.q %}q={{selected.q|urlencode}}&{% endif %}{% if selected.date_from %}date_from={{selected.date_from}}&{% endif %}{% if selected.date_to %}date_to={{selected.date_to}}&{% endif %}sort={% if selected.sort == 'name_desc' %}name_asc{% else %}name_desc{% endif %}"
+         class="col-span-5 px-3 py-2 rounded-lg inline-flex items-center gap-1" style="background:#0A4E75; color:#FDFEE9">
+        {% trans "Наименование" %}{% if selected.sort == 'name_desc' %} ↑{% elif selected.sort == 'name_asc' %} ↓{% endif %}
+      </a>
+
+      <a href="{% url 'medj:casefiles' %}?{% for v in selected.category %}category={{v}}&{% endfor %}{% for v in selected.specialty %}specialty={{v}}&{% endfor %}{% for v in selected.tags %}tags={{v}}&{% endfor %}{% if selected.q %}q={{selected.q|urlencode}}&{% endif %}{% if selected.date_from %}date_from={{selected.date_from}}&{% endif %}{% if selected.date_to %}date_to={{selected.date_to}}&{% endif %}sort={% if selected.sort == 'spec_desc' %}spec_asc{% else %}spec_desc{% endif %}"
+         class="col-span-2 px-3 py-2 rounded-lg inline-flex items-center gap-1" style="background:#0A4E75; color:#FDFEE9">
+        {% trans "Специалист" %}{% if selected.sort == 'spec_desc' %} ↑{% elif selected.sort == 'spec_asc' %} ↓{% endif %}
+      </a>
+
     </div>
+  </div>
+
+
+      {% for group in grouped %}
+      <div class="px-4 pt-4">
+        <div class="text-primaryDark font-bold mb-2">{{ group.label }}</div>
+        <div class="divide-y divide-[#0A4E75]/30">
+          {% for d in group.items %}
+          <a href="{% url 'medj:event_detail' d.event_id %}" class="block py-4 hover:bg-white/50 rounded-xl">
+            <div class="grid grid-cols-12 items-start gap-2 text-primaryDark">
+              <div class="col-span-3">{{ d.date|date:"d.m.Y" }}</div>
+              <div class="col-span-2">{{ d.type_name }}</div>
+              <div class="col-span-5">{{ d.title }}</div>
+              <div class="col-span-2">{{ d.specialist }}</div>
+            </div>
+            <div class="mt-2 flex flex-wrap gap-2">
+              {% for t in d.tags %}
+              <span class="inline-flex items-center px-2 py-1 rounded-full text-xs text-white" style="background:#0A4E75">{{ t }}</span>
+              {% endfor %}
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-blockbg rounded-2xl p-6 shadow-sm text-primaryDark">{% trans "Няма документи за показване." %}</div>
+    {% endif %}
+  </section>
+</div>
+
+<script>
+
+  document.querySelectorAll('aside input[type="checkbox"]').forEach(ch => {
+    ch.addEventListener('change', () => {
+      document.getElementById('filtersForm').submit();
+    });
+  });
+</script>
 {% endblock %}

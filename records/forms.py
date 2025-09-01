@@ -8,95 +8,114 @@ from .models import (
     DocumentType,
     MedicalEvent,
     Tag,
+    LabIndicator,
+    LabTestMeasurement,
 )
 
+from .models import (
+    Document, MedicalSpecialty, DocumentType, MedicalEvent,
+    MedicalCategory,
+    Tag, LabIndicator, LabTestMeasurement,
+)
 UserModel = get_user_model()
 
 class LoginForm(AuthenticationForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['username'].widget.attrs.update(
-            {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}
-        )
-        self.fields['password'].widget.attrs.update(
-            {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline'}
-        )
+    pass
 
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(required=True, label=_l("Имейл"))
-
     class Meta:
         model = UserModel
-        fields = ["username", "email", "first_name", "last_name"]
+        fields = ("username", "email", "first_name", "last_name")
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if email and UserModel.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError(_l("Потребител с този имейл адрес вече съществува."))
+        return email
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field_name, field in self.fields.items():
-            field.widget.attrs.update({'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2'})
-
-class DocumentUploadForm(forms.ModelForm):
-    specialty = forms.ModelChoiceField(queryset=MedicalSpecialty.objects.all(), label=_l("Специалност"))
-    doc_type = forms.ModelChoiceField(queryset=DocumentType.objects.filter(is_active=True), label=_l("Вид документ"))
-    document_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}), label=_l("Дата на документа"))
-    attach_to_event = forms.ModelChoiceField(queryset=MedicalEvent.objects.none(), required=False, label=_l("Прикачи към събитие"))
-    file = forms.FileField(label=_l("Файл"))
-
+class DocumentTagForm(forms.ModelForm):
     class Meta:
         model = Document
-        fields = ["file", "doc_type", "document_date"]
+        fields = ["tags"]
+        widgets = {"tags": forms.SelectMultiple(attrs={"class": "form-multiselect"})}
+
+class EventTagForm(forms.ModelForm):
+    class Meta:
+        model = MedicalEvent
+        fields = ["tags"]
+        widgets = {"tags": forms.SelectMultiple(attrs={"class": "form-multiselect"})}
+
+class TagCreationForm(forms.ModelForm):
+    class Meta:
+        model = Tag
+        fields = ["name", "category"]
+        widgets = {
+            "name": forms.TextInput(attrs={"placeholder": _l("Въведете име на таг")}),
+        }
+
+class DocumentUploadForm(forms.Form):
+    doc_type = forms.ModelChoiceField(
+        queryset=DocumentType.objects.filter(is_active=True),
+        label=_l("Вид документ"),
+        empty_label=_l("Изберете вид документ"),
+        required=True,
+    )
+    specialty = forms.ModelChoiceField(
+        queryset=MedicalSpecialty.objects.filter(is_active=True),
+        label=_l("Специалност"),
+        empty_label=_l("Изберете специалност"),
+        required=True,
+    )
+    category = forms.ModelChoiceField(
+        queryset=MedicalCategory.objects.filter(is_active=True),
+        label=_l("Категория"),
+        empty_label=_l("Изберете категория"),
+        required=True,
+    )
+
+    target_event = forms.ModelChoiceField(
+        queryset=MedicalEvent.objects.none(),
+        label=_l("Свържи със съществуващо събитие"),
+        required=False,
+    )
+    new_event_date = forms.DateField(
+        label=_l("Или създай ново събитие с дата"),
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+    tags = forms.CharField(
+        label=_l("Тагове (разделени със запетая)"),
+        required=False,
+        widget=forms.TextInput(attrs={"placeholder": _l("напр. кръвна картина, профилактичен")}),
+    )
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user", None)
+        initial_specialty = kwargs.pop("initial_specialty", None)
+        initial_category = kwargs.pop("initial_category", None)
         super().__init__(*args, **kwargs)
-        self.fields["attach_to_event"].queryset = MedicalEvent.objects.none()
-        if "specialty" in self.data and user and hasattr(user, "patientprofile"):
-            try:
-                spec_id = int(self.data.get("specialty"))
-                self.fields["attach_to_event"].queryset = MedicalEvent.objects.filter(
-                    patient=user.patientprofile, specialty_id=spec_id
-                ).order_by("-event_date")
-            except (TypeError, ValueError):
-                self.fields["attach_to_event"].queryset = MedicalEvent.objects.none()
 
-    def clean(self):
-        cleaned = super().clean()
-        return cleaned
-
-class EventTagForm(forms.Form):
-    tags = forms.ModelMultipleChoiceField(
-        queryset=Tag.objects.all(),
-        required=False,
-        widget=forms.SelectMultiple(attrs={"class": "w-full"}),
-        label=_l("Тагове")
-    )
-
-class DocumentTagForm(forms.Form):
-    tags = forms.ModelMultipleChoiceField(
-        queryset=Tag.objects.all(),
-        required=False,
-        widget=forms.SelectMultiple(attrs={"class": "w-full"}),
-        label=_l("Тагове")
-    )
-
-class MoveDocumentForm(forms.Form):
-    target_event = forms.ModelChoiceField(queryset=MedicalEvent.objects.none(), required=False, label=_l("Премести в събитие"))
-    new_event_date = forms.DateField(required=False, widget=forms.DateInput(attrs={"type": "date"}), label=_l("Или създай ново събитие на дата"))
-    specialty = forms.ModelChoiceField(queryset=MedicalSpecialty.objects.all(), label=_l("Специалност"))
-
-    def __init__(self, *args, **kwargs):
-        user = kwargs.pop("user", None)
-        initial_specialty = kwargs.pop("specialty", None)
-        super().__init__(*args, **kwargs)
         if initial_specialty:
-            self.fields["specialty"].initial = initial_specialty.pk if hasattr(initial_specialty, "pk") else initial_specialty
-        if "specialty" in self.data and user and hasattr(user, "patientprofile"):
+            self.fields["specialty"].initial = getattr(initial_specialty, "pk", initial_specialty)
+        if initial_category:
+            self.fields["category"].initial = getattr(initial_category, "pk", initial_category)
+
+        if user and hasattr(user, "patientprofile"):
             try:
-                spec_id = int(self.data.get("specialty"))
-                self.fields["target_event"].queryset = MedicalEvent.objects.filter(
-                    patient=user.patientprofile, specialty_id=spec_id
-                ).order_by("-event_date")
+                spec_id = int((self.data or {}).get("specialty"))
             except (TypeError, ValueError):
-                self.fields["target_event"].queryset = MedicalEvent.objects.none()
+                spec_id = None
+            try:
+                cat_id = int((self.data or {}).get("category"))
+            except (TypeError, ValueError):
+                cat_id = None
+
+            qs = MedicalEvent.objects.filter(patient=user.patientprofile)
+            if spec_id:
+                qs = qs.filter(specialty_id=spec_id)
+            if cat_id:
+                qs = qs.filter(category_id=cat_id)
+            self.fields["target_event"].queryset = qs.order_by("-event_date")
 
     def clean(self):
         cleaned = super().clean()
@@ -108,16 +127,39 @@ class MoveDocumentForm(forms.Form):
             raise forms.ValidationError(_l("Изберете само едно: съществуващо събитие или нова дата."))
         return cleaned
 
+    def get_normalized_tags(self):
+        raw = self.cleaned_data.get("tags") or ""
+        parts = [p.strip() for p in raw.split(",") if p.strip()]
+        unique = []
+        for p in parts:
+            if p not in unique:
+                unique.append(p)
+        return unique
+
 class DocumentEditForm(forms.ModelForm):
     doc_type = forms.ModelChoiceField(
         queryset=DocumentType.objects.filter(is_active=True),
         label=_l("Вид документ"),
+        required=True,
     )
     document_date = forms.DateField(
         widget=forms.DateInput(attrs={"type": "date"}),
         label=_l("Дата на документа"),
+        required=False,
     )
-
     class Meta:
         model = Document
-        fields = ["doc_type", "document_date"]
+        fields = ["doc_type", "document_date", "summary", "notes"]
+
+class ShareCreateForm(forms.Form):
+    duration_hours = forms.IntegerField(min_value=1, label=_l("Валидност (часове)"))
+
+class LabIndicatorForm(forms.ModelForm):
+    class Meta:
+        model = LabIndicator
+        fields = ["name", "unit", "reference_low", "reference_high"]
+
+class LabTestMeasurementForm(forms.ModelForm):
+    class Meta:
+        model = LabTestMeasurement
+        fields = ["medical_event", "indicator", "value", "measured_at"]

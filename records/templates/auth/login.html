@@ -1,34 +1,41 @@
 {% extends "basetemplates/base_public.html" %}
-{% load i18n widget_tweaks %}
+{% load i18n static %}
 
-{% block title %}{% trans "Sign in" %}{% endblock %}
+{% block public_content %}
+<div class="flex flex-col items-center justify-center h-full py-8">
+    <h1 class="text-2xl font-bold text-primaryDark mb-6">MedJ</h1>
 
-{% block content %}
-<div class="max-w-md mx-auto">
-    <h2 class="text-center text-2xl font-bold text-brand-blue">{% trans "Sign in to your account" %}</h2>
-    <form method="post" class="mt-8 space-y-6 bg-brand-cream p-8 rounded-2xl shadow-soft">
+    <form method="post" action="{% url 'login' %}" class="w-full max-w-sm space-y-4">
         {% csrf_token %}
-        {% if form.non_field_errors %}
-          <div class="p-3 rounded bg-red-100 text-red-800 text-sm">{{ form.non_field_errors }}</div>
-        {% endif %}
-
         <div>
-            <label class="block text-sm font-medium mb-1" for="{{ form.username.id_for_label }}">{% trans "Username" %}</label>
-            {% render_field form.username class="block w-full rounded-md bg-white px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-blue" %}
-            {{ form.username.errors }}
+            <label for="username" class="block mb-2 text-sm font-medium text-primaryDark">{% trans "Потребителско име" %}</label>
+            <input type="text" name="username" id="username" required
+                   class="bg-blockbg border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5">
         </div>
 
         <div>
-            <label class="block text-sm font-medium mb-1" for="{{ form.password.id_for_label }}">{% trans "Password" %}</label>
-            {% render_field form.password class="block w-full rounded-md bg-white px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-blue" %}
-            {{ form.password.errors }}
+            <label for="password" class="block mb-2 text-sm font-medium text-primaryDark">{% trans "Парола" %}</label>
+            <input type="password" name="password" id="password" required
+                   class="bg-blockbg border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5">
         </div>
 
-        <button type="submit" class="w-full mt-2 rounded-full bg-brand-cyan px-4 py-3 font-semibold text-white hover:bg-brand-blue transition-colors">{% trans "Sign in" %}</button>
+        <div class="flex items-center justify-between">
+            <label class="flex items-center space-x-2 text-sm text-gray-700">
+                <input type="checkbox" name="remember" class="w-4 h-4 border-gray-300 rounded">
+                <span>{% trans "Запомни ме" %}</span>
+            </label>
+            <a href="{% url 'password_reset' %}" class="text-sm text-primary hover:underline">{% trans "Забравена парола?" %}</a>
+        </div>
+
+        <button type="submit"
+                class="w-full text-white bg-primary hover:bg-primaryDark focus:ring-4 focus:outline-none focus:ring-primary font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+            {% trans "Вход" %}
+        </button>
+
+        <p class="text-sm text-gray-600 text-center">
+            {% trans "Нямаш акаунт?" %}
+            <a href="{% url 'medj:register' %}" class="text-primary hover:underline">{% trans "Регистрация" %}</a>
+        </p>
     </form>
-    <p class="mt-6 text-center text-sm text-gray-600">
-        {% trans "Don't have an account?" %}
-        <a href="{% url 'medj:register' %}" class="font-medium text-brand-blue hover:underline">{% trans "Register now" %}</a>
-    </p>
 </div>
 {% endblock %}

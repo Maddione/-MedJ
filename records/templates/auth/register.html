@@ -1,36 +1,64 @@
-{% extends "basetemplates/base_auth.html" %}
-{% load i18n %}
-{% block title %}{% trans "Create account" %}{% endblock %}
-{% block content %}
-<h2 class="text-center text-2xl font-bold text-button-blue">{% trans "Create your account" %}</h2>
-<form method="post" class="mt-8 space-y-6">
-  {% csrf_token %}
-  {% if form.non_field_errors %}
-    <div class="p-3 rounded bg-brand-red/10 text-brand-red text-sm">{{ form.non_field_errors }}</div>
-  {% endif %}
-  <div>
-    <label class="block text-sm font-medium mb-1" for="{{ form.username.id_for_label }}">{% trans "Username" %}</label>
-    {{ form.username|as_widget(attrs={'class':'block w-full rounded-md bg-white px-3 py-2 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-nav-cyan'}) }}
-    {{ form.username.errors }}
-  </div>
-  <div>
-    <label class="block text-sm font-medium mb-1" for="{{ form.email.id_for_label }}">{% trans "Email address" %}</label>
-    {{ form.email|as_widget(attrs={'class':'block w-full rounded-md bg-white px-3 py-2 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-nav-cyan'}) }}
-    {{ form.email.errors }}
-  </div>
-  <div>
-    <label class="block text-sm font-medium mb-1" for="{{ form.password1.id_for_label }}">{% trans "Password" %}</label>
-    {{ form.password1|as_widget(attrs={'class':'block w-full rounded-md bg-white px-3 py-2 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-nav-cyan'}) }}
-    {{ form.password1.errors }}
-  </div>
-  <div>
-    <label class="block text-sm font-medium mb-1" for="{{ form.password2.id_for_label }}">{% trans "Confirm password" %}</label>
-    {{ form.password2|as_widget(attrs={'class':'block w-full rounded-md bg-white px-3 py-2 outline outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-nav-cyan'}) }}
-    {{ form.password2.errors }}
-  </div>
-  <button type="submit" class="w-full mt-2 rounded-md bg-button-blue px-4 py-2 font-semibold text-white hover:bg-nav-cyan">{% trans "Create account" %}</button>
-</form>
-<p class="mt-6 text-center text-sm text-gray-600">
-  {% trans "Already have an account?" %} <a href="{% url 'medj:login' %}" class="text-nav-cyan hover:underline">{% trans "Sign in" %}</a>
-</p>
+{% extends "basetemplates/base_public.html" %}
+{% load i18n static %}
+
+{% block public_content %}
+<div class="flex flex-col items-center justify-center h-full py-8">
+    <h1 class="text-2xl font-bold text-primaryDark mb-6">MedJ</h1>
+
+    {% if form.non_field_errors %}
+        <div class="w-full max-w-sm mb-4 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-700">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'medj:register' %}" class="w-full max-w-sm space-y-4" novalidate>
+        {% csrf_token %}
+
+        <div>
+            <label for="{{ form.username.id_for_label }}" class="block mb-2 text-sm font-medium text-primaryDark">{% trans "Потребителско име" %}</label>
+            <input type="text" name="{{ form.username.html_name }}" id="{{ form.username.id_for_label }}" value="{{ form.username.value|default_if_none:'' }}" autocomplete="username"
+                   class="bg-blockbg border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5" required>
+            {% if form.username.errors %}
+                <p class="mt-1 text-sm text-danger">{{ form.username.errors|striptags }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label for="{{ form.email.id_for_label }}" class="block mb-2 text-sm font-medium text-primaryDark">{% trans "Имейл" %}</label>
+            <input type="email" name="{{ form.email.html_name }}" id="{{ form.email.id_for_label }}" value="{{ form.email.value|default_if_none:'' }}" autocomplete="email"
+                   class="bg-blockbg border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5" required>
+            {% if form.email.errors %}
+                <p class="mt-1 text-sm text-danger">{{ form.email.errors|striptags }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label for="{{ form.password1.id_for_label }}" class="block mb-2 text-sm font-medium text-primaryDark">{% trans "Парола" %}</label>
+            <input type="password" name="{{ form.password1.html_name }}" id="{{ form.password1.id_for_label }}" autocomplete="new-password"
+                   class="bg-blockbg border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5" required>
+            {% if form.password1.errors %}
+                <p class="mt-1 text-sm text-danger">{{ form.password1.errors|striptags }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label for="{{ form.password2.id_for_label }}" class="block mb-2 text-sm font-medium text-primaryDark">{% trans "Потвърди паролата" %}</label>
+            <input type="password" name="{{ form.password2.html_name }}" id="{{ form.password2.id_for_label }}" autocomplete="new-password"
+                   class="bg-blockbg border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary focus:border-primary block w-full p-2.5" required>
+            {% if form.password2.errors %}
+                <p class="mt-1 text-sm text-danger">{{ form.password2.errors|striptags }}</p>
+            {% endif %}
+        </div>
+
+        <button type="submit"
+                class="w-full text-white bg-primary hover:bg-primaryDark focus:ring-4 focus:outline-none focus:ring-primary font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+            {% trans "Регистрация" %}
+        </button>
+
+        <p class="text-sm text-gray-600 text-center">
+            {% trans "Вече имаш акаунт?" %}
+            <a href="{% url 'login' %}" class="text-primary hover:underline">{% trans "Вход" %}</a>
+        </p>
+    </form>
+</div>
 {% endblock %}

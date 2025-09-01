@@ -63,6 +63,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "medj.wsgi.application"
 ASGI_APPLICATION = "medj.asgi.application"
+
 DATABASES = {
     "default": {
         "ENGINE": os.getenv("DB_ENGINE", "django.db.backends.sqlite3"),
@@ -109,3 +110,9 @@ PARLER_LANGUAGES = {
         'hide_untranslated': False,
     }
 }
+
+OCR_API_URL = os.getenv("OCR_API_URL", "http://127.0.0.1:5000/ocr")
+OCR_TIMEOUT = int(os.getenv("OCR_TIMEOUT", "15"))
+
+OCR_RETURNS_ANON = True
+

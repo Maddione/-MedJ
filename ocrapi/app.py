@@ -159,20 +159,21 @@ def ocr():
     gpt_json = maybe_call_gpt(anon_text, user_ctx)
 
     out = {
-        "filename": filename,
-        "summary": "",
-        "event_date": "",
-        "detected_specialty": "",
-        "suggested_tags": [],
-        "blood_test_results": blood_tests,
-        "doctors": [],
-        "diagnosis": "",
-        "treatment_plan": "",
-        "html_table": html_table,
+        "ok": True,
+        "summary": summary,
+        "event_date": event_date,
+        "detected_specialty": detected_specialty,
+        "suggested_tags": suggested_tags,
+        "blood_test_results": blood_test_results,
+        "diagnosis": diagnosis,
+        "treatment_plan": treatment_plan,
         "data": {
             "raw_text": anon_text
-        }
+        },
+        "html_fragment": html_table,
+        "anonymized": True
     }
+    return jsonify(out)
 
     if gpt_json and isinstance(gpt_json, dict):
         if isinstance(gpt_json.get("blood_test_results"), list) and len(gpt_json["blood_test_results"]) >= len(blood_tests):
