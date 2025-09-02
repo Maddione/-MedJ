@@ -13,6 +13,7 @@
 <body class="min-h-screen bg-sitebg flex flex-col">
   <header>
     <div class="bg-primary h-[7.6vh] w-[98%] mx-auto px-6 flex items-center justify-between rounded-b-3xl">
+      <!-- Ляв блок: език + MedJ -->
       <div class="flex items-center gap-3 h-full">
         <div class="relative flex items-center h-full">
           <button type="button" id="langBtn" class="flex items-center justify-center">
@@ -31,9 +32,14 @@
           MedJ
         </a>
       </div>
-      <nav class="flex items-center gap-2">
-        {% block nav_buttons %}{% endblock %}
-      </nav>
+
+      <!-- Десен блок: навигационни бутони + потребителски дропдаун -->
+      <div class="flex items-center gap-2">
+        <nav class="flex items-center gap-2">
+          {% block nav_buttons %}{% endblock %}
+        </nav>
+        {% block nav_user %}{% endblock %}
+      </div>
     </div>
   </header>
 

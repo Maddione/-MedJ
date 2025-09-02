@@ -40,7 +40,7 @@ def event_history(request: HttpRequest, pk: int | None = None) -> HttpResponse:
 
 @login_required
 def update_event_details(request: HttpRequest, event_id: int | None = None, pk: int | None = None) -> JsonResponse:
-    # тук си оставяме TODO/реалната логика е била празна
+
     return JsonResponse({"ok": True})
 
 @login_required

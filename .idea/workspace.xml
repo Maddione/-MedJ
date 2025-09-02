@@ -8,79 +8,49 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c486bb59-c79b-4440-8fcc-e0c5e6eda3dc" name="Changes" comment="perfect, DO NOT TOUCH AGAIN">
-      <change afterPath="$PROJECT_DIR$/ocrapi/requirements-ocr.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/constants.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/services/csv_to_pdf.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/services/labs_utils.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/services/pdf.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/services/print_utils.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/services/tags.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/services/upload-flow.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/subpages/csv_print.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templatetags/string_extras.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/utils/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/utils/labs.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/views/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/views/api.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/views/casefiles.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/views/dashboard.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/views/documents.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/views/events.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/views/exports.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/views/helpers.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/views/labs.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/views/pages_profile.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/views/pages_public.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/views/share.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/views/share_csv.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/views/upload.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/views/utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitattributes" beforeDir="false" afterPath="$PROJECT_DIR$/.gitattributes" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/auth_backends.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/management/commands/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/management/commands/bootstrap_site.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/management/commands/canonicalize_indicator_tags.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/management/commands/import_lab_indicators_csv.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/management/commands/sync_taxonomy_tags.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/middleware/onboarding.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/main/profile.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/password/password_reset_complete.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/password/password_reset_confirm.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/password/password_reset_done.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/password/password_reset_email" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/password/password_reset_form.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/password/password_reset_subject" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/utils/db_checks.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/views/auth.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/views/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.dev.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.dev.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/entrypoint.dev.sh" beforeDir="false" afterPath="$PROJECT_DIR$/entrypoint.dev.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/locale/bg/LC_MESSAGES/django.mo" beforeDir="false" afterPath="$PROJECT_DIR$/locale/bg/LC_MESSAGES/django.mo" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/locale/bg/LC_MESSAGES/django.po" beforeDir="false" afterPath="$PROJECT_DIR$/locale/bg/LC_MESSAGES/django.po" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/locale/en/LC_MESSAGES/django.po" beforeDir="false" afterPath="$PROJECT_DIR$/locale/en/LC_MESSAGES/django.po" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/medj/settings/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/settings/base.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/medj/settings/dev.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/settings/dev.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ocrapi/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/ocrapi/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ocrapi/dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/ocrapi/dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ocrapi/requirements.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ocrapi/vision_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/ocrapi/vision_handler.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/apps.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/apps.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/forms.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/management/commands/seed_initial_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/management/commands/seed_initial_data.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/services/labs_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/services/labs_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/signals.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/signals.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/templates/auth/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/auth/login.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/auth/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/auth/register.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base_app.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_app.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base_auth.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base_public.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_public.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/main/casefiles.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/casefiles.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/main/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/dashboard.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/main/share.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/share.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/main/upload.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/upload.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/doctors.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/doctors.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/main/personalcard.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/personalcard.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/templates/subpages/document_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/document_detail.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/document_edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/document_edit.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/document_edit_tags.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/document_edit_tags.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/document_move.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/document_move.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/event_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/event_detail.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/event_edit_tags.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/event_edit_tags.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/event_history.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/event_history.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/labtest_edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/labtest_edit.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/labtests.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/labtests.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/medical_event_confirm_delete.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/medical_event_confirm_delete.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/medical_event_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/medical_event_form.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/profile.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/share_view.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/share_view.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/upload_history.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/upload_history.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/subpages/profile.html" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/records/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/views.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/events.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/events.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/pages_profile.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/pages_profile.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/share.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/share.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/theme/static_src/styles.css" beforeDir="false" afterPath="$PROJECT_DIR$/theme/static_src/styles.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/theme/static_src/tailwind.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/theme/static_src/tailwind.config.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -121,25 +91,32 @@
     <setting file="file://$PROJECT_DIR$/Dockerfile" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/docker-compose.dev.yml" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/entrypoint.dev.sh" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/medj/settings/base.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/medj/settings/dev.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/ocrapi/Dockerfile" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/ocrapi/requirements-ocr.txt" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/admin.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/apps.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/records/auth_backends.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/constants.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/forms.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/records/management/commands/seed_initial_data.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/records/management/commands/bootstrap_site.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/records/management/commands/seed_initial_data.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/records/management/commands/sync_taxonomy_tags.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/models.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/services/csv_to_pdf.py" root0="SKIP_INSPECTION" />
-    <setting file="file://$PROJECT_DIR$/records/services/labs_utils.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/records/services/labs_utils.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/services/tags.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/services/upload-flow.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/records/urls.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/records/signals.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/records/urls.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/records/utils/db_checks.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/utils/labs.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/__init__.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/api.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/records/views/auth.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/documents.py" root0="SKIP_INSPECTION" />
-    <setting file="file://$PROJECT_DIR$/records/views/events.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/records/views/events.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/views/exports.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/views/labs.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/pages_profile.py" root0="SKIP_INSPECTION" />
@@ -149,7 +126,7 @@
     <setting file="file://$PROJECT_DIR$/records/views/upload.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/utils.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/requirements.txt" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/theme/static_src/styles.css" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/theme/static_src/styles.css" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
@@ -198,11 +175,11 @@
       <recent name="C:\Users\444\AppData\Local\spicetify\CustomApps\library" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\444\PychamProjects\MedJ2.1\records\templates\main" />
+      <recent name="C:\Users\444\PychamProjects\MedJ2.1\records\templates\password" />
       <recent name="C:\Users\444\PychamProjects\MedJ2.1\records\utils" />
       <recent name="C:\Users\444\PychamProjects\MedJ2.1\records\views" />
       <recent name="C:\Users\444\PychamProjects\MedJ2.1\theme\static\js" />
-      <recent name="C:\Users\444\PychamProjects\MedJ2.1\theme" />
-      <recent name="C:\Users\444\PychamProjects\MedJ2.1\static\css" />
     </key>
   </component>
   <component name="RunManager" selected="Django Server.MedJ">
@@ -305,7 +282,8 @@
       <workItem from="1756438043941" duration="2764000" />
       <workItem from="1756441345921" duration="117471000" />
       <workItem from="1756666269346" duration="27877000" />
-      <workItem from="1756700709227" duration="31853000" />
+      <workItem from="1756700709227" duration="33623000" />
+      <workItem from="1756794412403" duration="24968000" />
     </task>
     <task id="LOCAL-00001" summary="2.1">
       <option name="closed" value="true" />
@@ -371,7 +349,23 @@
       <option name="project" value="LOCAL" />
       <updated>1756734293171</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="perfect, DO NOT TOUCH AGAIN">
+      <option name="closed" value="true" />
+      <created>1756739616546</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1756739616546</updated>
+    </task>
+    <task id="LOCAL-00010" summary="perfect, DO NOT TOUCH AGAIN">
+      <option name="closed" value="true" />
+      <created>1756812967116</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1756812967116</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -409,18 +403,13 @@
           <option name="timeStamp" value="4" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/records/models.py</url>
-          <line>110</line>
-          <option name="timeStamp" value="8" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/records/management/commands/cleanup_shares.py</url>
           <line>8</line>
           <option name="timeStamp" value="9" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/records/management/commands/seed_initial_data.py</url>
-          <line>87</line>
+          <line>106</line>
           <option name="timeStamp" value="11" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="jinja2-line">

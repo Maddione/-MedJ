@@ -1,21 +1,13 @@
 ﻿from pathlib import Path
 import os
-from django.utils.translation import gettext_lazy as _l
+from django.utils.translation import gettext_lazy as _
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-def as_bool(val: str, default=False):
-    if val is None:
-        return default
-    return str(val).strip().lower() in {"1", "true", "yes", "y", "on"}
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-insecure-secret-key")
+DEBUG = False
+ALLOWED_HOSTS = []
 
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-dev-key")
-DEBUG = as_bool(os.getenv("DJANGO_DEBUG", os.getenv("DEBUG", "1")), default=True)
-ALLOWED_HOSTS = (
-    os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",")
-    if os.getenv("DJANGO_ALLOWED_HOSTS")
-    else []
-)
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -26,10 +18,12 @@ INSTALLED_APPS = [
     "parler",
     "tailwind",
     "theme",
-    "records",
+    "records.apps.RecordsConfig",
     "django_browser_reload",
     "widget_tweaks",
 ]
+MEDJ_TAG_SYNC_ENABLED = True
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -40,7 +34,10 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_browser_reload.middleware.BrowserReloadMiddleware",
+    "records.middleware.onboarding.OnboardingMiddleware",
+
 ]
+
 ROOT_URLCONF = "medj.urls"
 
 TEMPLATES = [
@@ -54,65 +51,83 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "django.template.context_processors.i18n",
+                "django.template.context_processors.static",
+                "django.template.context_processors.tz",
             ],
         },
     },
 ]
 
+WSGI_APPLICATION = "MedJ2.wsgi.application"
 
+AUTH_USER_MODEL = "records.User"
+AUTHENTICATION_BACKENDS = [
+    "records.auth_backends.EmailOrUsernameBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
 
-WSGI_APPLICATION = "medj.wsgi.application"
-ASGI_APPLICATION = "medj.asgi.application"
-
-DATABASES = {
-    "default": {
-        "ENGINE": os.getenv("DB_ENGINE", "django.db.backends.sqlite3"),
-        "NAME": os.getenv("DB_NAME", BASE_DIR / "db.sqlite3"),
-    }
-}
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
+
 LANGUAGE_CODE = "bg"
 LANGUAGES = [
-    ("bg", _l("Bulgarian")),
-    ("en", "English"),
+    ("bg", _("Български")),
+    ("en-us", "English (US)"),
 ]
-LOCALE_PATHS = [os.path.join(BASE_DIR, "locale")]
-TIME_ZONE = "Europe/Sofia"
 USE_I18N = True
-USE_L10N = True
+LOCALE_PATHS = [BASE_DIR / "locale"]
+
+TIME_ZONE = "Europe/Sofia"
 USE_TZ = True
-AUTH_USER_MODEL = "records.User"
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = [BASE_DIR / "theme" / "static"]
-
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 TAILWIND_APP_NAME = "theme"
-LOGIN_URL = "medj:login"
-LOGIN_REDIRECT_URL = "medj:dashboard"
-LOGOUT_REDIRECT_URL = "medj:landingpage"
+
+LOGIN_URL = "/login/"
+LOGIN_REDIRECT_URL = "/dashboard/"
+LOGOUT_REDIRECT_URL = "/login/"
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_AGE = 7200
+SESSION_SAVE_EVERY_REQUEST = True
 
 PARLER_LANGUAGES = {
     None: (
-        {'code': 'bg',},
-        {'code': 'en',},
+        {"code": "bg"},
+        {"code": "en-us"},
     ),
-    'default': {
-        'fallback': 'bg',
-        'hide_untranslated': False,
-    }
+    "default": {
+        "fallbacks": ["bg"],
+        "hide_untranslated": False,
+        "default": True,
+    },
 }
 
-OCR_API_URL = os.getenv("OCR_API_URL", "http://127.0.0.1:5000/ocr")
-OCR_TIMEOUT = int(os.getenv("OCR_TIMEOUT", "15"))
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ.get("POSTGRES_DB", "medj"),
+        "USER": os.environ.get("POSTGRES_USER", "medj"),
+        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "medj"),
+        "HOST": os.environ.get("POSTGRES_HOST", "db"),
+        "PORT": int(os.environ.get("POSTGRES_PORT", "5432")),
+    },
+    "backup": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "backup.sqlite3",
+    },
+}
+BACKUP_DB_ALIAS = "backup"
 
-OCR_RETURNS_ANON = True
+WSGI_APPLICATION = "medj.wsgi.application"
 

@@ -1,12 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MedJ\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-31 18:30+0300\n"
-"PO-Revision-Date: 2025-08-31 18:30+0300\n"
-"Last-Translator: Gemini Assistant\n"
-"Language-Team: English <en@example.com>\n"
-"Language: en\n"
+"Language: en-us\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -19,271 +14,46 @@ msgid "English (US)"
 msgstr "English (US)"
 
 msgid "Вход"
-msgstr "Login"
-
-msgid "Регистрация"
-msgstr "Register"
-
-msgid "Влезте в своя акаунт"
-msgstr "Sign in to your account"
-
-msgid "Потребителско име"
-msgstr "Username"
+msgstr "Sign in"
 
 msgid "Парола"
 msgstr "Password"
 
-msgid "Забравена парола?"
-msgstr "Forgot password?"
+msgid "Потребител"
+msgstr "Username"
 
-msgid "Все още нямате акаунт?"
-msgstr "Don't have an account yet?"
+msgid "Запомни ме"
+msgstr "Remember me"
 
-msgid "Създайте нов акаунт"
-msgstr "Create a new account"
+msgid "Забравена парола"
+msgstr "Forgot password"
 
-msgid "Потвърдете паролата"
-msgstr "Confirm password"
+msgid "Изпрати линк"
+msgstr "Send link"
 
-msgid "Създай акаунт"
-msgstr "Create account"
+msgid "Проверете пощата си"
+msgstr "Check your email"
 
-msgid "Вече имате акаунт?"
-msgstr "Already have an account?"
-
-msgid "Табло"
-msgstr "Dashboard"
-
-msgid "Досие"
-msgstr "Case Files"
-
-msgid "Личен картон"
-msgstr "Personal Card"
-
-msgid "Качи"
-msgstr "Upload"
-
-msgid "Профил"
-msgstr "Profile"
-
-msgid "История на качените"
-msgstr "Upload History"
-
-msgid "История на събитията"
-msgstr "Event History"
-
-msgid "Изход"
-msgstr "Logout"
-
-msgid "Начало"
-msgstr "Home"
-
-msgid "Добре дошли в MedJ"
-msgstr "Welcome to MedJ"
-
-msgid "Вашето дигитално здравно досие. Сигурно, достъпно и лесно за управление."
-msgstr "Your digital health record. Secure, accessible, and easy to manage."
-
-msgid "Създай своето досие сега"
-msgstr "Create Your Record Now"
-
-msgid "Медицинско досие"
-msgstr "Medical Case File"
-
-msgid "Филтриране по:"
-msgstr "Filter by:"
-
-msgid "Всички категории"
-msgstr "All Categories"
-
-msgid "Всички специалности"
-msgstr "All Specialties"
-
-msgid "Приложи филтри"
-msgstr "Apply Filters"
-
-msgid "Вашето табло"
-msgstr "Your Dashboard"
-
-msgid "Предстоящи прегледи"
-msgstr "Upcoming Appointments"
-
-msgid "Тук ще се показват предстоящите прегледи."
-msgstr "Upcoming appointments will be displayed here."
-
-msgid "Последни документи"
-msgstr "Recent Documents"
-
-msgid "Тук ще се показват последните качени документи."
-msgstr "Recently uploaded documents will be displayed here."
-
-msgid "Активни медикаменти"
-msgstr "Active Medications"
-
-msgid "Тук ще се показва списък с активни медикаменти."
-msgstr "A list of active medications will be displayed here."
-
-msgid "Лична здравна карта"
-msgstr "Personal Health Card"
-
-msgid "Основна информация"
-msgstr "Basic Information"
-
-msgid "Име"
-msgstr "Name"
-
-msgid "Възраст"
-msgstr "Age"
-
-msgid "Височина"
-msgstr "Height"
-
-msgid "Тегло"
-msgstr "Weight"
-
-msgid "Кръвна група"
-msgstr "Blood Type"
-
-msgid "Алергии"
-msgstr "Allergies"
-
-msgid "Личен лекар"
-msgstr "Family Doctor"
-
-msgid "QR Код за Спешна Помощ"
-msgstr "Emergency QR Code"
-
-msgid "Сканирайте този код, за да видите публичния здравен профил."
-msgstr "Scan this code to view the public health profile."
-
-msgid "Качване на документи"
-msgstr "Document Upload"
-
-msgid "Стъпка 1: Качете вашите файлове"
-msgstr "Step 1: Upload Your Files"
-
-msgid "Плъзнете и пуснете файлове тук"
-msgstr "Drag and drop files here"
-
-msgid "или"
-msgstr "or"
-
-msgid "Изберете файлове"
-msgstr "Choose Files"
-
-msgid "Поддържани формати: JPG, PNG, PDF"
-msgstr "Supported formats: JPG, PNG, PDF"
-
-msgid "Стъпка 2: Опишете събитието"
-msgstr "Step 2: Describe the Event"
-
-msgid "Тип на събитието"
-msgstr "Event Type"
-
-msgid "Категория"
-msgstr "Category"
-
-msgid "Специалност"
-msgstr "Specialty"
-
-msgid "Дата на събитието"
-msgstr "Event Date"
-
-msgid "Добавете тагове (разделени със запетая)"
-msgstr "Add tags (separated by a comma)"
-
-msgid "Обработи и качи"
-msgstr "Process and Upload"
-
-msgid "Документ"
-msgstr "Document"
-
-msgid "Детайли"
-msgstr "Details"
-
-msgid "Име на файл"
-msgstr "File Name"
-
-msgid "OCR Текст"
-msgstr "OCR Text"
-
-msgid "Редактирай"
-msgstr "Edit"
-
-msgid "Изтрий"
-msgstr "Delete"
-
-msgid "Сподели"
-msgstr "Share"
-
-msgid "Медицинско събитие"
-msgstr "Medical Event"
-
-msgid "Обобщение от AI"
-msgstr "AI Summary"
-
-msgid "Лабораторни резултати"
-msgstr "Lab Results"
-
-msgid "Наративни секции"
-msgstr "Narrative Sections"
-
-msgid "Тагове"
-msgstr "Tags"
-
-msgid "История на медицинските събития"
-msgstr "Medical Event History"
-
-msgid "Търсене"
-msgstr "Search"
-
-msgid "Дата"
-msgstr "Date"
-
-msgid "Събитие"
-msgstr "Event"
-
-msgid "Действия"
-msgstr "Actions"
-
-msgid "Потребителски профил"
-msgstr "User Profile"
-
-msgid "Настройки на профила"
-msgstr "Profile Settings"
-
-msgid "Смяна на парола"
-msgstr "Change Password"
-
-msgid "Стара парола"
-msgstr "Old Password"
+msgid "Ако съществува акаунт с този email, изпратихме инструкции за смяна на паролата."
+msgstr "If an account with this email exists, we've sent password reset instructions."
 
 msgid "Нова парола"
-msgstr "New Password"
+msgstr "New password"
 
-msgid "Потвърди нова парола"
-msgstr "Confirm New Password"
+msgid "Повтори новата парола"
+msgstr "Repeat new password"
 
-msgid "Запази парола"
-msgstr "Save Password"
+msgid "Запази"
+msgstr "Save"
 
-msgid "Управление на данни"
-msgstr "Data Management"
+msgid "Паролата е сменена"
+msgstr "Password changed"
 
-msgid "Експорт на всички данни (JSON)"
-msgstr "Export All Data (JSON)"
+msgid "Към вход"
+msgstr "Back to sign in"
 
-msgid "Изтриване на акаунт"
-msgstr "Delete Account"
-
-msgid "Сигурни ли сте? Тази операция е необратима."
-msgstr "Are you sure? This action is irreversible."
-
-msgid "Изтрий моя акаунт"
-msgstr "Delete My Account"
-
-msgid "Запази език"
-msgstr "Save Language"
+msgid "Към профила"
+msgstr "Back to profile"
 
 msgid "Споделен документ"
 msgstr "Shared Document"
@@ -311,3 +81,126 @@ msgstr "Type"
 
 msgid "Наименование"
 msgstr "Title"
+
+msgid "Дата"
+msgstr "Date"
+
+msgid "Размер"
+msgstr "Size"
+
+msgid "Тагове"
+msgstr "Tags"
+
+msgid "Действия"
+msgstr "Actions"
+
+msgid "Изтегли"
+msgstr "Download"
+
+msgid "Премести"
+msgstr "Move"
+
+msgid "Редактирай"
+msgstr "Edit"
+
+msgid "Експорт като PDF"
+msgstr "Export as PDF"
+
+msgid "История"
+msgstr "History"
+
+msgid "Запази език"
+msgstr "Save Language"
+
+msgid "Табло"
+msgstr "Dashboard"
+
+msgid "Досие"
+msgstr "Casefile"
+
+msgid "Л.Картон"
+msgstr "Personal Card"
+
+msgid "Документи"
+msgstr "Documents"
+
+msgid "Качи"
+msgstr "Upload"
+
+msgid "Сподели"
+msgstr "Share"
+
+msgid "Профил"
+msgstr "Profile"
+
+msgid "История на качване"
+msgstr "Upload history"
+
+msgid "Изход"
+msgstr "Sign out"
+
+msgid "Настройки и профил"
+msgstr "Settings & profile"
+
+msgid "Профил и настройки"
+msgstr "Profile & settings"
+
+msgid "Управлявайте акаунта, личните данни и предпочитанията си."
+msgstr "Manage your account, personal data and preferences."
+
+msgid "Секции"
+msgstr "Sections"
+
+msgid "Обща информация"
+msgstr "Account"
+
+msgid "Базови настройки на акаунта."
+msgstr "Basic account settings."
+
+msgid "Потребителско име"
+msgstr "Username"
+
+msgid "Запази промените"
+msgstr "Save changes"
+
+msgid "Личен профил"
+msgstr "Personal profile"
+
+msgid "Демографски и контактни данни."
+msgstr "Demographic and contact data."
+
+msgid "Дата на раждане"
+msgstr "Date of birth"
+
+msgid "Пол"
+msgstr "Gender"
+
+msgid "Изберете"
+msgstr "Select"
+
+msgid "Мъж"
+msgstr "Male"
+
+msgid "Жена"
+msgstr "Female"
+
+msgid "Друг"
+msgstr "Other"
+
+msgid "Телефон"
+msgstr "Phone"
+
+msgid "Адрес"
+msgstr "Address"
+
+msgid "Промяна на парола"
+msgstr "Change password"
+
+msgid "За да смените паролата си, отворете защитената форма."
+msgstr "Open the protected form to change your password."
+
+msgid "Смени паролата"
+msgstr "Change password"
+
+msgid "Език"
+msgstr "Language"

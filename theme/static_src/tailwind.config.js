@@ -21,7 +21,8 @@ module.exports = {
         primary: "#43B8CF",
         primaryDark: "#0A4E75",
         success: "#15BC11",
-        danger: "#D84137"
+        danger: "#D84137",
+        containerbg: "#FFFFF5"
       }
     }
   },

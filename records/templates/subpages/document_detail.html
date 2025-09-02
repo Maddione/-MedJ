@@ -1,110 +1,34 @@
-{% extends 'basetemplates/base_app.html' %}
-{% load static %}
+{% extends "basetemplates/base_app.html" %}
 {% load i18n %}
-
 {% block app_content %}
-<main class="bg-site-background min-h-screen p-4 md:p-8">
-  <div class="container mx-auto max-w-5xl">
-    <div class="bg-block-background p-6 rounded-3xl shadow-lg mb-8">
-      <h1 class="text-3xl font-bold text-gray-800">{% trans "Детайли за документ" %}</h1>
-      <p class="mt-2 text-gray-600">
-        {% trans "Тип" %}: {{ document.doc_type.name }} • {% trans "Дата" %}: {{ document.document_date|date:"d.m.Y" }}
-      </p>
-      <p class="text-gray-600">
-        {% trans "Събитие" %}:
-        <a href="{% url 'medj:medical_event_detail' pk=event.id %}" class="text-button-blue hover:underline">
-          {{ event.specialty.name }} — {{ event.event_date|date:"d.m.Y" }}
-        </a>
-      </p>
+<h1 class="text-2xl font-semibold mb-3">{% trans "Документ" %} #{{ document.id }}</h1>
+<div class="bg-[--color-blockbg] p-4 rounded-xl shadow mb-4">
+  <div class="grid md:grid-cols-2 gap-4">
+    <div>
+      <div class="font-medium">{% trans "Заглавие" %}</div>
+      <div>{{ document.title|default_if_none:"" }}</div>
     </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div class="bg-block-background p-6 rounded-3xl shadow-lg">
-        <h2 class="text-xl font-semibold text-navbar-button-blue mb-4">{% trans "Преглед" %}</h2>
-        {% with file_url=document.file.url fname=document.file.name %}
-          {% if fname|lower|endswith:".pdf" %}
-            <iframe src="{{ file_url }}#toolbar=0&navpanes=0&scrollbar=0" width="100%" height="620" class="rounded-lg shadow-md border border-gray-300"></iframe>
-          {% else %}
-            <img src="{{ file_url }}" class="max-w-full h-auto rounded-lg shadow-md border border-gray-300" alt="">
-          {% endif %}
-        {% endwith %}
-        <div class="mt-4 flex items-center gap-3">
-          <a href="{{ document.file.url }}" class="px-4 py-2 bg-checkmark-green text-white rounded-lg shadow hover:bg-green-700 transition">
-            <i class="fa-solid fa-download"></i> {% trans "Изтегли" %}
-          </a>
-          <form method="post" action="{% url 'medj:share_create' %}">
-            {% csrf_token %}
-            <input type="hidden" name="scope" value="document">
-            <input type="hidden" name="document_id" value="{{ document.id }}">
-            <select name="duration" class="border rounded px-2 py-1">
-              <option value="1h">1ч</option>
-              <option value="6h" selected>6ч</option>
-              <option value="12h">12ч</option>
-              <option value="24h">24ч</option>
-              <option value="72h">72ч</option>
-              <option value="7d">7 дни</option>
-            </select>
-            <label class="ml-2 text-sm"><input type="checkbox" name="allow_download" value="1" checked> {% trans "Изтегляне" %}</label>
-            <button class="ml-2 px-4 py-2 bg-button-blue text-white rounded-lg shadow hover:bg-navbar-button-blue transition">
-              <i class="fa-solid fa-share-nodes"></i> {% trans "Сподели" %}
-            </button>
-          </form>
-        </div>
-      </div>
-
-      <div class="bg-block-background p-6 rounded-3xl shadow-lg">
-        <h2 class="text-xl font-semibold text-navbar-button-blue mb-4">{% trans "Подробности" %}</h2>
-        <div class="space-y-3">
-          <div>
-            <p class="text-gray-700 text-sm">{% trans "Тип документ" %}</p>
-            <p class="text-gray-900 font-semibold">{{ document.doc_type.name }}</p>
-          </div>
-          <div>
-            <p class="text-gray-700 text-sm">{% trans "Дата на документа" %}</p>
-            <p class="text-gray-900 font-semibold">{{ document.document_date|date:"d.m.Y" }}</p>
-          </div>
-          <div>
-            <p class="text-gray-700 text-sm">{% trans "Лекар" %}</p>
-            <p class="text-gray-900 font-semibold">{{ document.practitioner.full_name|default:"—" }}</p>
-          </div>
-          <div>
-            <p class="text-gray-700 text-sm">{% trans "Тагове" %}</p>
-            <div class="flex flex-wrap gap-2">
-              {% for t in document.tags.all %}
-                <span class="bg-button-blue text-white text-xs font-semibold px-2.5 py-0.5 rounded-full">#{{ t.name }}</span>
-              {% empty %}
-                <span class="text-gray-500">—</span>
-              {% endfor %}
-            </div>
-            <div class="mt-3 flex items-center gap-3">
-              <a href="{% url 'medj:document_edit_tags' pk=document.id %}" class="px-4 py-2 bg-white text-button-blue rounded-lg shadow border hover:bg-gray-50 transition">
-                <i class="fa-solid fa-tags"></i> {% trans "Редактирай тагове" %}
-              </a>
-              <a href="{% url 'medj:document_edit' pk=document.id %}" class="px-4 py-2 bg-white text-button-blue rounded-lg shadow border hover:bg-gray-50 transition">
-                <i class="fa-solid fa-pen-to-square"></i> {% trans "Редактирай документ" %}
-              </a>
-            </div>
-          </div>
-          <div class="pt-4 flex items-center gap-3">
-            <a href="{% url 'medj:document_move' pk=document.id %}" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg shadow hover:bg-gray-300 transition">
-              <i class="fa-solid fa-folder-open"></i> {% trans "Премести" %}
-            </a>
-            <a href="{% url 'medj:medical_event_detail' pk=event.id %}" class="px-4 py-2 bg-white text-gray-800 rounded-lg shadow border hover:bg-gray-50 transition">
-              {% trans "Към събитието" %}
-            </a>
-          </div>
-        </div>
-      </div>
+    <div>
+      <div class="font-medium">{% trans "Дата" %}</div>
+      <div>{{ document.document_date|default_if_none:"" }}</div>
     </div>
-
-    {% if document.original_ocr_text %}
-      <div class="bg-block-background p-6 rounded-3xl shadow-lg mt-8">
-        <h2 class="text-xl font-semibold text-navbar-button-blue mb-4">{% trans "OCR текст" %}</h2>
-        <div class="p-4 bg-gray-100 rounded-lg max-h-60 overflow-y-auto text-sm text-gray-700">
-          <pre class="whitespace-pre-wrap break-words">{{ document.original_ocr_text }}</pre>
-        </div>
-      </div>
-    {% endif %}
+    <div>
+      <div class="font-medium">{% trans "Тип" %}</div>
+      <div>{{ document.doc_type|default_if_none:"" }}</div>
+    </div>
+    <div>
+      <div class="font-medium">{% trans "Събитие" %}</div>
+      <div>{{ document.medical_event|default_if_none:"" }}</div>
+    </div>
   </div>
-</main>
+</div>
+<div class="flex gap-3 mb-6">
+  <a href="/documents/{{ document.id }}/edit/" class="px-4 py-2 rounded-md bg-[--color-primary] text-[--color-blockbg]">{% trans "Редакция" %}</a>
+  <a href="/documents/{{ document.id }}/edit-tags/" class="px-4 py-2 rounded-md bg-[--color-primaryDark] text-[--color-blockbg]">{% trans "Тагове" %}</a>
+  <a href="/documents/{{ document.id }}/export/pdf/" class="px-4 py-2 rounded-md bg-[--color-success] text-white">{% trans "PDF" %}</a>
+</div>
+<div class="bg-[--color-blockbg] p-4 rounded-xl shadow">
+  <h2 class="font-semibold mb-2">{% trans "OCR текст" %}</h2>
+  <pre class="whitespace-pre-wrap">{{ document.original_ocr_text|default_if_none:"" }}</pre>
+</div>
 {% endblock %}

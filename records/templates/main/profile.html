@@ -1,0 +1,150 @@
+{% extends "basetemplates/base_app.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Профил" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6">
+  {% if messages %}
+    <div class="space-y-2">
+      {% for message in messages %}
+        <div class="rounded-xl px-4 py-3 {% if message.tags == 'success' %}bg-green-50 text-green-700 border border-green-200{% elif message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200{% else %}bg-[--color-blockbg] text-[--color-primaryDark] border border-[--color-primary]/20{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if account_form.non_field_errors or profile_form.non_field_errors %}
+    <div class="rounded-xl px-4 py-3 bg-red-50 text-red-700 border border-red-200">
+      {% for e in account_form.non_field_errors %}<p>{{ e }}</p>{% endfor %}
+      {% for e in profile_form.non_field_errors %}<p>{{ e }}</p>{% endfor %}
+    </div>
+  {% endif %}
+
+  <form method="post" novalidate class="space-y-6">
+    {% csrf_token %}
+
+    <section class="bg-[--color-blockbg] rounded-3xl shadow border border-[--color-primary]/20 p-6">
+      <h2 class="text-xl font-semibold text-[--color-primaryDark] mb-4">{% trans "Акаунт" %}</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm text-[--color-primaryDark] mb-1" for="{{ account_form.email.id_for_label }}">{% trans "Имейл" %}</label>
+          {{ account_form.email }}
+          {% if account_form.email.errors %}
+            <ul class="mt-1 text-sm text-red-600 space-y-1">
+              {% for e in account_form.email.errors %}<li>{{ e }}</li>{% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+        <div>
+          <label class="block text-sm text-[--color-primaryDark] mb-1" for="{{ account_form.username.id_for_label }}">{% trans "Потребителско име" %}</label>
+          {{ account_form.username }}
+          {% if account_form.username.errors %}
+            <ul class="mt-1 text-sm text-red-600 space-y-1">
+              {% for e in account_form.username.errors %}<li>{{ e }}</li>{% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-[--color-blockbg] rounded-3xl shadow border border-[--color-primary]/20 p-6">
+      <h2 class="text-xl font-semibold text-[--color-primaryDark] mb-4">{% trans "Лични данни" %}</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm text-[--color-primaryDark] mb-1" for="{{ profile_form.first_name_bg.id_for_label }}">{% trans "Име (BG)" %}</label>
+          {{ profile_form.first_name_bg }}
+          {% if profile_form.first_name_bg.errors %}
+            <ul class="mt-1 text-sm text-red-600 space-y-1">{% for e in profile_form.first_name_bg.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+        <div>
+          <label class="block text-sm text-[--color-primaryDark] mb-1" for="{{ profile_form.middle_name_bg.id_for_label }}">{% trans "Презиме (BG)" %}</label>
+          {{ profile_form.middle_name_bg }}
+          {% if profile_form.middle_name_bg.errors %}
+            <ul class="mt-1 text-sm text-red-600 space-y-1">{% for e in profile_form.middle_name_bg.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+        <div>
+          <label class="block text-sm text-[--color-primaryDark] mb-1" for="{{ profile_form.last_name_bg.id_for_label }}">{% trans "Фамилия (BG)" %}</label>
+          {{ profile_form.last_name_bg }}
+          {% if profile_form.last_name_bg.errors %}
+            <ul class="mt-1 text-sm text-red-600 space-y-1">{% for e in profile_form.last_name_bg.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm text-[--color-primaryDark] mb-1" for="{{ profile_form.first_name_en.id_for_label }}">{% trans "Име (EN, по желание)" %}</label>
+          {{ profile_form.first_name_en }}
+          {% if profile_form.first_name_en.errors %}
+            <ul class="mt-1 text-sm text-red-600 space-y-1">{% for e in profile_form.first_name_en.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+        <div>
+          <label class="block text-sm text-[--color-primaryDark] mb-1" for="{{ profile_form.middle_name_en.id_for_label }}">{% trans "Презиме (EN)" %}</label>
+          {{ profile_form.middle_name_en }}
+          {% if profile_form.middle_name_en.errors %}
+            <ul class="mt-1 text-sm text-red-600 space-y-1">{% for e in profile_form.middle_name_en.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+        <div>
+          <label class="block text-sm text-[--color-primaryDark] mb-1" for="{{ profile_form.last_name_en.id_for_label }}">{% trans "Фамилия (EN)" %}</label>
+          {{ profile_form.last_name_en }}
+          {% if profile_form.last_name_en.errors %}
+            <ul class="mt-1 text-sm text-red-600 space-y-1">{% for e in profile_form.last_name_en.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm text-[--color-primaryDark] mb-1" for="{{ profile_form.phone_number.id_for_label }}">{% trans "Телефон" %}</label>
+          {{ profile_form.phone_number }}
+          {% if profile_form.phone_number.errors %}
+            <ul class="mt-1 text-sm text-red-600 space-y-1">{% for e in profile_form.phone_number.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+        <div>
+          <label class="block text-sm text-[--color-primaryDark] mb-1" for="{{ profile_form.date_of_birth.id_for_label }}">{% trans "Дата на раждане" %}</label>
+          {{ profile_form.date_of_birth }}
+          {% if profile_form.date_of_birth.errors %}
+            <ul class="mt-1 text-sm text-red-600 space-y-1">{% for e in profile_form.date_of_birth.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+        <div>
+          <label class="block text-sm text-[--color-primaryDark] mb-1" for="{{ profile_form.gender.id_for_label }}">{% trans "Пол" %}</label>
+          {{ profile_form.gender }}
+          {% if profile_form.gender.errors %}
+            <ul class="mt-1 text-sm text-red-600 space-y-1">{% for e in profile_form.gender.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm text-[--color-primaryDark] mb-1" for="{{ profile_form.blood_type.id_for_label }}">{% trans "Кръвна група" %}</label>
+          {{ profile_form.blood_type }}
+          {% if profile_form.blood_type.errors %}
+            <ul class="mt-1 text-sm text-red-600 space-y-1">{% for e in profile_form.blood_type.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-sm text-[--color-primaryDark] mb-1" for="{{ profile_form.address.id_for_label }}">{% trans "Адрес" %}</label>
+          {{ profile_form.address }}
+          {% if profile_form.address.errors %}
+            <ul class="mt-1 text-sm text-red-600 space-y-1">{% for e in profile_form.address.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+
+    <div class="flex items-center justify-end gap-3">
+      <a href="{% url 'medj:dashboard' %}" class="px-5 py-2 rounded-xl border border-[--color-primary]/30 text-[--color-primaryDark] bg-[--color-blockbg] hover:bg-[--color-primary]/5">{% trans "Отмени" %}</a>
+      <button type="submit" class="px-6 py-2.5 rounded-xl bg-[--color-primaryDark] text-[--color-blockbg] hover:opacity-90">{% trans "Запази" %}</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

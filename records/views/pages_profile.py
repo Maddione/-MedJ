@@ -8,7 +8,7 @@ def personal_card(request: HttpRequest) -> HttpResponse:
 
 @login_required
 def profile(request: HttpRequest) -> HttpResponse:
-    return render(request, "subpages/profile.html")
+    return render(request, "subpages/../templates/main/profile.html")
 
 @login_required
 def doctors(request: HttpRequest) -> HttpResponse:
