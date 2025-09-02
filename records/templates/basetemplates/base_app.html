@@ -2,17 +2,49 @@
 {% load i18n static %}
 
 {% block nav_buttons %}
-  <a href="{% url 'medj:dashboard' %}" class="text-white/90 hover:text-white font-semibold uppercase tracking-wide px-4 py-2 rounded-md transition-colors">{% translate "Табло" %}</a>
-  <a href="{% url 'medj:casefiles' %}" class="text-white/90 hover:text-white font-semibold uppercase tracking-wide px-4 py-2 rounded-md transition-colors">{% translate "Досие" %}</a>
-  <a href="{% url 'medj:personal_card' %}" class="text-white/90 hover:text-white font-semibold uppercase tracking-wide px-4 py-2 rounded-md transition-colors">{% translate "Л.Картон" %}</a>
-  <a href="{% url 'medj:documents' %}" class="text-white/90 hover:text-white font-semibold uppercase tracking-wide px-4 py-2 rounded-md transition-colors">{% translate "Документи" %}</a>
+<a href="{% url 'medj:dashboard' %}" class="px-4 py-2 rounded-md text-white/90 hover:bg-white/10 transition-colors">{% translate "Табло" %}</a>
+<a href="{% url 'medj:casefiles' %}" class="px-4 py-2 rounded-md text-white/90 hover:bg-white/10 transition-colors">{% translate "Досие" %}</a>
+<a href="{% url 'medj:personal_card' %}" class="px-4 py-2 rounded-md text-white/90 hover:bg-white/10 transition-colors">{% translate "Л.Картон" %}</a>
+<a href="{% url 'medj:documents' %}" class="px-4 py-2 rounded-md text-white/90 hover:bg-white/10 transition-colors">{% translate "Документи" %}</a>
+<a href="{% url 'medj:upload' %}" class="ml-2 px-5 py-2 rounded-lg bg-[--color-primaryDark] text-white hover:opacity-90 transition-colors">{% translate "Качи" %}</a>
+<a href="{% url 'medj:share_document_page' %}" class="ml-2 px-5 py-2 rounded-lg bg-[--color-success] text-white hover:opacity-90 transition-colors">{% translate "Сподели" %}</a>
+{% endblock %}
 
-  <a href="{% url 'medj:upload' %}" class="ml-2 bg-primaryDark hover:bg-blue-600 text-white font-bold uppercase px-5 py-2 rounded-lg transition-colors">{% translate "Качи" %}</a>
-  <a href="{% url 'medj:share_document_page' %}" class="ml-2 bg-green-600 hover:bg-green-700 text-white font-bold uppercase px-5 py-2 rounded-lg transition-colors">{% translate "Сподели" %}</a>
+{% block nav_user %}
+<div class="relative" id="userMenuWrap">
+  <button id="userMenuBtn" class="flex items-center gap-2 px-3 py-2 rounded-lg text-white hover:bg-white/10">
+    <img src="{% static 'images/profileicon.png' %}" alt="profile" class="h-6 w-6 object-contain" style="width:24px;height:24px;">
+    <span class="font-semibold truncate max-w-[12rem]">{{ request.user.get_full_name|default:request.user.username }}</span>
+    <i class="fa-solid fa-chevron-down text-white/90"></i>
+  </button>
+  <div id="userMenu" class="hidden absolute right-0 mt-2 w-56 z-50 rounded-lg shadow-md bg-blockbg py-1 border border-[--color-primary]/20">
+    <a href="{% url 'medj:profile' %}" class="block w-full text-left px-4 py-2 rounded text-primaryDark hover:bg-sitebg">{% translate "Профил" %}</a>
+    <a href="{% url 'medj:upload_history' %}" class="block w-full text-left px-4 py-2 rounded text-primaryDark hover:bg-sitebg">{% translate "История на качване" %}</a>
+    <a href="{% url 'medj:labtests' %}" class="block w-full text-left px-4 py-2 rounded text-primaryDark hover:bg-sitebg">{% translate "Лаб. изследвания" %}</a>
+    <a href="{% url 'medj:event_history' %}" class="block w-full text-left px-4 py-2 rounded text-primaryDark hover:bg-sitebg">{% translate "История на събития" %}</a>
+    <a href="{% url 'medj:csv_print' %}" class="block w-full text-left px-4 py-2 rounded text-primaryDark hover:bg-sitebg">{% translate "CSV печат" %}</a>
+    <a href="{% url 'medj:documents' %}" class="block w-full text-left px-4 py-2 rounded text-primaryDark hover:bg-sitebg">{% translate "Документи" %}</a>
+    <div class="my-1 border-t border-gray-200"></div>
+    <a href="{% url 'medj:logout' %}" class="block w-full text-left px-4 py-2 rounded text-red-600 hover:bg-sitebg">{% translate "Изход" %}</a>
+  </div>
+</div>
+<script>
+(function(){
+  var wrap=document.getElementById('userMenuWrap');
+  var btn=document.getElementById('userMenuBtn');
+  var menu=document.getElementById('userMenu');
+  if(!wrap||!btn||!menu) return;
+  function hide(){menu.classList.add('hidden')}
+  function toggle(){menu.classList.toggle('hidden')}
+  btn.addEventListener('click',function(e){e.stopPropagation();toggle()});
+  document.addEventListener('click',hide);
+  wrap.addEventListener('keydown',function(e){if(e.key==='Escape')hide();if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle()}})
+})();
+</script>
 {% endblock %}
 
 {% block body_content %}
-  <div class="w-[98%] mx-auto bg-blockbg rounded-3xl shadow-md flex-1 min-h-[calc(100vh-160px)] p-4">
-    {% block app_content %}{% endblock %}
-  </div>
+<div class="w-[98%] mx-auto bg-blockbg rounded-3xl shadow-md flex-1 min-h-[calc(100vh-160px)] p-4">
+  {% block app_content %}{% endblock %}
+</div>
 {% endblock %}
