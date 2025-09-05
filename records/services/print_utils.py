@@ -1,43 +1,43 @@
-from __future__ import annotations
-import io
-from typing import Dict, Any
+from pathlib import Path
+from django.conf import settings
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 
-try:
-
-    from xhtml2pdf import pisa
-except Exception as e:  # pragma: no cover
-    pisa = None
-
-def render_template_to_pdf(request, template_name: str, context: Dict[str, Any]) -> bytes:
-
-    html = render_to_string(template_name, context=context, request=request)
-    if not pisa:
-
-        from reportlab.pdfgen import canvas
-        from reportlab.lib.pagesizes import A4
-        buf = io.BytesIO()
-        c = canvas.Canvas(buf, pagesize=A4)
-        c.setFont("Helvetica", 12)
-        c.drawString(40, 800, "xhtml2pdf не е инсталиран. Инсталирай 'xhtml2pdf' за HTML->PDF рендер.")
-        c.drawString(40, 784, "Временно съдържанието (html) е налично само като текст в този PDF.")
-        # По желание: запиши малка част от HTML-а
-        snippet = (html or "")[:2000].replace("\n", " ")
-        c.setFont("Helvetica", 8)
-        c.drawString(40, 760, snippet)
-        c.showPage()
-        c.save()
+def render_html_to_pdf(html, base_url=None):
+    try:
+        from weasyprint import HTML
+        return HTML(string=html, base_url=base_url).write_pdf()
+    except Exception:
+        from io import BytesIO
+        from xhtml2pdf import pisa
+        buf = BytesIO()
+        pisa.CreatePDF(src=html, dest=buf, encoding="utf-8")
         return buf.getvalue()
 
-    out = io.BytesIO()
+def render_template_to_pdf(template_name, context, base_url=None):
+    html = render_to_string(template_name, context)
+    if base_url is None:
+        base_url = str(Path(settings.BASE_DIR))
+    return render_html_to_pdf(html, base_url=base_url)
 
-    pisa.CreatePDF(io.StringIO(html), dest=out)
-    return out.getvalue()
+def pdf_http_response(pdf_bytes, filename, inline=True):
+    response = HttpResponse(pdf_bytes, content_type="application/pdf")
+    disposition = "inline" if inline else "attachment"
+    response["Content-Disposition"] = f'{disposition}; filename="{filename}"'
+    return response
 
-def pdf_response(filename: str, pdf_bytes: bytes, inline: bool = True) -> HttpResponse:
+def pdf_response(pdf_bytes, filename, inline=True):
+    response = HttpResponse(pdf_bytes, content_type="application/pdf")
+    disposition = "inline" if inline else "attachment"
+    response["Content-Disposition"] = f'{disposition}; filename="{filename}"'
+    return response
 
-    resp = HttpResponse(pdf_bytes, content_type="application/pdf")
-    disp = "inline" if inline else "attachment"
-    resp["Content-Disposition"] = f'{disp}; filename="{filename}"'
-    return resp
+def render_template_to_pdf_response(template_name, context, filename, inline=True, base_url=None):
+    pdf = render_template_to_pdf(template_name, context, base_url=base_url)
+    return pdf_http_response(pdf, filename, inline=inline)
+
+def create_pdf_from_template(template_name, context):
+    return render_template_to_pdf(template_name, context)
+
+def create_pdf_response(template_name, context, filename):
+    return render_template_to_pdf_response(template_name, context, filename)

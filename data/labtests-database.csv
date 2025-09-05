@@ -1,0 +1,558 @@
+Standard Name - Abbrev,Standard Name - Full,Abbrev,Abbrev,Abbrev,CATEGORY,REF LOW MALE,REF HIGH MALE,UNITS,REF LOW FEMALE,REF HIGH FEMALE,UNITS
+TSH,Thyroid Stimulating Hormone,TSH,Thyrotropin,TÐ¢H,Endocrinology,0.4,4,mIU/L,0.4,4,mIU/L
+FT4,Free Thyroxine,FT4,Free T4,F-T4,Endocrinology,10,22,pmol/L,10,22,pmol/L
+FT3,Free Triiodothyronine,FT3,Free T3,F-T3,Endocrinology,3.5,6.5,pmol/L,3.5,6.5,pmol/L
+TT4,Total Thyroxine,TT4,T4 total,T4,Endocrinology,4.5,12.5,Âµg/dL,4.5,12.5,Âµg/dL
+TT3,Total Triiodothyronine,TT3,T3 total,T3,Endocrinology,80,200,ng/dL,80,200,ng/dL
+Anti-TPO,Anti-thyroid peroxidase Ab,Anti-TPO,TPOAb,Anti TPO,Endocrinology,,35,IU/mL,,35,IU/mL
+Anti-Tg,Anti-thyroglobulin Ab,Anti-Tg,TgAb,Anti Tg,Endocrinology,,115,IU/mL,,115,IU/mL
+Cortisol AM,Cortisol (08:00),Cortisol,Hydrocortisone,A.M. Cortisol,Endocrinology,6,23,Âµg/dL,6,23,Âµg/dL
+Cortisol PM,Cortisol (20:00),Cortisol,Hydrocortisone,P.M. Cortisol,Endocrinology,3,16,Âµg/dL,3,16,Âµg/dL
+ACTH,Adrenocorticotropic Hormone,ACTH,Corticotropin,Adrenocorticotrophin,Endocrinology,10,60,pg/mL,10,60,pg/mL
+PRL,Prolactin,PRL,HPRL,Prolact.,Endocrinology,,15,ng/mL,,25,ng/mL
+LH,Luteinizing Hormone,LH,Lutropin,ICSH,Endocrinology,1.7,8.6,IU/L,2.4,12.6,IU/L
+FSH,Follicle Stimulating Hormone,FSH,Follitropin,Folliculotropin,Endocrinology,1.5,12.4,IU/L,3.5,12.5,IU/L
+E2,Estradiol,E2,17Î²-Estradiol,Oestradiol,Endocrinology,,50,pg/mL,50,400,pg/mL
+Testo,Total Testosterone,TT,Testosterone,TST,Endocrinology,300,1000,ng/dL,15,70,ng/dL
+DHEA-S,Dehydroepiandrosterone sulfate,DHEA-S,DEA-S,Dehydroepiandrosterone-S,Endocrinology,100,400,Âµg/dL,35,250,Âµg/dL
+Insulin,Insulin (fasting),INS,Fasting Insulin,IRI,Endocrinology,2,25,ÂµIU/mL,2,25,ÂµIU/mL
+HbA1c,Glycated Hemoglobin,HbA1c,A1c,Glycohemoglobin,Endocrinology,,5.7,%,,5.7,%
+Glucose,Fasting Plasma Glucose,FPG,Glucose fasting,Glu,Endocrinology,3.9,5.5,mmol/L,3.9,5.5,mmol/L
+TRAb,TSH Receptor Antibodies,TRAb,TSHRAb,TSI,Endocrinology,,1.75,IU/L,,1.75,IU/L
+rT3,Reverse Triiodothyronine,rT3,RevT3,Reverse T3,Endocrinology,0.09,0.35,ng/mL,0.09,0.35,ng/mL
+17-OHP,17-Hydroxyprogesterone,17-OHP,17-OH Prog,17 HydroxyP,Endocrinology,27,199,ng/dL,20,100,ng/dL
+Prog,Progesterone,Prog,P4,PRG,Endocrinology,0.2,1.4,ng/mL,0.2,25,ng/mL
+DHT,Dihydrotestosterone,DHT,5?-DHT,5-alpha-DHT,Endocrinology,30,85,ng/dL,5,30,ng/dL
+SHBG,Sex Hormone Binding Globulin,SHBG,TeBG,SBP,Endocrinology,10,57,nmol/L,18,144,nmol/L
+IGF-1,Insulin-like Growth Factor 1,IGF-1,Somatomedin C,IGF1,Endocrinology,100,300,ng/mL,100,300,ng/mL
+GH,Growth Hormone,GH,Somatotropin,STH,Endocrinology,0,3,ng/mL,0,8,ng/mL
+PTH,Parathyroid Hormone,PTH,Parathormone,Parathyrin,Endocrinology,15,65,pg/mL,15,65,pg/mL
+Calcitonin,Calcitonin,CT,Thyrocalcitonin,CALC,Endocrinology,,10,pg/mL,,5,pg/mL
+25-OH VitD,25-Hydroxy Vitamin D,VitD,25(OH)D,Calcidiol,Endocrinology,20,50,ng/mL,20,50,ng/mL
+Aldo,Aldosterone,Aldo,ALD,ALDO,Endocrinology,4,31,ng/dL,4,31,ng/dL
+Renin,Plasma Renin Activity,Renin,PRA,Active Renin,Endocrinology,0.25,5.82,ng/mL/h,0.25,5.82,ng/mL/h
+Tg,Thyroglobulin,Tg,Thyroglob,ThyroG,Endocrinology,,55,ng/mL,,55,ng/mL
+TgAb,Thyroglobulin Antibodies,TgAb,Anti-Tg,ThyAb,Endocrinology,,115,IU/mL,,115,IU/mL
+C-peptide,C-Peptide,C-peptide,Connecting peptide,Cpep,Endocrinology,0.5,2,ng/mL,0.5,2,ng/mL
+OGTT,Oral Glucose Tolerance Test,OGTT,Glucose tolerance,2h-Glucose,Endocrinology,,140,mg/dL,,140,mg/dL
+Metanephrine,Metanephrines,MN,Metanephrine,Meta,Endocrinology,,90,pg/mL,,90,pg/mL
+Normetanephrine,Normetanephrines,NMN,Normetanephrine,N-Meta,Endocrinology,,180,pg/mL,,180,pg/mL
+11-Deoxycort,11-Deoxycortisol,11-DC,DeoxyCortisol,11-Deoxy,Endocrinology,10,79,ng/dL,10,79,ng/dL
+Estrone,Estrone,E1,Oestrone,Est1,Endocrinology,10,60,pg/mL,17,200,pg/mL
+Androstenedione,Androstenedione,A4,?4-Androstenedione,Androst,Endocrinology,40,150,ng/dL,30,200,ng/dL
+AMH,Anti-M?llerian Hormone,AMH,M?llerian inhibiting substance,MIS,Endocrinology,1.5,12.4,ng/mL,1,7,ng/mL
+hCG,Human Chorionic Gonadotropin,hCG,?-hCG,ChorionicG,Endocrinology,,5,mIU/mL,,5,mIU/mL
+Phosphate,Phosphate,PO4,Phosphorus,Phos,Endocrinology,2.5,4.5,mg/dL,2.5,4.5,mg/dL
+Magnesium,Magnesium,Mg,Mag,Magnesium ion,Endocrinology,1.7,2.2,mg/dL,1.7,2.2,mg/dL
+Ca,Total Calcium,Ca,Calcium total,CaTot,Endocrinology,8.5,10.5,mg/dL,8.5,10.5,mg/dL
+iCa,Ionized Calcium,iCa,Ca?? ionized,Free Ca,Endocrinology,1.12,1.32,mmol/L,1.12,1.32,mmol/L
+FreeTesto,Free Testosterone,FreeT,fTesto,Free-T,Endocrinology,9,30,ng/dL,0.3,1.9,ng/dL
+BioTesto,Bioavailable Testosterone,BioT,BioTesto,BioAvail T,Endocrinology,150,400,ng/dL,3,15,ng/dL
+DHEA,Dehydroepiandrosterone,DHEA,DEA,DehydroEpi,Endocrinology,1,10,ng/mL,1,10,ng/mL
+Estriol,Estriol,E3,Oestriol,Est3,Endocrinology,,70,pg/mL,,70,pg/mL
+VitD2,25-Hydroxy Vitamin D2,VitD2,25(OH)D2,Calcidiol-D2,Endocrinology,10,30,ng/mL,10,30,ng/mL
+VitD3,25-Hydroxy Vitamin D3,VitD3,25(OH)D3,Calcidiol-D3,Endocrinology,20,50,ng/mL,20,50,ng/mL
+"1,25(OH)2D","1,25-Dihydroxy Vitamin D",Calcitriol,"1,25(OH)?D","1,25D",Endocrinology,18,72,pg/mL,18,72,pg/mL
+DOC,11-Deoxycorticosterone,DOC,11-DOC,Deoxycort,Endocrinology,,16,ng/dL,,16,ng/dL
+Corticosterone,Corticosterone,B,CORT,11-dehydrocorticosterone,Endocrinology,0.2,2.3,µg/dL,0.2,2.3,µg/dL
+hs-cTnI,High-sensitivity Cardiac Troponin I,hs-cTnI,hsTnI,TnI-hs,Cardiology,,0.034,ng/mL,,0.016,ng/mL
+hs-cTnT,High-sensitivity Cardiac Troponin T,hs-cTnT,hsTnT,TnT-hs,Cardiology,,0.014,ng/mL,,0.01,ng/mL
+CK-MM,Creatine Kinase MM Isoenzyme,CK-MM,CKMM,MM-CK,Cardiology,,3,ng/mL,,3,ng/mL
+CK-BB,Creatine Kinase BB Isoenzyme,CK-BB,CKBB,BB-CK,Cardiology,,0.5,ng/mL,,0.5,ng/mL
+LDH,Lactate Dehydrogenase,LDH,L-LDH,LD,Cardiology,135,225,U/L,135,225,U/L
+AST,Aspartate Aminotransferase,AST,GOT,ASAT,Cardiology,,40,U/L,,32,U/L
+non-HDL-C,Non-HDL Cholesterol,non-HDL-C,nonHDL-C,Non HDL,Cardiology,,130,mg/dL,,130,mg/dL
+ApoE,Apolipoprotein E,ApoE,Apo-E,Apolipo E,Cardiology,3,5.4,mg/dL,3,5.4,mg/dL
+ApoCIII,Apolipoprotein C-III,ApoCIII,Apo C3,Apolipo CIII,Cardiology,8,12,mg/dL,8,12,mg/dL
+Remnant-C,Remnant Cholesterol,Remnant-C,RC,Remn Chol,Cardiology,,30,mg/dL,,30,mg/dL
+oxLDL,Oxidized LDL,oxLDL,Ox-LDL,Oxid LDL,Cardiology,,60,U/L,,60,U/L
+Lp-PLA2,Lipoprotein-associated Phospholipase A2,Lp-PLA2,LpPLA2,PLA2,Cardiology,,200,ng/mL,,200,ng/mL
+IL-6,Interleukin-6,IL-6,IL6,Interleukin 6,Cardiology,,7,pg/mL,,7,pg/mL
+TNF-?,Tumor Necrosis Factor alpha,TNF-?,TNFa,TNF alpha,Cardiology,,8,pg/mL,,8,pg/mL
+ATIII,Antithrombin III,ATIII,Antithrombin,AT3,Cardiology,80,120,%,80,120,%
+Protein C,Protein C Activity,Protein C,Prot C,PC,Cardiology,70,150,%,70,150,%
+Protein S,Protein S Activity,Protein S,Prot S,PS,Cardiology,60,150,%,60,150,%
+TAT,Thrombin-Antithrombin Complex,TAT,TAT complex,Thrombin-AT,Cardiology,,4,µg/L,,4,µg/L
+Plasminogen,Plasminogen Activity,Plasminogen,PLG,Plgn,Cardiology,75,140,%,75,140,%
+PAI-1,Plasminogen Activator Inhibitor-1,PAI-1,PAI1,Serpin E1,Cardiology,2,47,ng/mL,2,47,ng/mL
+Uric Acid,Uric Acid,UA,Urate,UricAc,Cardiology,3.4,7,mg/dL,2.4,6,mg/dL
+Copeptin,Copeptin,CPP,CT-proAVP,CPT,Cardiology,,10,pmol/L,,10,pmol/L
+Adiponectin,Adiponectin,ADN,Acrp30,AdipoQ,Cardiology,4,26,µg/mL,4,26,µg/mL
+Leptin,Leptin,LEP,OB protein,OB,Cardiology,0.5,8,ng/mL,1,25,ng/mL
+Hb,Hemoglobin,Hb,HGB,Hemoglobin,Hematology,13.5,17.5,g/dL,12,16,g/dL
+Hct,Hematocrit,Hct,Hemat,PCV,Hematology,41,53,%,36,46,%
+RBC,Red Blood Cell Count,RBC,Erythrocytes,Red Cells,Hematology,4.5,5.9,10^12/L,4.1,5.1,10^12/L
+WBC,White Blood Cell Count,WBC,Leukocytes,White Cells,Hematology,4,10,10^9/L,4,10,10^9/L
+PLT,Platelet Count,PLT,Thrombocytes,Platelets,Hematology,150,400,10^9/L,150,400,10^9/L
+MCV,Mean Corpuscular Volume,MCV,Mean Cell Volume,MC Vol,Hematology,80,100,fL,80,100,fL
+MCH,Mean Corpuscular Hemoglobin,MCH,Mean Cell Hb,M Cell Hb,Hematology,27,33,pg,27,33,pg
+MCHC,Mean Corpuscular Hb Conc.,MCHC,Hb Concentration,MCH Conc,Hematology,32,36,g/dL,32,36,g/dL
+RDW,Red Cell Distribution Width,RDW,RDW-CV,Red Width,Hematology,11.5,14.5,%,11.5,14.5,%
+Retic%,Reticulocyte Percentage,Retic%,Reticulocytes %,Retic Pct,Hematology,0.5,2.5,%,0.5,2.5,%
+Retic#,Reticulocyte Count (absolute),Retic#,Abs Retic,Retic Abs,Hematology,25,100,10^9/L,25,100,10^9/L
+CHr,Reticulocyte Hb Content,CHr,RET-He,CHr Hb,Hematology,28,35,pg,28,35,pg
+Neut#,Neutrophils (absolute),Neut#,ANC,Neut Abs,Hematology,1.5,7,10^9/L,1.5,7,10^9/L
+Lymph#,Lymphocytes (absolute),Lymph#,ALC,Lymph Abs,Hematology,1,4,10^9/L,1,4,10^9/L
+Mono#,Monocytes (absolute),Mono#,AMC,Mono Abs,Hematology,0.2,0.8,10^9/L,0.2,0.8,10^9/L
+Eos#,Eosinophils (absolute),Eos#,AEC,Eos Abs,Hematology,0,0.5,10^9/L,0,0.5,10^9/L
+Baso#,Basophils (absolute),Baso#,ABC,Baso Abs,Hematology,0,0.2,10^9/L,0,0.2,10^9/L
+Serum Iron,Serum Iron,Fe,Serum Fe,Iron,Hematology,65,175,Âµg/dL,50,170,Âµg/dL
+Ferritin,Ferritin,FER,Ft,Ferrit,Hematology,30,400,ng/mL,13,150,ng/mL
+Transferrin,Transferrin,Tf,Siderophilin,Transf,Hematology,200,360,mg/dL,200,360,mg/dL
+TIBC,Total Iron Binding Capacity,TIBC,Total IBC,Iron Capacity,Hematology,250,450,Âµg/dL,250,450,Âµg/dL
+TSAT,Transferrin Saturation,TSAT,Sat%,Iron Sat,Hematology,20,50,%,20,50,%
+sTfR,Soluble Transferrin Receptor,sTfR,sTFR,Sol Transf R,Hematology,1.8,4.6,mg/L,1.8,4.6,mg/L
+Haptoglobin,Haptoglobin,Hp,HAPTO,Haptog,Hematology,30,200,mg/dL,30,200,mg/dL
+LDH,Lactate Dehydrogenase,LDH,L-LDH,LD,Hematology,135,225,U/L,135,225,U/L
+Bilirubin T,Bilirubin Total,TBil,Total Bili,Bili T,Hematology,0.2,1.2,mg/dL,0.2,1.2,mg/dL
+Bilirubin Ind,Bilirubin Indirect,IBil,Unconjugated Bili,Bili Ind,Hematology,0.2,0.8,mg/dL,0.2,0.8,mg/dL
+PT,Prothrombin Time,PT,Protime,Quick,Hematology,11,13.5,s,11,13.5,s
+INR,International Normalized Ratio,INR,PT-INR,Prot INR,Hematology,0.8,1.2,,0.8,1.2,
+aPTT,Activated Partial Thromboplastin Time,aPTT,APTT,PTT,Hematology,25,35,s,25,35,s
+TT,Thrombin Time,TT,TCT,Thrombin T,Hematology,14,19,s,14,19,s
+Fibrinogen,Fibrinogen,Fib,Fg,Fibrino,Hematology,200,400,mg/dL,200,400,mg/dL
+D-dimer,D-dimer,DD,D-Di,FDP-DD,Hematology,,0.5,mg/L FEU,,0.5,mg/L FEU
+FII,Factor II (Prothrombin) Activity,FII,Factor 2,Prothrombin,Hematology,50,150,%,50,150,%
+FV,Factor V Activity,FV,Factor 5,Proaccelerin,Hematology,50,150,%,50,150,%
+FVII,Factor VII Activity,FVII,Factor 7,Proconvertin,Hematology,50,150,%,50,150,%
+FVIII,Factor VIII Activity,FVIII,Factor 8,AHF,Hematology,50,150,%,50,150,%
+FIX,Factor IX Activity,FIX,Factor 9,Christmas factor,Hematology,50,150,%,50,150,%
+FX,Factor X Activity,FX,Factor 10,Stuart-Prower,Hematology,50,150,%,50,150,%
+FXI,Factor XI Activity,FXI,Factor 11,PTA,Hematology,50,150,%,50,150,%
+FXII,Factor XII Activity,FXII,Factor 12,Hageman factor,Hematology,50,150,%,50,150,%
+FXIII,Factor XIII Activity,FXIII,Factor 13,FSF,Hematology,50,150,%,50,150,%
+vWF Ag,von Willebrand Factor Antigen,vWF Ag,vWF Antigen,VWF Ag,Hematology,50,150,%,50,150,%
+vWF Act,von Willebrand Factor Activity,vWF Act,Ristocetin Cofactor,VWF Activity,Hematology,50,150,%,50,150,%
+ATIII,Antithrombin III,ATIII,Antithrombin,AT3,Hematology,80,120,%,80,120,%
+Protein C,Protein C Activity,Protein C,Prot C,PC,Hematology,70,150,%,70,150,%
+Protein S,Protein S Activity,Protein S,Prot S,PS,Hematology,60,150,%,60,150,%
+LA,Lupus Anticoagulant,LA,LAC,Lupus Ab,Hematology,,,,,,
+DAT,Direct Antiglobulin Test,DAT,Direct Coombs,Direct AGT,Hematology,,,,,,
+IAT,Indirect Antiglobulin Test,IAT,Indirect Coombs,Indirect AGT,Hematology,,,,,,
+Cold Aggl,Cold Agglutinins,Cold Aggl,Cold Agg,CAggl,Hematology,,,,,,
+EPO,Erythropoietin,EPO,Erythropoetin,Erythropoyetin,Hematology,4,25,mIU/mL,4,25,mIU/mL
+Vitamin B12,Vitamin B12,B12,Cobalamin,Vit B12,Hematology,200,900,pg/mL,200,900,pg/mL
+Folate,Folate (Serum),Folate,Folic Acid,Vit B9,Hematology,3,20,ng/mL,3,20,ng/mL
+Homocysteine,Homocysteine,Hcy,HOMCYS,HCY,Hematology,,15,Âµmol/L,,15,Âµmol/L
+MMA,Methylmalonic Acid,MMA,Methylmalonate,MeMal Acid,Hematology,70,270,nmol/L,70,270,nmol/L
+sFLC-Îº,Serum Free Light Chains Kappa,sFLC-Îº,Free Kappa,Kappa FLC,Hematology,3.3,19.4,mg/L,3.3,19.4,mg/L
+sFLC-Î»,Serum Free Light Chains Lambda,sFLC-Î»,Free Lambda,Lambda FLC,Hematology,5.7,26.3,mg/L,5.7,26.3,mg/L
+FLC Ratio,Kappa/Lambda Ratio,K/L Ratio,Îº/Î» Ratio,FLC Îº/Î»,Hematology,0.26,1.65,,0.26,1.65,
+Î²2M,Beta-2 Microglobulin,Beta2M,B2M,Î²2 Microglobulin,Hematology,0.7,1.8,mg/L,0.7,1.8,mg/L
+HbA,Hemoglobin A (electrophoresis),HbA,Hb A1,Hemoglobin A,Hematology,95,98,%,95,98,%
+HbA2,Hemoglobin A2 (electrophoresis),HbA2,Hb A2,Hemoglobin A2,Hematology,2,3.5,%,2,3.5,%
+HbF,Fetal Hemoglobin,HbF,F Hemoglobin,Fetal Hb,Hematology,0,1,%,0,1,%
+G6PD,Glucose-6-Phosphate Dehydrogenase,G6PD,G-6-PD,G6PDH,Hematology,7,20.5,U/g Hb,7,20.5,U/g Hb
+OFT,Osmotic Fragility Test,OFT,Osmotic Fragility,Osm Frag,Hematology,,,,,,
+Sickle Screen,Sickle Cell Screen,Sickling,Sickle Test,Sickl Scr,Hematology,,,,,,
+CD34,CD34+ Cells,CD34,HSC markers,Stem Cell CD34,Hematology,,,,,,
+CSF Pressure,Cerebrospinal Fluid Opening Pressure,LP Pressure,OP,,Neurology,70,180,mmH2O,70,180,mmH2O
+CSF Appearance,Cerebrospinal Fluid Appearance,,,,Neurology,Clear,Colorless,,Clear,Colorless,
+CSF Xantho,Cerebrospinal Fluid Xanthochromia,,,,Neurology,Negative,,,Negative,,
+CSF WBC,Cerebrospinal Fluid White Blood Cell Count,CSF Cell Ct,,,Neurology,0,5,cells/µL,0,5,cells/µL
+CSF RBC,Cerebrospinal Fluid Red Blood Cell Count,,,,Neurology,0,0,cells/µL,0,0,cells/µL
+CSF Protein,"Cerebrospinal Fluid Protein, Total",,Prot-CSF,,Neurology,15,45,mg/dL,15,45,mg/dL
+CSF Glucose,Cerebrospinal Fluid Glucose,,Gluc-CSF,,Neurology,50,80,mg/dL,50,80,mg/dL
+CSF/Serum Gluc,CSF/Serum Glucose Ratio,,,,Neurology,0.6,,ratio,0.6,,ratio
+CSF Lactate,Cerebrospinal Fluid Lactate,,,,Neurology,1.1,2.4,mmol/L,1.1,2.4,mmol/L
+CSF IgG Index,Cerebrospinal Fluid IgG Index,IgG Index,,,Neurology,0.23,0.62,index,0.23,0.62,index
+"OCB, CSF","Oligoclonal Bands, CSF",,OCB,,Neurology,Negative,,,Negative,,
+CSF Albumin,Cerebrospinal Fluid Albumin,,,,Neurology,,<35,mg/dL,,<35,mg/dL
+Q-Alb,CSF/Serum Albumin Ratio,,,,Neurology,,<9,x10??,,<9,x10??
+"MBP, CSF","Myelin Basic Protein, CSF",,,,Neurology,,<1.5,ng/mL,,<1.5,ng/mL
+"NSE, CSF","Neuron-Specific Enolase, CSF",,,,Neurology,,<20,ng/mL,,<20,ng/mL
+"Tau, CSF","Tau Protein, CSF",Total Tau,,,Neurology,,<300,pg/mL,,<300,pg/mL
+"p-Tau, CSF","Phosphorylated Tau Protein, CSF",,,,Neurology,,<61,pg/mL,,<61,pg/mL
+"A?42, CSF","Amyloid Beta 42, CSF",,AB-42,,Neurology,>500,,pg/mL,>500,,pg/mL
+14-3-3 Protein,"14-3-3 Protein, CSF",,,,Neurology,Negative,,,Negative,,
+"VDRL, CSF","Venereal Disease Research Laboratory, CSF",,,,Neurology,Non-reactive,,,Non-reactive,,
+"Crypto Ag, CSF","Cryptococcal Antigen, CSF",CrAg,,,Neurology,Negative,,,Negative,,
+AChR Bind Ab,Acetylcholine Receptor Binding Ab,,,,Neurology,,<=0.02,nmol/L,,<=0.02,nmol/L
+AChR Block Ab,Acetylcholine Receptor Blocking Ab,,,,Neurology,,<15,% block,,<15,% block
+MuSK Ab,Muscle-Specific Kinase Antibody,,,,Neurology,Negative,,,Negative,,
+VGCC Ab,Voltage-Gated Calcium Channel Antibody,,P/Q-type Ab,,Neurology,,<=20,pmol/L,,<=20,pmol/L
+Paraneoplastic Ab,Paraneoplastic Antibody Panel,PNS panel,Anti-Hu,Anti-Yo,Neurology,Negative,,,Negative,,
+AQP4-IgG,Aquaporin-4 Antibody,NMO-IgG,,,Neurology,Negative,,,Negative,,
+MOG-IgG,Myelin Oligodendrocyte Glycoprotein Ab,MOGAD,,,Neurology,Negative,,,Negative,,
+NMDA-R Ab,Anti-NMDA Receptor Antibody,,,,Neurology,Negative,,,Negative,,
+GAD65 Ab,Glutamic Acid Decarboxylase 65 Ab,Anti-GAD65,,,Neurology,,<=5.0,IU/mL,,<=5.0,IU/mL
+LGI1 Ab,Leucine-rich Glioma-inactivated 1 Ab,,,,Neurology,Negative,,,Negative,,
+CASPR2 Ab,Contactin-associated Protein-like 2 Ab,,,,Neurology,Negative,,,Negative,,
+HTT Test,Huntington's Disease Gene Test,,HD gene,,Neurology,<27,repeats,,<27,repeats,
+APOE Genotype,Apolipoprotein E Genotyping,,,,Neurology,,,Genotype,,,Genotype
+C9orf72 Test,C9orf72 Gene Expansion Test,,ALS gene,,Neurology,<30,repeats,,<30,repeats,
+"Ammonia, Pl","Ammonia, Plasma",NH3,,,Neurology,15,45,µmol/L,15,45,µmol/L
+"Pyruvate, Pl","Pyruvate, Plasma",,,,Neurology,0.03,0.08,mmol/L,0.03,0.08,mmol/L
+L/P Ratio,Lactate/Pyruvate Ratio,,,,Neurology,<15,,ratio,<15,,ratio
+Vit B1,"Vitamin B1 (Thiamine), Blood",Thiamine,,,Neurology,70,180,nmol/L,70,180,nmol/L
+Vit E,"Vitamin E (Alpha-Tocopherol), Serum",Tocopherol,,,Neurology,5.5,17,mg/L,5.5,17,mg/L
+Ceruloplasmin,"Ceruloplasmin, Serum",,,,Neurology,20,60,mg/dL,20,60,mg/dL
+"Copper, Ser","Copper, Serum",Cu,,,Neurology,75,145,µg/dL,75,145,µg/dL
+"Copper, Ur 24h","Copper, 24-Hour Urine",,,,Neurology,15,60,µg/24h,15,60,µg/24h
+VLCFA,Very Long Chain Fatty Acids,,,,Neurology,,,Ratio,,,Ratio
+Aldolase,"Aldolase, Serum",,,,Neurology,1,7.5,U/L,1,7.5,U/L
+"NSE, Serum","Neuron-Specific Enolase, Serum",,,,Neurology,,<=16.3,ng/mL,,<=16.3,ng/mL
+"Lead, Blood","Lead, Blood",Pb,,,Neurology,<5,,µg/dL,<5,,µg/dL
+"JCV PCR, CSF","JC Virus DNA by PCR, CSF",,,,Neurology,Not Detected,,,Not Detected,,
+ALT,Alanine Aminotransferase,SGPT,GPT,,Gastroenterology,10,40,U/L,7,35,U/L
+AST,Aspartate Aminotransferase,SGOT,GOT,,Gastroenterology,10,40,U/L,9,32,U/L
+ALP,Alkaline Phosphatase,ALK PHOS,,,Gastroenterology,40,129,U/L,35,104,U/L
+GGT,Gamma-Glutamyl Transferase,GGTP,,,Gastroenterology,8,61,U/L,5,36,U/L
+"Albumin, Ser","Albumin, Serum",ALB,,,Gastroenterology,3.5,5.2,g/dL,3.5,5.2,g/dL
+"T Prot, Ser","Total Protein, Serum",TP,,,Gastroenterology,6,8.3,g/dL,6,8.3,g/dL
+Amylase,"Amylase, Serum",AMY,,,Gastroenterology,30,110,U/L,30,110,U/L
+Lipase,"Lipase, Serum",LPS,,,Gastroenterology,10,140,U/L,10,140,U/L
+Anti-HAV IgM,"Hepatitis A Virus Antibody, IgM",HAV-Ab IgM,,,Gastroenterology,Negative,,,Negative,,
+Anti-HAV Total,"Hepatitis A Virus Antibody, Total",HAV-Ab Total,,,Gastroenterology,Negative,,,Negative,,
+HBsAg,Hepatitis B Surface Antigen,,,,Gastroenterology,Non-reactive,,,Non-reactive,,
+Anti-HBs,Hepatitis B Surface Antibody,HBsAb,,,Gastroenterology,<10,,mIU/mL,<10,,mIU/mL
+Anti-HBc IgM,"Hepatitis B Core Antibody, IgM",HBcAb IgM,,,Gastroenterology,Negative,,,Negative,,
+Anti-HBc Total,"Hepatitis B Core Antibody, Total",HBcAb Total,,,Gastroenterology,Negative,,,Negative,,
+HBeAg,Hepatitis B e-Antigen,,,,Gastroenterology,Negative,,,Negative,,
+Anti-HBe,Hepatitis B e-Antibody,HBeAb,,,Gastroenterology,Negative,,,Negative,,
+HBV DNA,Hepatitis B Virus DNA (Viral Load),,,,Gastroenterology,Not Detected,,IU/mL,Not Detected,,IU/mL
+Anti-HCV,Hepatitis C Virus Antibody,HCV-Ab,,,Gastroenterology,Non-reactive,,,Non-reactive,,
+HCV RNA,Hepatitis C Virus RNA (Viral Load),,,,Gastroenterology,Not Detected,,IU/mL,Not Detected,,IU/mL
+Anti-HDV,Hepatitis D Virus Antibody,HDV-Ab,,,Gastroenterology,Negative,,,Negative,,
+ASMA,Anti-Smooth Muscle Antibody,,,,Gastroenterology,<1:20,,Titer,<1:20,,Titer
+AMA,Anti-Mitochondrial Antibody,,,,Gastroenterology,<1:20,,Titer,<1:20,,Titer
+Anti-LKM-1,Anti-Liver Kidney Microsomal Type 1 Ab,,LKM,,Gastroenterology,Negative,,,Negative,,
+"IgG, Serum","Immunoglobulin G, Serum",,,,Gastroenterology,700,1600,mg/dL,700,1600,mg/dL
+"IgA, Serum","Immunoglobulin A, Serum",,,,Gastroenterology,70,400,mg/dL,70,400,mg/dL
+"IgM, Serum","Immunoglobulin M, Serum",,,,Gastroenterology,40,230,mg/dL,40,230,mg/dL
+F-Calprotectin,Fecal Calprotectin,,,,Gastroenterology,,<50,µg/g,,<50,µg/g
+F-Lactoferrin,Fecal Lactoferrin,,,,Gastroenterology,,<7.25,µg/g,,<7.25,µg/g
+tTG-IgA,"Tissue Transglutaminase Antibody, IgA",,,,Gastroenterology,,<4.0,U/mL,,<4.0,U/mL
+DGP-IgG,"Deamidated Gliadin Peptide Ab, IgG",,,,Gastroenterology,,<15,U/mL,,<15,U/mL
+EMA-IgA,"Endomysial Antibody, IgA",,,,Gastroenterology,Negative,,,Negative,,
+ASCA,Anti-Saccharomyces cerevisiae Antibody,,,,Gastroenterology,,<20,U/mL,,<20,U/mL
+p-ANCA,Perinuclear Anti-Neutrophil Cytoplasmic Ab,,,,Gastroenterology,Negative,,,Negative,,
+FIT,Fecal Immunochemical Test,FOBT,,,Gastroenterology,Negative,,,Negative,,
+O&P,Stool Ova and Parasites,,,,Gastroenterology,No Ova or Parasites Seen,,,No Ova or Parasites Seen,,
+Stool Culture,"Stool Culture, Enteric Pathogens",,,,Gastroenterology,No pathogens,,,No pathogens,,
+C. diff Toxin,Clostridioides difficile Toxin Assay,,,,Gastroenterology,Negative,,,Negative,,
+Giardia Ag,"Giardia lamblia Antigen, Stool",,,,Gastroenterology,Negative,,,Negative,,
+F-Elastase-1,Fecal Elastase-1,FE-1,,,Gastroenterology,>200,,µg/g,>200,,µg/g
+Stool Fat,"Stool Fat, Qualitative",Sudan Stain,,,Gastroenterology,<20,,droplets/hpf,<20,,droplets/hpf
+AFP,Alpha-Fetoprotein,,,,Gastroenterology,0,9,ng/mL,0,9,ng/mL
+CEA,Carcinoembryonic Antigen,,,,Gastroenterology,0,3,ng/mL,0,3,ng/mL
+CA 19-9,Carbohydrate Antigen 19-9,,,,Gastroenterology,,<37,U/mL,,<37,U/mL
+Gastrin,"Gastrin, Serum",,,,Gastroenterology,,<100,pg/mL,,<100,pg/mL
+H. pylori Ag,Helicobacter pylori Stool Antigen,,,,Gastroenterology,Negative,,,Negative,,
+UBT,Urea Breath Test,,,,Gastroenterology,Negative,,,Negative,,
+"A1AT, Ser","Alpha-1 Antitrypsin, Serum",AAT,,,Gastroenterology,90,200,mg/dL,90,200,mg/dL
+"A1AT, Stool","Alpha-1 Antitrypsin Clearance, Stool",,,,Gastroenterology,,<27,mL/24h,,<27,mL/24h
+NBS Panel,Newborn Screening Panel,Heel Stick,NBSP,,Pediatrics,,,,,,
+"Bili, Neonatal","Bilirubin, Neonatal (Total & Direct)",T&D Bili,,,Pediatrics,Age-specific,Age-specific,mg/dL,Age-specific,Age-specific,mg/dL
+Sweat Chloride,Sweat Chloride Test,,,,Pediatrics,,<30,mmol/L,,<30,mmol/L
+Phenylalanine,"Phenylalanine, Blood",PKU Screen,,,Pediatrics,<2,,mg/dL,<2,,mg/dL
+IRT,Immunoreactive Trypsinogen,,,,Pediatrics,Age-specific,,ng/mL,Age-specific,,ng/mL
+GALT,Galactose-1-Phosphate Uridyltransferase,,,,Pediatrics,>18.5,,U/g Hb,>18.5,,U/g Hb
+Biotinidase,"Biotinidase Activity, Serum",,,,Pediatrics,>4.4,,U/mL,>4.4,,U/mL
+"IgE, Total","Immunoglobulin E, Total",,,,Pediatrics,Age-specific,,kU/L,Age-specific,,kU/L
+Spec IgE,Specific IgE (Allergen Panel),RAST,,,Pediatrics,,<0.35,kU/L,,<0.35,kU/L
+Tryptase,"Tryptase, Serum",,,,Pediatrics,,<11.5,ng/mL,,<11.5,ng/mL
+Plasma A.A.,Plasma Amino Acids,PAA,,,Pediatrics,Age-specific,,nmol/mL,Age-specific,,nmol/mL
+Urine O.A.,Urine Organic Acids,UOA,,,Pediatrics,,,report,,,report
+Acylcarnitine,"Acylcarnitine Profile, Blood Spot",,,,Pediatrics,,,report,,,report
+Prealbumin,"Prealbumin, Serum",Transthyretin,,,Pediatrics,Age-specific,,mg/dL,Age-specific,,mg/dL
+Cystatin C,"Cystatin C, Serum",,,,Pediatrics,Age-specific,,mg/L,Age-specific,,mg/L
+"RSV Ag, Nasal",Respiratory Syncytial Virus Antigen,,,,Pediatrics,Negative,,,Negative,,
+Influenza Ag,"Influenza A+B Antigen, Nasal",,,,Pediatrics,Negative,,,Negative,,
+"Strep Ag, Rapid","Group A Streptococcus Antigen, Throat",RADT,,,Pediatrics,Negative,,,Negative,,
+Rotavirus Ag,"Rotavirus Antigen, Stool",,,,Pediatrics,Negative,,,Negative,,
+Blood Culture,Blood Culture,,,,Pediatrics,No Growth,,,No Growth,,
+Urine Culture,Urine Culture,,,,Pediatrics,"<10,000",,CFU/mL,"<10,000",,CFU/mL
+U. Reduc Subst,Urine Reducing Substances,,,,Pediatrics,Negative,,,Negative,,
+Measles Ab IgG,"Measles (Rubeola) Antibody, IgG",,,,Pediatrics,>1.1,,AI,>1.1,,AI
+Mumps Ab IgG,"Mumps Antibody, IgG",,,,Pediatrics,>1.1,,AI,>1.1,,AI
+Rubella Ab IgG,"Rubella Antibody, IgG",,,,Pediatrics,>10,,IU/mL,>10,,IU/mL
+VZV Ab IgG,"Varicella-Zoster Virus Antibody, IgG",,,,Pediatrics,>1.1,,AI,>1.1,,AI
+EBV VCA IgM,EBV Viral Capsid Antigen IgM,,,,Pediatrics,Negative,,,Negative,,
+EBV VCA IgG,EBV Viral Capsid Antigen IgG,,,,Pediatrics,Negative,,,Negative,,
+EBNA-IgG,EBV Nuclear Antigen IgG,,,,Pediatrics,Negative,,,Negative,,
+CH50,Total Complement Activity,,,,Pediatrics,30,75,U/mL,30,75,U/mL
+C3 Complement,Complement C3,,,,Pediatrics,Age-specific,,mg/dL,Age-specific,,mg/dL
+C4 Complement,Complement C4,,,,Pediatrics,Age-specific,,mg/dL,Age-specific,,mg/dL
+ABG,Arterial Blood Gas,,,,Pulmonology,,,Report,,,Report
+"pH, Arterial","pH, Arterial Blood",,,,Pulmonology,7.35,7.45,,7.35,7.45,
+PaCO2,"Partial Pressure of Carbon Dioxide, Arterial",pCO2,,,Pulmonology,35,45,mm Hg,35,45,mm Hg
+PaO2,"Partial Pressure of Oxygen, Arterial",pO2,,,Pulmonology,75,100,mm Hg,75,100,mm Hg
+"HCO3, Arterial","Bicarbonate, Arterial",,,,Pulmonology,22,28,mEq/L,22,28,mEq/L
+COHb,Carboxyhemoglobin,,,,Pulmonology,0,1.5,%,0,1.5,%
+MetHb,Methemoglobin,,,,Pulmonology,<1.5,,%,<1.5,,%
+Sputum C&S,Sputum Culture and Sensitivity,,,,Pulmonology,No Pathogens,,,No Pathogens,,
+Sputum Gram,Sputum Gram Stain,,,,Pulmonology,,,Report,,,Report
+AFB Smear,Acid-Fast Bacilli Smear,,,,Pulmonology,Negative,,,Negative,,
+MTB Culture,Mycobacterium tuberculosis Culture,,,,Pulmonology,No Growth,,,No Growth,,
+IGRA,Interferon-Gamma Release Assay,QFT,T-SPOT,,Pulmonology,Negative,,,Negative,,
+Legionella Ag,Legionella pneumophila Urinary Antigen,,,,Pulmonology,Negative,,,Negative,,
+Strep pneumo Ag,Streptococcus pneumoniae Urinary Antigen,,,,Pulmonology,Negative,,,Negative,,
+Mycoplasma IgM,"Mycoplasma pneumoniae Antibodies, IgM",,,,Pulmonology,<1:10,,Titer,<1:10,,Titer
+Mycoplasma IgG,"Mycoplasma pneumoniae Antibodies, IgG",,,,Pulmonology,<1:10,,Titer,<1:10,,Titer
+Aspergillus Ag,Aspergillus Galactomannan Antigen,,,,Pulmonology,<0.5,,Index,<0.5,,Index
+Aspergillus IgG,Aspergillus fumigatus IgG Antibody,,,,Pulmonology,<40,,mg/L,<40,,mg/L
+PJP DFA/PCR,Pneumocystis jirovecii DFA or PCR,PCP Test,,,Pulmonology,Negative,,,Negative,,
+A1AT Genotype,Alpha-1 Antitrypsin Genotyping,,,,Pulmonology,,,Genotype,,,Genotype
+CFTR Gene,Cystic Fibrosis Gene Mutation Analysis,,,,Pulmonology,,,Report,,,Report
+ACE,Angiotensin-Converting Enzyme,,,,Pulmonology,9,67,U/L,9,67,U/L
+ProGRP,Pro-gastrin-releasing peptide,,,,Pulmonology,,<50,pg/mL,,<50,pg/mL
+CYFRA 21-1,Cytokeratin 19 fragment,,,,Pulmonology,,<3.3,ng/mL,,<3.3,ng/mL
+Pleural Fluid pH,Pleural Fluid pH,,,,Pulmonology,>7.2,,,>7.2,,
+Pl Fld Cell Ct,Pleural Fluid Cell Count and Differential,,,,Pulmonology,,,Report,,,Report
+Pl Fld Protein,Pleural Fluid Total Protein,,,,Pulmonology,<2.5,,g/dL,<2.5,,g/dL
+Pl Fld LDH,Pleural Fluid Lactate Dehydrogenase,,,,Pulmonology,<200,,IU/L,<200,,IU/L
+Pl Fld Glucose,Pleural Fluid Glucose,,,,Pulmonology,>60,,mg/dL,>60,,mg/dL
+Pl Fld Amylase,Pleural Fluid Amylase,,,,Pulmonology,,<100,U/L,,<100,U/L
+Pl Fld Trigs,Pleural Fluid Triglycerides,,,,Pulmonology,,<110,mg/dL,,<110,mg/dL
+Pl Fld ADA,Pleural Fluid Adenosine Deaminase,,,,Pulmonology,,<40,U/L,,<40,U/L
+Pl Fld Cytology,Pleural Fluid Cytology,,,,Pulmonology,No Malignant,Cells,,No Malignant,Cells,
+"Creatinine, Ser","Creatinine, Serum",Crea,SCr,,Nephrology,0.7,1.3,mg/dL,0.6,1.1,mg/dL
+BUN,Blood Urea Nitrogen,,,,Nephrology,7,20,mg/dL,7,20,mg/dL
+BUN/Crea Ratio,BUN/Creatinine Ratio,,,,Nephrology,10,20,ratio,10,20,ratio
+eGFR,Estimated Glomerular Filtration Rate,,,,Nephrology,>60,,mL/min/1.73m?,>60,,mL/min/1.73m?
+Bicarbonate,"Bicarbonate, Serum",HCO3,Total CO2,,Nephrology,22,29,mmol/L,22,29,mmol/L
+Anion Gap,Anion Gap,AG,,,Nephrology,4,12,mEq/L,4,12,mEq/L
+"Uric Acid, Ser","Uric Acid, Serum",UA,,,Nephrology,3.4,7,mg/dL,2.4,6,mg/dL
+"Osmolality, Ser","Osmolality, Serum",,,,Nephrology,275,295,mOsm/kg,275,295,mOsm/kg
+Urinalysis,"Urinalysis, Complete with Microscopic",UA,,,Nephrology,,,Report,,,Report
+Urine pH,Urine pH,,,,Nephrology,4.5,8,,4.5,8,
+Urine SpGr,Urine Specific Gravity,,,,Nephrology,1.005,1.03,,1.005,1.03,
+Urine Protein,Urine Protein (Dipstick),,,,Nephrology,Negative,,,Negative,,
+Urine Glucose,Urine Glucose (Dipstick),,,,Nephrology,Negative,,,Negative,,
+Urine Ketones,Urine Ketones (Dipstick),,,,Nephrology,Negative,,,Negative,,
+Urine Blood,Urine Blood (Dipstick),,,,Nephrology,Negative,,,Negative,,
+Urine Leuk Est,Urine Leukocyte Esterase,,,,Nephrology,Negative,,,Negative,,
+Urine Nitrite,Urine Nitrite,,,,Nephrology,Negative,,,Negative,,
+Urine UBG,Urine Urobilinogen,,,,Nephrology,0.2,1,mg/dL,0.2,1,mg/dL
+Urine RBC,Urine Microscopic: Red Blood Cells,,,,Nephrology,0,2,/HPF,0,2,/HPF
+Urine WBC,Urine Microscopic: White Blood Cells,,,,Nephrology,0,5,/HPF,0,5,/HPF
+Urine Casts,Urine Microscopic: Casts,,,,Nephrology,None seen,,,None seen,,
+ACR,Urine Albumin-to-Creatinine Ratio,UACR,Microalbumin,,Nephrology,,<30,mg/g,,<30,mg/g
+PCR,Urine Protein-to-Creatinine Ratio,UPCR,,,Nephrology,,<200,mg/g,,<200,mg/g
+"Urine Prot, 24h","Urine Protein, 24-Hour",,,,Nephrology,,<150,mg/24h,,<150,mg/24h
+"CrCl, 24h","Creatinine Clearance, 24-Hour",,,,Nephrology,97,137,mL/min,88,128,mL/min
+FENa,Fractional Excretion of Sodium,,,,Nephrology,<1,,%,<1,,%
+"Osmolality, Ur","Osmolality, Urine",,,,Nephrology,300,900,mOsm/kg,300,900,mOsm/kg
+ANA,Antinuclear Antibody,,,,Nephrology,<1:40,,Titer,<1:40,,Titer
+Anti-dsDNA,Anti-double-stranded DNA Antibody,,,,Nephrology,,<30,IU/mL,,<30,IU/mL
+c-ANCA,Cytoplasmic ANCA (Anti-PR3),,PR3-ANCA,,Nephrology,Negative,,,Negative,,
+p-ANCA,Perinuclear ANCA (Anti-MPO),,MPO-ANCA,,Nephrology,Negative,,,Negative,,
+Anti-GBM Ab,Anti-Glomerular Basement Membrane Ab,,,,Nephrology,<1.0,,Units,<1.0,,Units
+Cryoglobulins,"Cryoglobulins, Serum",,,,Nephrology,Negative,,,Negative,,
+SPEP,Serum Protein Electrophoresis,,,,Nephrology,,,Report,,,Report
+UPEP,Urine Protein Electrophoresis,,,,Nephrology,,,Report,,,Report
+SFLC,Serum Free Light Chains,Kappa/Lambda,,,Nephrology,0.26,1.65,Ratio,0.26,1.65,Ratio
+Stone Analysis,Kidney Stone Analysis,,,,Nephrology,,,Composition,,,Composition
+"U Ca, 24h","Urine Calcium, 24-Hour",,,,Nephrology,,<250,mg/24h,,<200,mg/24h
+"U Oxalate, 24h","Urine Oxalate, 24-Hour",,,,Nephrology,,<45,mg/24h,,<45,mg/24h
+"U Citrate, 24h","Urine Citrate, 24-Hour",,,,Nephrology,>320,,mg/24h,>320,,mg/24h
+KOH Prep,Potassium Hydroxide Preparation,Fungal Smear,,,Dermatology,No Fungi Seen,,,No Fungi Seen,,
+Fungal Culture,"Fungal Culture, Dermatophyte",,,,Dermatology,No Growth,,,No Growth,,
+Tzanck Smear,Tzanck Smear,,,,Dermatology,No Giant Cells,,,No Giant Cells,,
+Wound Culture,"Bacterial Culture, Skin/Wound",C&S,,,Dermatology,No Pathogens,,,No Pathogens,,
+"DIF, Skin","Direct Immunofluorescence, Skin Biopsy",,,,Dermatology,Negative,,,Negative,,
+Anti-Ro/SSA,Anti-Ro/SSA Antibody,,,,Dermatology,<1.0,,AI,<1.0,,AI
+Anti-La/SSB,Anti-La/SSB Antibody,,,,Dermatology,<1.0,,AI,<1.0,,AI
+Anti-Sm,Anti-Smith Antibody,,,,Dermatology,<1.0,,AI,<1.0,,AI
+Anti-RNP,Anti-Ribonucleoprotein Antibody,,,,Dermatology,<1.0,,AI,<1.0,,AI
+Anti-Scl-70,Anti-Scl-70 (Topoisomerase I) Ab,,,,Dermatology,<1.0,,AI,<1.0,,AI
+Anti-Centromere,Anti-Centromere B Antibody,,,,Dermatology,<1.0,,AI,<1.0,,AI
+Anti-Jo-1,Anti-Jo-1 Antibody,,,,Dermatology,<1.0,,AI,<1.0,,AI
+Anti-Mi-2,Anti-Mi-2 Antibody,,,,Dermatology,<1.0,,AI,<1.0,,AI
+Anti-MDA5,Anti-Melanoma Differentiation-Assoc. 5 Ab,,,,Dermatology,Negative,,,Negative,,
+Dsg1 Ab,Desmoglein 1 Antibody,,,,Dermatology,,<20,RU/mL,,<20,RU/mL
+Dsg3 Ab,Desmoglein 3 Antibody,,,,Dermatology,,<20,RU/mL,,<20,RU/mL
+BP180 Ab,Bullous Pemphigoid Antigen 180 Ab,,,,Dermatology,,<9,RU/mL,,<9,RU/mL
+BP230 Ab,Bullous Pemphigoid Antigen 230 Ab,,,,Dermatology,,<9,RU/mL,,<9,RU/mL
+Collagen VII Ab,Type VII Collagen Antibody,,,,Dermatology,Negative,,,Negative,,
+RPR,Rapid Plasma Reagin,,,,Dermatology,Non-reactive,,,Non-reactive,,
+"VDRL, Serum","Venereal Disease Research Laboratory, Serum",,,,Dermatology,Non-reactive,,,Non-reactive,,
+FTA-ABS,Fluorescent Treponemal Antibody Absorption,,,,Dermatology,Non-reactive,,,Non-reactive,,
+TP-PA,Treponema pallidum Particle Agglutination,,,,Dermatology,Non-reactive,,,Non-reactive,,
+HSV 1/2 IgM,"Herpes Simplex Virus 1/2 Antibodies, IgM",,,,Dermatology,<0.9,,Index,<0.9,,Index
+HSV 1/2 IgG,"Herpes Simplex Virus 1/2 Antibodies, IgG",,,,Dermatology,<0.9,,Index,<0.9,,Index
+"Porphyrins, Pl","Porphyrins, Total Plasma",,,,Dermatology,1,20,µg/dL,1,20,µg/dL
+"Porphyrins, Ur","Porphyrins, 24-Hour Urine",,,,Dermatology,50,200,µg/24h,50,200,µg/24h
+UROD,Uroporphyrinogen Decarboxylase,,,,Dermatology,Normal,,Activity,Normal,,Activity
+"Zinc, Plasma","Zinc, Plasma/Serum",,,,Dermatology,70,120,µg/dL,70,120,µg/dL
+BRAF Mutation,BRAF V600 Mutation Analysis,,,,Dermatology,Not Detected,,,Not Detected,,
+Lymph Subsets,Lymphocyte Subset Panel,CD4/CD8,,,Dermatology,,,Report,,,Report
+"hCG, Serum Qual","Human Chorionic Gonadotropin, Qualitative",Preg Test,,,OB/GYN,,,,Negative,,
+"hCG, Serum Quant","Human Chorionic Gonadotropin, Quantitative",Beta-hCG,,,OB/GYN,<5,,mIU/mL,<5 (Non-preg),,mIU/mL
+Prolactin,"Prolactin, Serum",PRL,,,OB/GYN,4,15,ng/mL,5,25 (Non-preg),ng/mL
+AMH,Anti-M??llerian Hormone,,,,OB/GYN,,,,Age-specific,,ng/mL
+PAPP-A,Pregnancy-Associated Plasma Protein-A,,,,OB/GYN,,,,Gest. Age Spec.,,mIU/mL
+MS-AFP,Maternal Serum Alpha-Fetoprotein,,,,OB/GYN,,,,Gest. Age Spec.,,MoM
+uE3,Unconjugated Estriol,,,,OB/GYN,,,,Gest. Age Spec.,,ng/mL
+Inhibin A,"Inhibin A, Dimeric",,,,OB/GYN,,,,Gest. Age Spec.,,pg/mL
+Quad Screen,Quadruple Marker Screen,,,,OB/GYN,,,,Risk Report,,
+PlGF,Placental Growth Factor,,,,OB/GYN,,,,Gest. Age Spec.,,pg/mL
+hPL,Human Placental Lactogen,,,,OB/GYN,,,,Gest. Age Spec.,,?µg/mL
+cffDNA,Cell-Free Fetal DNA,NIPT,,,OB/GYN,,,,Risk Report,,
+Amnio Karyotype,"Karyotype, Amniotic Fluid",,,,OB/GYN,,,,Report,,
+L/S Ratio,Lecithin/Sphingomyelin Ratio,,,,OB/GYN,,,,>2.0 (Mature),,Ratio
+"PG, Amniotic","Phosphatidylglycerol, Amniotic Fluid",,,,OB/GYN,,,,Present (Mature),,
+fFN,Fetal Fibronectin,,,,OB/GYN,,,,<50,,ng/mL
+Toxo IgG,"Toxoplasma gondii Antibody, IgG",,,,OB/GYN,,,,<1.0 (Neg),,IU/mL
+Toxo IgM,"Toxoplasma gondii Antibody, IgM",,,,OB/GYN,,,,<0.8 (Neg),,Index
+CMV IgG,"Cytomegalovirus Antibody, IgG",,,,OB/GYN,,,,<0.6 (Neg),,U/mL
+CMV IgM,"Cytomegalovirus Antibody, IgM",,,,OB/GYN,,,,<30 (Neg),,AU/mL
+GBS Screen,Group B Streptococcus Screen,,,,OB/GYN,,,,Negative,,
+Chlamydia NAAT,Chlamydia trachomatis NAAT,CT,,,OB/GYN,,,,Not Detected,,
+Gonorrhea NAAT,Neisseria gonorrhoeae NAAT,GC,,,OB/GYN,,,,Not Detected,,
+Trichomonas NAAT,Trichomonas vaginalis NAAT,TV,,,OB/GYN,,,,Not Detected,,
+BV Panel,Bacterial Vaginosis Panel,,,,OB/GYN,,,,Report,,
+HIV 1/2 Ab/Ag,HIV-1/2 Antigen/Antibody Combo,,,,OB/GYN,Non-reactive,,,Non-reactive,,
+HPV DNA,"Human Papillomavirus DNA, High-Risk",,,,OB/GYN,,,,Not Detected,,
+Pap Test,Papanicolaou Smear,Cervical Cytology,,,OB/GYN,,,,NILM,,
+CA-125,Cancer Antigen 125,,,,OB/GYN,,,,<35,,U/mL
+HE4,Human Epididymis Protein 4,,,,OB/GYN,,,,<140,,pmol/L
+ROMA Score,Risk of Ovarian Malignancy Algorithm,,,,OB/GYN,,,,Risk Report,,
+CA 15-3,Cancer Antigen 15-3,,,,OB/GYN,,,,<30,,U/mL
+CA 27.29,Cancer Antigen 27.29,,,,OB/GYN,,,,<40,,U/mL
+Blood Type,ABO/Rh Grouping,,,,Surgery,,,Type,,,Type
+Ab Screen,"Antibody Screen, Blood",IAT,,,Surgery,Negative,,,Negative,,
+Crossmatch,Crossmatch,,,,Surgery,Compatible,,,Compatible,,
+"Lactate, Plasma","Lactate, Plasma",,,,Surgery,0.5,2.2,mmol/L,0.5,2.2,mmol/L
+Procalcitonin,Procalcitonin,PCT,,,Surgery,,<0.1,ng/mL,,<0.1,ng/mL
+FDP,Fibrin Degradation Products,,,,Surgery,,<10,µg/mL,,<10,µg/mL
+TEG/ROTEM,Thromboelastography/Rotational thromboelastometry,,,,Surgery,,,Report,,,Report
+Tissue Culture,Tissue Culture and Sensitivity,,,,Surgery,No Growth,,,No Growth,,
+Vanc Trough,"Vancomycin Level, Trough",,,,Surgery,10,20,µg/mL,10,20,µg/mL
+Genta Trough,"Gentamicin Level, Trough",,,,Surgery,,<2.0,µg/mL,,<2.0,µg/mL
+Pseudocholinesterase,"Pseudocholinesterase, Serum",PChE,,,Surgery,5300,12900,U/L,5300,12900,U/L
+Ionized Calcium,"Ionized Calcium, Serum",iCa,,,Surgery,1.15,1.35,mmol/L,1.15,1.35,mmol/L
+Synovial Fluid,"Synovial Fluid Analysis, Complete",Joint Fluid,Arthrocentesis,,Orthopedics,,,Report,,,Report
+Syn Fluid WBC,Synovial Fluid White Blood Cell Count,,,,Orthopedics,,<200,cells/?µL,,<200,cells/?µL
+Syn Fluid PMN%,Synovial Fluid Polymorphonuclear %,,,,Orthopedics,,<25,%,,<25,%
+Crystal Analysis,Synovial Fluid Crystal Analysis,,,,Orthopedics,No Crystals,,,No Crystals,,
+Syn Fluid Gram,Synovial Fluid Gram Stain,,,,Orthopedics,No Organisms,,,No Organisms,,
+Syn Fluid Cult,Synovial Fluid Culture,,,,Orthopedics,No Growth,,,No Growth,,
+RF,"Rheumatoid Factor, Serum",,,,Orthopedics,,<15,IU/mL,,<15,IU/mL
+Anti-CCP,Anti-Cyclic Citrullinated Peptide Ab,,,,Orthopedics,,<5.0,U/mL,,<5.0,U/mL
+HLA-B27,Human Leukocyte Antigen B27,,,,Orthopedics,Negative,,,Negative,,
+ASO Titer,Anti-Streptolysin O Titer,ASLO,,,Orthopedics,,<200,IU/mL,,<200,IU/mL
+Lyme Serology,"Lyme Disease Antibodies (IgG, IgM)",,,,Orthopedics,Negative,,,Negative,,
+P1NP,Procollagen Type I N-terminal Propeptide,,,,Orthopedics,22,87,ng/mL,19,76 (premeno),ng/mL
+Osteocalcin,Osteocalcin,Bone Gla,,,Orthopedics,14,46,ng/mL,11,46 (premeno),ng/mL
+"CTX, Serum",C-terminal telopeptide of type I collagen,,,,Orthopedics,,<0.854,ng/mL,,<0.573 (premeno),ng/mL
+"NTX, Urine",N-terminal telopeptide of type I collagen,,,,Orthopedics,,,BCE/mmol Cr,,,BCE/mmol Cr
+"Myoglobin, Ser","Myoglobin, Serum",,,,Orthopedics,28,87,ng/mL,25,58,ng/mL
+"Myoglobin, Ur","Myoglobin, Urine",,,,Orthopedics,,<20,ng/mL,,<20,ng/mL
+Throat Culture,"Throat Swab Culture, Routine",,,,ENT,No pathogens,,,No pathogens,,
+GAS Culture,"Group A Streptococcus Culture, Throat",Strep Culture,,,ENT,No S. pyogenes,,,No S. pyogenes,,
+Diphtheria Cult,Throat Culture for Corynebacterium diphtheriae,,,,ENT,No C. diphtheriae,,,No C. diphtheriae,,
+Nasal Culture,"Nasal Swab Culture, Routine Bacterial",,,,ENT,Normal Flora,,,Normal Flora,,
+MRSA Screen,"MRSA Screen by PCR/Culture, Nasal",,,,ENT,Negative,,,Negative,,
+Ear Culture,Ear Swab Culture (External Canal),,,,ENT,No pathogens,,,No pathogens,,
+"Fungal Cult, Oral","Fungal Culture, Oral Swab",Thrush Culture,,,ENT,No Yeast,,,No Yeast,,
+"Fungal Cult, Nasal","Fungal Culture, Nasal/Sinus",,,,ENT,No Fungi Seen,,,No Fungi Seen,,
+Nasal Eos,Nasal Smear for Eosinophils,,,,ENT,<10,,% of WBCs,<10,,% of WBCs
+"HPV, Oropharynx","HPV DNA, Oropharyngeal Tissue",,,,ENT,Not Detected,,,Not Detected,,
+"EBV DNA, Plasma","Epstein-Barr Virus DNA (PCR), Plasma",,,,ENT,Not Detected,,copies/mL,Not Detected,,copies/mL
+Sialic Acid,"Sialic Acid, Total, Serum",NANA,,,ENT,46,68,mg/dL,46,68,mg/dL
+Conj Gram Stain,"Conjunctival Swab, Gram Stain",,,,Ophthalmology,,,Report,,,Report
+Conj Culture,"Conjunctival Swab, Bacterial Culture",,,,Ophthalmology,No Pathogens,,,No Pathogens,,
+Corneal Scrape,Corneal Scraping for Culture & Stain,,,,Ophthalmology,No Organisms,,,No Organisms,,
+"KOH Smear, Eye","Potassium Hydroxide Smear, Ocular",,,,Ophthalmology,No Fungi Seen,,,No Fungi Seen,,
+"Fungal Cult, Eye","Fungal Culture, Ocular",,,,Ophthalmology,No Growth,,,No Growth,,
+Vitreous Tap,Aqueous/Vitreous Fluid Culture & Stain,,,,Ophthalmology,No Organisms,,,No Organisms,,
+"HSV PCR, Ocular","Herpes Simplex Virus PCR, Ocular Fluid",,,,Ophthalmology,Not Detected,,,Not Detected,,
+"VZV PCR, Ocular","Varicella-Zoster Virus PCR, Ocular Fluid",,,,Ophthalmology,Not Detected,,,Not Detected,,
+"CMV PCR, Ocular","Cytomegalovirus PCR, Ocular Fluid",,,,Ophthalmology,Not Detected,,,Not Detected,,
+Chlamydia DFA,"Chlamydia trachomatis DFA, Conjunctival",,,,Ophthalmology,Not Detected,,,Not Detected,,
+Toxocara IgG,"Toxocara canis Antibody, IgG",,,,Ophthalmology,<1:32,,Titer,<1:32,,Titer
+Tear Osmolarity,Tear Film Osmolarity,,,,Ophthalmology,<308,,mOsm/L,<308,,mOsm/L
+"MMP-9, Tear","Matrix Metalloproteinase-9, Tears",,,,Ophthalmology,Negative,,,Negative,,
+Retinal Dystrophy Panel,Genetic Panel for Inherited Retinal Dystrophy,,,,Ophthalmology,,,Report,,,Report
+"Lysozyme, Tears","Lysozyme, Tear Fluid",,,,Ophthalmology,>2.0,,mg/mL,>2.0,,mg/mL
+Lithium,"Lithium Level, Serum",,,,Psychiatry,0.6,1.2,mEq/L,0.6,1.2,mEq/L
+Valproic Acid,"Valproic Acid Level, Serum",VPA,Depakote,,Psychiatry,50,100,µg/mL,50,100,µg/mL
+Carbamazepine,"Carbamazepine Level, Serum",CBZ,Tegretol,,Psychiatry,4,12,µg/mL,4,12,µg/mL
+Lamotrigine,"Lamotrigine Level, Serum",LMG,Lamictal,,Psychiatry,3,14,µg/mL,3,14,µg/mL
+Clozapine,"Clozapine & Norclozapine Level, Serum",,,,Psychiatry,>350,,ng/mL,>350,,ng/mL
+Olanzapine,"Olanzapine Level, Serum",,Zyprexa,,Psychiatry,20,80,ng/mL,20,80,ng/mL
+Risperidone,"Risperidone & Paliperidone Level, Serum",,,,Psychiatry,20,60,ng/mL,20,60,ng/mL
+Quetiapine,"Quetiapine Level, Serum",,Seroquel,,Psychiatry,50,250,ng/mL,50,250,ng/mL
+Aripiprazole,"Aripiprazole Level, Serum",,Abilify,,Psychiatry,100,350,ng/mL,100,350,ng/mL
+TCA Panel,"Tricyclic Antidepressant Panel, Serum",,,,Psychiatry,,,Report,,,Report
+Amitriptyline,"Amitriptyline & Nortriptyline Level, Serum",,,,Psychiatry,100,250,ng/mL,100,250,ng/mL
+Imipramine,"Imipramine & Desipramine Level, Serum",,,,Psychiatry,150,300,ng/mL,150,300,ng/mL
+Doxepin,"Doxepin & Nordoxepin Level, Serum",,,,Psychiatry,100,250,ng/mL,100,250,ng/mL
+UDS Panel,"Urine Drug Screen, Panel",,,,Psychiatry,,,Report,,,Report
+"UDS, Opiates","Opiates, Urine Screen",,,,Psychiatry,Negative,,,Negative,,
+"UDS, Cocaine","Cocaine Metabolite, Urine Screen",,,,Psychiatry,Negative,,,Negative,,
+"UDS, Cannabis","Cannabis (THC), Urine Screen",,,,Psychiatry,Negative,,,Negative,,
+"UDS, Amphet","Amphetamines, Urine Screen",,,,Psychiatry,Negative,,,Negative,,
+"UDS, Benzos","Benzodiazepines, Urine Screen",,,,Psychiatry,Negative,,,Negative,,
+"UDS, Buprenor","Buprenorphine, Urine Screen",,,,Psychiatry,Negative,,,Negative,,
+"Ethanol, Serum","Ethanol, Serum/Blood",Alcohol,,,Psychiatry,0,,mg/dL,0,,mg/dL
+CDT,Carbohydrate-Deficient Transferrin,,,,Psychiatry,,<1.7,%,,<1.7,%
+PEth,Phosphatidylethanol,,,,Psychiatry,,<20,ng/mL,,<20,ng/mL
+CYP2D6,CYP2D6 Genotyping,,,,Psychiatry,,,Genotype,,,Genotype
+CYP2C19,CYP2C19 Genotyping,,,,Psychiatry,,,Genotype,,,Genotype
+HLA-B*1502,HLA-B*1502 Genotyping,,,,Psychiatry,Not Detected,,,Not Detected,,
+HLA-A*3101,HLA-A*3101 Genotyping,,,,Psychiatry,Not Detected,,,Not Detected,,
+Bupropion Level,"Bupropion Level, Serum",,Wellbutrin,,Psychiatry,50,100,ng/mL,50,100,ng/mL
+Citalopram Level,"Citalopram Level, Serum",Celexa,,,Psychiatry,50,110,ng/mL,50,110,ng/mL
+Sertraline Level,"Sertraline Level, Serum",Zoloft,,,Psychiatry,10,150,ng/mL,10,150,ng/mL
+Fluphenazine Lvl,"Fluphenazine Level, Serum",,,,Psychiatry,0.13,2.8,ng/mL,0.13,2.8,ng/mL
+Haloperidol Lvl,"Haloperidol Level, Serum",,Haldol,,Psychiatry,5,15,ng/mL,5,15,ng/mL
+aCL IgG,"Anti-Cardiolipin Antibody, IgG",ACA IgG,,,Rheumatology,,<15,GPL U/mL,,<15,GPL U/mL
+aCL IgM,"Anti-Cardiolipin Antibody, IgM",ACA IgM,,,Rheumatology,,<12.5,MPL U/mL,,<12.5,MPL U/mL
+Anti-B2GP1 IgG,"Anti-Beta 2 Glycoprotein I Ab, IgG",,,,Rheumatology,,<20,SGU,,<20,SGU
+Anti-B2GP1 IgM,"Anti-Beta 2 Glycoprotein I Ab, IgM",,,,Rheumatology,,<20,SMU,,<20,SMU
+Lupus Anticoag,Lupus Anticoagulant,LA,dRVVT,,Rheumatology,,<1.2,Ratio,,<1.2,Ratio
+Anti-Histone Ab,Anti-Histone Antibody,,,,Rheumatology,,<1.0,Units,,<1.0,Units
+Anti-Ribo P,Anti-Ribosomal P Antibody,,,,Rheumatology,,<1.0,Units,,<1.0,Units
+Anti-SRP Ab,Anti-Signal Recognition Particle Ab,,,,Rheumatology,Negative,,,Negative,,
+Anti-PL-7 Ab,Anti-Threonyl-tRNA Synthetase Ab,,,,Rheumatology,Negative,,,Negative,,
+Anti-PL-12 Ab,Anti-Alanyl-tRNA Synthetase Ab,,,,Rheumatology,Negative,,,Negative,,
+Anti-RNA Pol III,Anti-RNA Polymerase III Antibody,,,,Rheumatology,,<20,Units,,<20,Units
+SAA,Serum Amyloid A,,,,Rheumatology,,<10,mg/L,,<10,mg/L
+Anti-C1q Ab,Anti-C1q Antibody,,,,Rheumatology,,<15,U/mL,,<15,U/mL
+14-3-3 eta,14-3-3 eta protein,,,,Rheumatology,,<0.2,ng/mL,,<0.2,ng/mL
+Malaria Smear,Malaria Smear (Thick and Thin Film),,,,Infectious Diseases,No Parasites,,,No Parasites,,
+Malaria RDT,Malaria Rapid Diagnostic Test,,,,Infectious Diseases,Negative,,,Negative,,
+Beta-D-Glucan,"(1,3)-Beta-D-Glucan",BDG,,,Infectious Diseases,,<80,pg/mL,,<80,pg/mL
+"CrAg, Serum","Cryptococcal Antigen, Serum",,,,Infectious Diseases,Negative,,,Negative,,
+Dengue NS1 Ag,Dengue Virus NS1 Antigen,,,,Infectious Diseases,Negative,,,Negative,,
+Dengue IgG/IgM,"Dengue Virus Antibodies (IgG, IgM)",,,,Infectious Diseases,Negative,,,Negative,,
+Zika PCR,Zika Virus RNA by PCR,,,,Infectious Diseases,Not Detected,,,Not Detected,,
+Chikungunya Ab,"Chikungunya Virus Antibodies (IgG, IgM)",,CHIKV,,Infectious Diseases,Negative,,,Negative,,
+WNV Ab,West Nile Virus Antibodies (IgM),,,,Infectious Diseases,Negative,,,Negative,,
+Hantavirus Ab,"Hantavirus Antibodies (IgM, IgG)",,,,Infectious Diseases,Negative,,,Negative,,
+Parvovirus B19,"Parvovirus B19 Antibodies (IgM, IgG)",,,,Infectious Diseases,Negative,,,Negative,,
+Brucella Serology,Brucella Agglutination Titer,,,,Infectious Diseases,<1:160,,Titer,<1:160,,Titer
+Q Fever Serology,Coxiella burnetii Antibodies,,,,Infectious Diseases,Negative,,,Negative,,
+Rickettsia Sero,Rickettsia Antibodies (spotted fever group),,,,Infectious Diseases,<1:64,,Titer,<1:64,,Titer
+Leptospira Sero,Leptospira Antibodies,,,,Infectious Diseases,<1:100,,Titer,<1:100,,Titer
+Tularemia Sero,Francisella tularensis Antibodies,,,,Infectious Diseases,<1:160,,Titer,<1:160,,Titer
+Bartonella Sero,"Bartonella henselae Antibodies (IgG, IgM)",CSD,,,Infectious Diseases,<1:64,,Titer,<1:64,,Titer
+Leishmania Ab,Leishmania Antibodies,,,,Infectious Diseases,Negative,,,Negative,,
+Chagas Ab,Trypanosoma cruzi Antibodies,,,,Infectious Diseases,Negative,,,Negative,,
+Echinococcus Ab,Echinococcus granulosus Antibodies,,Hydatid,,Infectious Diseases,<1:128,,Titer,<1:128,,Titer
+Strongyloides Ab,Strongyloides stercoralis IgG,,,,Infectious Diseases,<0.9,,Index,<0.9,,Index
+Schisto Ab,Schistosoma Antibodies,Bilharzia,,,Infectious Diseases,Negative,,,Negative,,
+Trichinella Ab,Trichinella spiralis IgG,,,,Infectious Diseases,Negative,,,Negative,,
+Adenovirus PCR,"Adenovirus DNA by PCR, Blood",,,,Infectious Diseases,Not Detected,,,Not Detected,,
+HHV-6 PCR,Human Herpesvirus 6 DNA by PCR,,,,Infectious Diseases,Not Detected,,,Not Detected,,
+E. histolytica,"Entamoeba histolytica Antigen, Stool",,,,Infectious Diseases,Negative,,,Negative,,
+Filariasis Smear,"Microfilariae Smear, Blood",,Knott's test,,Infectious Diseases,No microfilariae,,,No microfilariae,,
+TBEV Ab,Tick-Borne Encephalitis Virus IgG/IgM,,,,Infectious Diseases,Negative,,,Negative,,
+Borrelia Blot,Borrelia burgdorferi Western Blot,Lyme Blot,,,Infectious Diseases,Negative,,,Negative,,
+Babesia Smear,"Babesia Smear, Blood",,,,Infectious Diseases,No Parasites,,,No Parasites,,
+Yersinia entero,Yersinia enterocolitica Antibodies,,,,Infectious Diseases,Negative,,,Negative,,
+Salivary Flow,Salivary Flow Rate (Unstimulated),Sialometry,,,Dental Medicine,>0.25,,mL/min,>0.25,,mL/min
+Salivary pH,Saliva pH,,,,Dental Medicine,6.7,7.4,pH units,6.7,7.4,pH units
+Salivary Buffer,Salivary Buffering Capacity,,,,Dental Medicine,High,,category,High,,category
+Salivary sIgA,Salivary Secretory Immunoglobulin A,,,,Dental Medicine,8,35,mg/dL,8,35,mg/dL
+Salivary Amylase,Salivary Alpha-Amylase,,,,Dental Medicine,20,120,U/mL,20,120,U/mL
+S. mutans Count,"Streptococcus mutans Count, Saliva",,,,Dental Medicine,,"<100,000",CFU/mL,,"<100,000",CFU/mL
+Lactobacillus Ct,"Lactobacillus Count, Saliva",,,,Dental Medicine,,"<10,000",CFU/mL,,"<10,000",CFU/mL
+Oral Brush Cyto,Oral Brush Cytology,,,,Dental Medicine,Negative,for dysplasia,,Negative,for dysplasia,
+GCF MMP-8,"Matrix Metalloproteinase-8, Crevicular Fluid",,,,Dental Medicine,,<8,ng/mL,,<8,ng/mL
+IL-1 Genotype,Interleukin-1 Genotype Test,,,,Dental Medicine,Negative,,for polymorphism,Negative,for polymorphism,
+Dental Patch Test,Patch Test for Dental Material Allergy,,,,Dental Medicine,,,Report,,,Report
+Salivary Cortisol,"Salivary Cortisol, AM",,,,Dental Medicine,0.1,0.8,µg/dL,0.1,0.8,µg/dL

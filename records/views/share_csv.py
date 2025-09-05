@@ -9,15 +9,16 @@ from django.shortcuts import render
 from records.services.csv_to_pdf import csv_to_pdf_with_template
 
 PDF_DIR = Path(settings.BASE_DIR) / "records" / "pdf_templates"
-PDF_BG  = PDF_DIR / "pdf-template-bg.pdf"
+PDF_BG = PDF_DIR / "pdf-template-bg.pdf"
+
 
 @login_required
 def csv_print_page(request):
-    return render(request, "main/csv_print.html")
+    return render(request, "subpages/csv_print.html")
+
 
 @login_required
 def csv_print_to_pdf(request):
-
     if request.method != "POST":
         return HttpResponseBadRequest("POST expected")
     if not PDF_BG.exists():
@@ -30,6 +31,5 @@ def csv_print_to_pdf(request):
 
     pdf_bytes = csv_to_pdf_with_template(f, kind, str(PDF_BG))
     resp = HttpResponse(pdf_bytes, content_type="application/pdf")
-    fname = f"MedJ-{kind}.pdf"
-    resp["Content-Disposition"] = f'inline; filename=\"{fname}\"'
+    resp["Content-Disposition"] = f'inline; filename="MedJ-{kind}.pdf"'
     return resp

@@ -2,7 +2,7 @@
 {% load i18n %}
 {% block app_content %}
 <h1 class="text-2xl font-semibold mb-3">{% trans "Документ" %} #{{ document.id }}</h1>
-<div class="bg-[--color-blockbg] p-4 rounded-xl shadow mb-4">
+<div class="bg-blockbg p-4 rounded-xl shadow mb-4">
   <div class="grid md:grid-cols-2 gap-4">
     <div>
       <div class="font-medium">{% trans "Заглавие" %}</div>
@@ -23,11 +23,11 @@
   </div>
 </div>
 <div class="flex gap-3 mb-6">
-  <a href="/documents/{{ document.id }}/edit/" class="px-4 py-2 rounded-md bg-[--color-primary] text-[--color-blockbg]">{% trans "Редакция" %}</a>
-  <a href="/documents/{{ document.id }}/edit-tags/" class="px-4 py-2 rounded-md bg-[--color-primaryDark] text-[--color-blockbg]">{% trans "Тагове" %}</a>
-  <a href="/documents/{{ document.id }}/export/pdf/" class="px-4 py-2 rounded-md bg-[--color-success] text-white">{% trans "PDF" %}</a>
+  <a href="/documents/{{ document.id }}/edit/" class="px-4 py-2 rounded-md bg-primary text-blockbg">{% trans "Редакция" %}</a>
+  <a href="/documents/{{ document.id }}/edit-tags/" class="px-4 py-2 rounded-md bg-primaryDark text-blockbg">{% trans "Тагове" %}</a>
+  <a href="/documents/{{ document.id }}/export/pdf/" class="px-4 py-2 rounded-md bg-success text-white">{% trans "PDF" %}</a>
 </div>
-<div class="bg-[--color-blockbg] p-4 rounded-xl shadow">
+<div class="bg-blockbg p-4 rounded-xl shadow">
   <h2 class="font-semibold mb-2">{% trans "OCR текст" %}</h2>
   <pre class="whitespace-pre-wrap">{{ document.original_ocr_text|default_if_none:"" }}</pre>
 </div>

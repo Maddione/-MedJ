@@ -23,6 +23,12 @@ class RegisterForm(UserCreationForm):
         model = User
         fields = ["username", "email", "phone", "password1", "password2"]
 
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if email and User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError(_("Email вече съществува."))
+        return email
+
 
 class LoginForm(AuthenticationForm):
     username = forms.CharField(label=_("Потребителско име или имейл"))
@@ -125,7 +131,10 @@ class DocumentUploadForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
+        if "file" in self.fields:
+            self.fields["file"].required = False
         self.fields["tags"].queryset = Tag.objects.filter(is_active=True).order_by("translations__name")
 
     def clean(self):
@@ -136,15 +145,22 @@ class DocumentUploadForm(forms.ModelForm):
             self.add_error("category", _("Задължително поле"))
         if not cleaned.get("doc_type"):
             self.add_error("doc_type", _("Задължително поле"))
-        if not cleaned.get("file"):
-            self.add_error("file", _("Моля, прикачете файл"))
+        has_single = bool(cleaned.get("file"))
+        has_multi = False
+        try:
+            files_list = self.files.getlist("files") if hasattr(self, "files") else []
+            has_multi = bool(files_list)
+        except Exception:
+            has_multi = False
+        if not has_single and not has_multi:
+            self.add_error("file", _("Моля, прикачете файл или изберете изображения."))
         return cleaned
 
     def save(self, commit=True):
         instance = super().save(commit=False)
         f = self.cleaned_data.get("file")
         if f and not instance.doc_kind:
-            name = f.name.lower()
+            name = (f.name or "").lower()
             if name.endswith((".png", ".jpg", ".jpeg")):
                 instance.doc_kind = "image"
             elif name.endswith(".pdf"):

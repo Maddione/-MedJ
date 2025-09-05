@@ -1,110 +1,141 @@
 from __future__ import annotations
+import io, os, csv, json, time
+from pathlib import Path
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
-
+from django.utils.translation import get_language
+from django.core import signing
 from ..models import Document, MedicalEvent
 from records.services.print_utils import render_template_to_pdf, pdf_response
+from records.services.csv_to_pdf import events_csv_to_pdf, labs_csv_to_pdf
+
+_SIGNER_SALT = "medj.share"
+
+def _templates_dir() -> Path:
+    return Path(settings.BASE_DIR) / "records" / "pdf_templates"
+
+def _template_pdf_path(request: HttpRequest) -> str:
+    lang = (getattr(request, "LANGUAGE_CODE", None) or get_language() or "bg").lower().split("-")[0]
+    suffix = "eng" if lang == "en" else "bg"
+    two = _templates_dir() / f"pdf-template-twopage-{suffix}.pdf"
+    one = _templates_dir() / f"pdf-template-{suffix}.pdf"
+    if two.exists():
+        return str(two)
+    return str(one)
+
+def _overlay_bytes_with_template(pdf_bytes: bytes, template_path: str) -> bytes:
+    try:
+        from PyPDF2 import PdfReader, PdfWriter
+    except Exception:
+        return pdf_bytes
+    if not os.path.exists(template_path):
+        return pdf_bytes
+    try:
+        tmpl_reader = PdfReader(template_path)
+        gen_reader = PdfReader(io.BytesIO(pdf_bytes))
+    except Exception:
+        return pdf_bytes
+    if not tmpl_reader.pages:
+        return pdf_bytes
+    first_tpl_page = tmpl_reader.pages[0]
+    second_tpl_page = tmpl_reader.pages[1] if len(tmpl_reader.pages) >= 2 else None
+    writer = PdfWriter()
+    for i, gen_page in enumerate(gen_reader.pages):
+        base_tpl = first_tpl_page if i == 0 else (second_tpl_page or first_tpl_page)
+        try:
+            page = base_tpl.clone()
+        except Exception:
+            import copy as _copy
+            page = _copy.deepcopy(base_tpl)
+        writer.add_page(page)
+        writer.pages[-1].merge_page(gen_page)
+    buf = io.BytesIO()
+    writer.write(buf)
+    return buf.getvalue()
+
+def _token_ok(request: HttpRequest, kind: str) -> bool:
+    t = request.GET.get("t")
+    if not t:
+        return False
+    try:
+        s = signing.Signer(salt=_SIGNER_SALT)
+        raw = s.unsign(t)
+        payload = json.loads(raw)
+    except Exception:
+        return False
+    if payload.get("k") != kind:
+        return False
+    try:
+        exp = int(payload.get("exp", 0))
+    except Exception:
+        return False
+    if exp < int(time.time()):
+        return False
+    if kind == "print_pdf":
+        labs_flag = 1 if request.GET.get("labs") else 0
+        if int(payload.get("labs", 0)) != labs_flag:
+            return False
+    return True
 
 @login_required
 def document_export_pdf(request: HttpRequest, pk: int) -> HttpResponse:
     doc = get_object_or_404(Document, pk=pk, owner=request.user)
     context = {"document": doc, "user": request.user}
     pdf_bytes = render_template_to_pdf(request, "subpages/document_export_pdf.html", context)
+    pdf_bytes = _overlay_bytes_with_template(pdf_bytes, _template_pdf_path(request))
     return pdf_response(f"document_{pk}.pdf", pdf_bytes, inline=True)
-
-@login_required
-def event_export_lab_period(request: HttpRequest, pk: int) -> HttpResponse:
-    event = get_object_or_404(MedicalEvent, pk=pk, patient__user=request.user)
-    from .utils import parse_date
-    dfrom = parse_date(request.GET.get("from"))
-    dto = parse_date(request.GET.get("to"))
-
-    from ..models import LabTestMeasurement
-    qs = (LabTestMeasurement.objects
-          .filter(medical_event=event)
-          .select_related("indicator")
-          .order_by("indicator__name", "measured_at"))
-    if dfrom:
-        qs = qs.filter(measured_at__gte=dfrom)
-    if dto:
-        qs = qs.filter(measured_at__lte=dto)
-
-    # build_lab_matrix приемам, че е твой helper. Ако е другаде – импортирай оттам.
-    from records.services.lab_utils import build_lab_matrix
-    matrix = build_lab_matrix(qs)
-
-    context = {
-        "event": event,
-        "period_from": dfrom,
-        "period_to": dto,
-        "lab_headers": matrix["headers"],
-        "lab_rows": matrix["rows"],
-    }
-    pdf_bytes = render_template_to_pdf(request, "print/lab_period_v1.html", context)
-    return pdf_response(f"event_{pk}_labs.pdf", pdf_bytes, inline=True)
 
 @login_required
 def event_export_pdf(request: HttpRequest, pk: int) -> HttpResponse:
     event = get_object_or_404(
-        MedicalEvent.objects.select_related("patient__user", "specialty").prefetch_related(
-            "diagnoses", "medications", "lab_measurements__indicator", "documents", "tags"
-        ),
+        MedicalEvent.objects.select_related("patient__user", "specialty").prefetch_related("documents", "tags"),
         pk=pk, patient__user=request.user
     )
-
-    patient_name = event.patient.user.get_full_name() or event.patient.user.username
-    specialty_name = event.specialty.safe_translation_getter("name", any_language=True) if event.specialty else ""
-
-    diagnoses_rows = [
-        {"Код": d.code or "", "Описание": d.text or "", "Дата": d.diagnosed_at or ""}
-        for d in event.diagnoses.all()
-    ]
-    medications_rows = [
-        {"Име": m.name or "", "Дозировка": m.dosage or "", "Начало": m.start_date or "", "Край": m.end_date or ""}
-        for m in event.medications.all()
-    ]
-    labs_rows = [
-        {"Показател": m.indicator.name, "Стойност": m.value, "Единица": m.indicator.unit or "", "Дата": m.measured_at or event.event_date}
-        for m in event.lab_measurements.select_related("indicator").all()
-    ]
-    docs_rows = [
-        {"Тип": d.doc_type.safe_translation_getter("name", any_language=True), "Дата": d.document_date, "Бележки": d.notes or ""}
-        for d in event.documents.all()
-    ]
-
+    diagnoses = getattr(event, "diagnoses", None)
+    treatment_plans = getattr(event, "treatment_plans", None)
+    narrative_sections = getattr(event, "narrative_sections", None)
+    labs_qs = getattr(event, "lab_measurements", None)
     context = {
-        "patient_name": patient_name,
-        "event_date": event.event_date,
-        "specialty_name": specialty_name,
-        "event_summary": event.summary or "",
-        "event_tags": [t.name for t in event.tags.all()],
-        "diagnoses_headers": ["Код", "Описание", "Дата"],
-        "diagnoses_rows": diagnoses_rows,
-        "medications_headers": ["Име", "Дозировка", "Начало", "Край"],
-        "medications_rows": medications_rows,
-        "labs_headers": ["Показател", "Стойност", "Единица", "Дата"],
-        "labs_rows": labs_rows,
-        "docs_headers": ["Тип", "Дата", "Бележки"],
-        "docs_rows": docs_rows,
+        "event": event,
+        "diagnoses": list(diagnoses.all()) if hasattr(diagnoses, "all") else [],
+        "treatment_plans": list(treatment_plans.all()) if hasattr(treatment_plans, "all") else [],
+        "narrative_sections": list(narrative_sections.all()) if hasattr(narrative_sections, "all") else [],
+        "documents": list(event.documents.all()) if hasattr(event, "documents") else [],
+        "labs": list(labs_qs.select_related("indicator").all()) if hasattr(labs_qs, "all") else [],
     }
-
-    pdf_bytes = render_template_to_pdf(request, "print/event_v1.html", context)
+    pdf_bytes = render_template_to_pdf(request, "subpages/event_export_pdf.html", context)
+    pdf_bytes = _overlay_bytes_with_template(pdf_bytes, _template_pdf_path(request))
     return pdf_response(f"event_{pk}.pdf", pdf_bytes, inline=True)
 
-from django.shortcuts import render
+def print_csv(request: HttpRequest) -> HttpResponse:
+    if not request.user.is_authenticated and not _token_ok(request, "print_csv"):
+        return HttpResponseForbidden()
+    labs = request.GET.get("labs")
+    out = io.StringIO()
+    w = csv.writer(out)
+    if labs:
+        w.writerow(["date", "indicator", "value", "unit", "reference_low", "reference_high", "abn"])
+    else:
+        w.writerow(["date", "category", "specialty", "summary"])
+    resp = HttpResponse(out.getvalue(), content_type="text/csv; charset=utf-8")
+    resp["Content-Disposition"] = 'attachment; filename="export.csv"'
+    return resp
 
-def print_csv(request):
-
-    context = {
-        "filters": request.GET,
-        "columns": ["Дата", "Показател", "Стойност", "Единица", "Реф. интервал", "Отклонение"],
-        "rows": [],
-    }
-    return render(request, "subpages/csv_print.html", context)
-
-def print_pdf(request):
-
-    context = {"filters": request.GET}
-    return render(request, "subpages/document_export_pdf.html", context)
-
+def print_pdf(request: HttpRequest) -> HttpResponse:
+    if not request.user.is_authenticated and not _token_ok(request, "print_pdf"):
+        return HttpResponseForbidden()
+    labs = request.GET.get("labs")
+    if labs:
+        buf = io.StringIO()
+        csv.writer(buf).writerow(["indicator", "value", "unit", "reference_low", "reference_high", "abn"])
+        generated = labs_csv_to_pdf(io.BytesIO(buf.getvalue().encode("utf-8")))
+        pdf_bytes = _overlay_bytes_with_template(generated, _template_pdf_path(request))
+        return pdf_response("labs.pdf", pdf_bytes, inline=True)
+    else:
+        buf = io.StringIO()
+        csv.writer(buf).writerow(["date", "category", "specialty", "summary"])
+        generated = events_csv_to_pdf(io.BytesIO(buf.getvalue().encode("utf-8")))
+        pdf_bytes = _overlay_bytes_with_template(generated, _template_pdf_path(request))
+        return pdf_response("events.pdf", pdf_bytes, inline=True)

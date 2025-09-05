@@ -4,51 +4,74 @@
     <option name="SPLITTER_PROPORTION" value="0.3309266" />
   </component>
   <component name="AutoImportSettings">
-    <option name="autoReloadType" value="SELECTIVE" />
+    <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c486bb59-c79b-4440-8fcc-e0c5e6eda3dc" name="Changes" comment="perfect, DO NOT TOUCH AGAIN">
-      <change afterPath="$PROJECT_DIR$/records/auth_backends.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/management/commands/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/management/commands/bootstrap_site.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/management/commands/canonicalize_indicator_tags.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/management/commands/import_lab_indicators_csv.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/management/commands/sync_taxonomy_tags.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/middleware/onboarding.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/main/profile.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/password/password_reset_complete.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/password/password_reset_confirm.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/password/password_reset_done.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/password/password_reset_email" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/password/password_reset_form.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/templates/password/password_reset_subject" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/utils/db_checks.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/views/auth.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/records/views/views.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_auth.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/password/change_done.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/password/change_form.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/subpages/labtests_export_csv.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/subpages/personalcard_public.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/subpages/profile_settings.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/views/personalcard.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/views/profile.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/views/settings.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/theme/static/css/onboarding_tour.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/theme/static/js/onboarding_tour.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/theme/static/js/password_toggle.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/theme/static/js/share_logic.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.dev.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.dev.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/entrypoint.dev.sh" beforeDir="false" afterPath="$PROJECT_DIR$/entrypoint.dev.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/locale/bg/LC_MESSAGES/django.mo" beforeDir="false" afterPath="$PROJECT_DIR$/locale/bg/LC_MESSAGES/django.mo" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/locale/bg/LC_MESSAGES/django.po" beforeDir="false" afterPath="$PROJECT_DIR$/locale/bg/LC_MESSAGES/django.po" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/locale/en/LC_MESSAGES/django.po" beforeDir="false" afterPath="$PROJECT_DIR$/locale/en/LC_MESSAGES/django.po" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/medj/settings/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/settings/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/medj/settings/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/settings/base.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/medj/settings/dev.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/settings/dev.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/apps.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/apps.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/medj/settings/prod.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/settings/prod.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ocrapi/requirements-ocr.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ocrapi/requirements-ocr.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/forms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/management/commands/canonicalize_indicator_tags.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/management/commands/canonicalize_indicator_tags.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/management/commands/import_lab_indicators_csv.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/management/commands/import_lab_indicators_csv.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/management/commands/seed_initial_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/management/commands/seed_initial_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/middleware/onboarding.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/middleware/onboarding.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/services/csv_to_pdf.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/services/csv_to_pdf.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/services/labs_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/services/labs_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/signals.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/signals.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/services/pdf.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/services/pdf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/services/print_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/services/print_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/services/upload-flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/services/upload_flow.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/templates/auth/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/auth/login.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/auth/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/auth/register.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base_app.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_app.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base_public.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_public.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/landingpage.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/landingpage.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/templates/main/personalcard.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/personalcard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/main/profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/profile.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/main/share.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/share.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/main/upload.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/upload.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/password/password_reset_complete.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/password/password_reset_complete.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/password/password_reset_confirm.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/password/password_reset_confirm.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/password/password_reset_done.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/password/password_reset_done.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/password/password_reset_email" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/password/password_reset_email.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/password/password_reset_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/password/password_reset_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/password/password_reset_subject" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/password/password_reset_subject.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/templates/subpages/document_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/document_detail.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/profile.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/subpages/document_export_pdf.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/document_export_pdf.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/subpages/event_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/event_detail.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/views/events.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/events.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/views/pages_profile.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/pages_profile.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/auth.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/auth.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/exports.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/exports.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/labs.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/labs.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/views/share.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/share.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/views/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/share_csv.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/share_csv.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/upload.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/upload.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/theme/static/js/upload_logic.js" beforeDir="false" afterPath="$PROJECT_DIR$/theme/static/js/upload_logic.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/theme/static_src/styles.css" beforeDir="false" afterPath="$PROJECT_DIR$/theme/static_src/styles.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/theme/static_src/tailwind.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/theme/static_src/tailwind.config.js" afterDir="false" />
     </list>
@@ -65,9 +88,10 @@
       <list>
         <option value="TypeScript File" />
         <option value="Dockerfile" />
+        <option value="CSS File" />
         <option value="JavaScript File" />
-        <option value="HTML File" />
         <option value="Python Script" />
+        <option value="HTML File" />
       </list>
     </option>
   </component>
@@ -88,13 +112,13 @@
 }</component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/.env" root0="SKIP_INSPECTION" />
-    <setting file="file://$PROJECT_DIR$/Dockerfile" root0="SKIP_INSPECTION" />
-    <setting file="file://$PROJECT_DIR$/docker-compose.dev.yml" root0="SKIP_INSPECTION" />
-    <setting file="file://$PROJECT_DIR$/entrypoint.dev.sh" root0="SKIP_INSPECTION" />
-    <setting file="file://$PROJECT_DIR$/medj/settings/base.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Dockerfile" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/docker-compose.dev.yml" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/entrypoint.dev.sh" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/medj/settings/base.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/medj/settings/dev.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/ocrapi/Dockerfile" root0="SKIP_INSPECTION" />
-    <setting file="file://$PROJECT_DIR$/ocrapi/requirements-ocr.txt" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/ocrapi/requirements-ocr.txt" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/admin.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/apps.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/auth_backends.py" root0="SKIP_INSPECTION" />
@@ -107,7 +131,7 @@
     <setting file="file://$PROJECT_DIR$/records/services/csv_to_pdf.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/services/labs_utils.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/services/tags.py" root0="SKIP_INSPECTION" />
-    <setting file="file://$PROJECT_DIR$/records/services/upload-flow.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/records/services/upload_flow.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/signals.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/urls.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/utils/db_checks.py" root0="SKIP_INSPECTION" />
@@ -117,15 +141,16 @@
     <setting file="file://$PROJECT_DIR$/records/views/auth.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/documents.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/events.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/records/views/exports.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/records/views/exports.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/labs.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/pages_profile.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/pages_public.py" root0="SKIP_INSPECTION" />
-    <setting file="file://$PROJECT_DIR$/records/views/share.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/records/views/share.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/share_csv.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/upload.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/utils.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/requirements.txt" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/theme/static/js/share_logic.js" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/theme/static_src/styles.css" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="ProblemsViewState">
@@ -140,36 +165,39 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
-    &quot;Django Server.MedJ.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;Node.js.styles.css.executor&quot;: &quot;Debug&quot;,
-    &quot;Node.js.styles.ts.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.manage.executor&quot;: &quot;Run&quot;,
-    &quot;Python.urls.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenDjangoStructureViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.pycharm.django.structure.promotion.once.per.project&quot;: &quot;true&quot;,
-    &quot;SHELLCHECK.PATH&quot;: &quot;C:\\Users\\444\\AppData\\Roaming\\JetBrains\\PyCharm2025.1\\plugins\\Shell Script\\shellcheck.exe&quot;,
-    &quot;django.template.preview.state&quot;: &quot;SHOW_EDITOR&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/444/AppData/Local/spicetify/CustomApps/library&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;project.propVCSSupport.Mappings&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;D:\\programi\\PyCharm 2025.1.3.1\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "DefaultHtmlFileTemplate": "HTML File",
+    "Django Server.MedJ.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Node.js.styles.css.executor": "Debug",
+    "Node.js.styles.ts.executor": "Debug",
+    "Python.manage.executor": "Run",
+    "Python.urls.executor": "Run",
+    "RunOnceActivity.OpenDjangoStructureViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.pycharm.django.structure.promotion.once.per.project": "true",
+    "SHELLCHECK.PATH": "C:\\Users\\444\\AppData\\Roaming\\JetBrains\\PyCharm2025.1\\plugins\\Shell Script\\shellcheck.exe",
+    "django.template.preview.state": "SHOW_EDITOR",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "C:/Users/444/AppData/Local/spicetify/CustomApps/library",
+    "list.type.of.created.stylesheet": "CSS",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "aDefault",
+    "settings.build.tools.auto.reload": "ALL",
+    "settings.editor.selected.configurable": "Docker",
+    "ts.external.directory.path": "D:\\programi\\PyCharm 2025.1.3.1\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\444\AppData\Local\spicetify\CustomApps\library" />
@@ -250,8 +278,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-09060db00ec0-JavaScript-PY-251.26927.90" />
-        <option value="bundled-python-sdk-41e8cd69c857-64d779b69b7a-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-251.26927.90" />
+        <option value="bundled-js-predefined-d6986cc7102b-b598e85cdad2-JavaScript-PY-252.25557.130" />
+        <option value="bundled-python-sdk-1bde30d8e611-7b97d883f26b-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-252.25557.130" />
       </set>
     </attachedChunks>
   </component>
@@ -283,7 +311,11 @@
       <workItem from="1756441345921" duration="117471000" />
       <workItem from="1756666269346" duration="27877000" />
       <workItem from="1756700709227" duration="33623000" />
-      <workItem from="1756794412403" duration="24968000" />
+      <workItem from="1756794412403" duration="32617000" />
+      <workItem from="1756859791173" duration="9013000" />
+      <workItem from="1756871001577" duration="743000" />
+      <workItem from="1756871779244" duration="6948000" />
+      <workItem from="1756906676367" duration="68699000" />
     </task>
     <task id="LOCAL-00001" summary="2.1">
       <option name="closed" value="true" />
@@ -365,7 +397,15 @@
       <option name="project" value="LOCAL" />
       <updated>1756812967116</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="perfect, DO NOT TOUCH AGAIN">
+      <option name="closed" value="true" />
+      <created>1756825137535</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1756825137535</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -409,8 +449,16 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/records/management/commands/seed_initial_data.py</url>
-          <line>106</line>
+          <line>129</line>
           <option name="timeStamp" value="11" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/records/views/upload.py</url>
+          <option name="timeStamp" value="15" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/records/middleware/onboarding.py</url>
+          <option name="timeStamp" value="17" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="jinja2-line">
           <url>file://$PROJECT_DIR$/records/templates/basetemplates/base.html</url>

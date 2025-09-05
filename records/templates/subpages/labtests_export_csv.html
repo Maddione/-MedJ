@@ -1,0 +1,102 @@
+{% load i18n static %}
+{% extends "basetemplates/base_app.html" %}
+
+{% block title %}{% trans "Export Lab Tests (CSV)" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+  <div class="flex items-center justify-between">
+    <h1 class="text-xl font-semibold">{% trans "Export Lab Tests (CSV)" %}</h1>
+    <a href="{% url 'medj:labtests' %}" class="text-sm underline opacity-80 hover:opacity-100">
+      {% trans "Back to Lab Tests" %}
+    </a>
+  </div>
+
+  <p class="text-sm opacity-80">
+    {% trans "Choose a date range and optional filters, then download your results as a CSV file." %}
+  </p>
+
+  <form method="get" action="{% url 'medj:export_lab_csv' %}" class="space-y-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <label class="block">
+        <span class="block text-sm font-medium mb-1">{% trans "From date" %}</span>
+        <input type="date" name="start_date" class="w-full rounded-xl p-2 border" />
+      </label>
+
+      <label class="block">
+        <span class="block text-sm font-medium mb-1">{% trans "To date" %}</span>
+        <input type="date" name="end_date" class="w-full rounded-xl p-2 border" />
+      </label>
+    </div>
+
+    <div>
+      <span class="block text-sm font-medium mb-1">{% trans "Indicators" %}</span>
+      <select name="indicator" multiple size="6" class="w-full rounded-xl p-2 border">
+        {% if indicators %}
+          {% for ind in indicators %}
+            <option value="{{ ind.id }}">{{ ind.name }}</option>
+          {% endfor %}
+        {% else %}
+          <option disabled>{% trans "No indicators available" %}</option>
+        {% endif %}
+      </select>
+      <p class="text-xs mt-1 opacity-70">{% trans "Hold Ctrl/Cmd to select multiple indicators." %}</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <fieldset class="rounded-xl p-3 border">
+        <legend class="text-sm font-medium px-1">{% trans "Column separator" %}</legend>
+        <label class="flex items-center gap-2 mt-1">
+          <input type="radio" name="sep" value="," checked />
+          <span class="text-sm">{% trans "Comma (,)" %}</span>
+        </label>
+        <label class="flex items-center gap-2 mt-1">
+          <input type="radio" name="sep" value=";" />
+          <span class="text-sm">{% trans "Semicolon (;)" %}</span>
+        </label>
+        <label class="flex items-center gap-2 mt-1">
+          <input type="radio" name="sep" value="\t" />
+          <span class="text-sm">{% trans "Tab" %}</span>
+        </label>
+      </fieldset>
+
+      <fieldset class="rounded-xl p-3 border">
+        <legend class="text-sm font-medium px-1">{% trans "Decimal separator" %}</legend>
+        <label class="flex items-center gap-2 mt-1">
+          <input type="radio" name="decimal" value="." checked />
+          <span class="text-sm">.</span>
+        </label>
+        <label class="flex items-center gap-2 mt-1">
+          <input type="radio" name="decimal" value="," />
+          <span class="text-sm">,</span>
+        </label>
+      </fieldset>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <label class="flex items-center gap-2">
+        <input type="checkbox" name="header" value="1" checked />
+        <span class="text-sm">{% trans "Include header row" %}</span>
+      </label>
+
+      <label class="flex items-center gap-2">
+        <input type="checkbox" name="only_abnormal" value="1" />
+        <span class="text-sm">{% trans "Only abnormal results" %}</span>
+      </label>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <button type="submit" class="px-4 py-2 rounded-xl bg-blue-600 text-white">
+        {% trans "Export CSV" %}
+      </button>
+      <a href="{% url 'medj:labtests' %}" class="px-4 py-2 rounded-xl border">
+        {% trans "Cancel" %}
+      </a>
+    </div>
+  </form>
+
+  <div class="text-xs opacity-70">
+    <p>{% trans "Tip: If your spreadsheet expects a different delimiter or decimal separator, adjust the options above before exporting." %}</p>
+  </div>
+</div>
+{% endblock %}

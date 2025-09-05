@@ -1,29 +1,577 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MedJ\n"
-"Language: en-us\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-01 00:00+0000\n"
+"PO-Revision-Date: 2025-01-01 00:00+0000\n"
+"Last-Translator: AUTO <auto@example.com>\n"
+"Language-Team: AUTO <auto@example.com>\n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "Български"
-msgstr "Bulgarian"
 
-msgid "English (US)"
-msgstr "English (US)"
 
-msgid "Вход"
-msgstr "Sign in"
+
+msgid "Адрес"
+msgstr "Address"
+
+msgid "Валиден до:"
+msgstr "Valid until:"
+
+msgid "Все още няма добавени медицински събития."
+msgstr "No medical events have been added yet."
+
+msgid "Визуализация на кръвни изследвания и други показатели."
+msgstr "Visualization of blood tests and other indicators."
+
+msgid "Вид"
+msgstr "Type"
+
+msgid "Дата"
+msgstr "Date"
+
+msgid "Дата на събитието"
+msgstr "Event date"
+
+msgid "Действия"
+msgstr "Actions"
+
+msgid "Детайли на събитието"
+msgstr "Event details"
+
+msgid "Документ"
+msgstr "Document"
+
+msgid "Експорт CSV"
+msgstr "Export CSV"
+
+msgid "ЗАПИШИ"
+msgstr "SAVE"
+
+msgid "Забележка: PDF визуализацията може да изглежда различно в зависимост от браузъра."
+msgstr "Note: The PDF preview may look different depending on the browser."
+
+msgid "Изтегли"
+msgstr "Download"
+
+msgid "Изтекъл"
+msgstr "Expired"
+
+msgid "Изображение на документ"
+msgstr "Document image"
+
+msgid "Име"
+msgstr "Name"
+
+msgid "Име на събитие"
+msgstr "Event name"
+
+msgid "Инсулин"
+msgstr "Insulin"
+
+msgid "Категория"
+msgstr "Category"
+
+msgid "Кръвна група"
+msgstr "Blood type"
+
+msgid "Лабораторни показатели"
+msgstr "Lab indicators"
+
+msgid "Личен картон"
+msgstr "Personal card"
+
+msgid "Няма визуализация за този тип файл."
+msgstr "No preview available for this file type."
+
+msgid "Няма прикачен документ."
+msgstr "No attached document."
+
+msgid "Няма качени документи."
+msgstr "No uploaded documents."
+
+msgid "Обобщение"
+msgstr "Summary"
+
+msgid "От"
+msgstr "From"
+
+msgid "Отказ"
+msgstr "Cancel"
+
+msgid "Отмени линка"
+msgstr "Revoke link"
+
+msgid "Показатели"
+msgstr "Indicators"
+
+msgid "Потвърждение за изтриване"
+msgstr "Delete confirmation"
+
+msgid "Практикуващи лекари"
+msgstr "Practicing doctors"
+
+msgid "Преглед"
+msgstr "View"
+
+msgid "Преглед и редактиране на стойностите на лабораторните показатели."
+msgstr "View and edit lab indicator values."
+
+msgid "Преглед в цял размер"
+msgstr "Full-size preview"
+
+msgid "Преглед на всички медицински събития."
+msgstr "View all medical events."
+
+msgid "Прикачен документ"
+msgstr "Attached document"
+
+msgid "Резюме"
+msgstr "Summary"
+
+msgid "Редакция на кръвни показатели"
+msgstr "Edit blood indicators"
+
+msgid "Редакция на медицинско събитие"
+msgstr "Edit medical event"
+
+msgid "Сканирайте за отваряне на тази страница."
+msgstr "Scan to open this page."
+
+msgid "Създаване на ново медицинско събитие"
+msgstr "Create a new medical event"
+
+msgid "Създай събитие"
+msgstr "Create event"
+
+msgid "Специалност"
+msgstr "Specialty"
+
+msgid "Споделен документ"
+msgstr "Shared document"
+
+msgid "Споделено събитие"
+msgstr "Shared event"
+
+msgid "Стойности на показателите"
+msgstr "Indicator values"
+
+msgid "Тагове"
+msgstr "Tags"
+
+msgid "Телефон"
+msgstr "Phone"
+
+msgid "Триглицериди"
+msgstr "Trigl ycerides"
+
+msgid "Тип"
+msgstr "Type"
+
+msgid "Тип събитие"
+msgstr "Event type"
+
+msgid "Тук ще се появи интерактивна графика."
+msgstr "An interactive chart will appear here."
+
+msgid "Хемоглобин"
+msgstr "Hemoglobin"
+
+msgid "Търсене по резюме, таг, специалност…"
+msgstr "Search by summary, tag, specialty…"
+
+msgid "Добави таг…"
+msgstr "Add tag…"
+
+msgid "Добави"
+msgstr "Add"
+
+msgid "Запази"
+msgstr "Save"
+
+msgid "Изтрий."
+msgstr "Delete."
+
+msgid "Export Lab Tests (CSV)"
+msgstr "Export Lab Tests (CSV)"
+
+msgid "Back to Lab Tests"
+msgstr "Back to Lab Tests"
+
+msgid "Choose a date range and optional filters, then download your results as a CSV file."
+msgstr "Choose a date range and optional filters, then download your results as a CSV file."
+
+msgid "From date"
+msgstr "From date"
+
+msgid "To date"
+msgstr "To date"
+
+msgid "Indicators"
+msgstr "Indicators"
+
+msgid "No indicators available"
+msgstr "No indicators available"
+
+msgid "Hold Ctrl/Cmd to select multiple indicators."
+msgstr "Hold Ctrl/Cmd to select multiple indicators."
+
+msgid "Column separator"
+msgstr "Column separator"
+
+msgid "Comma (,)"
+msgstr "Comma (,)"
+
+msgid "Semicolon (;)"
+msgstr "Semicolon (;)"
+
+msgid "Tab"
+msgstr "Tab"
+
+msgid "Decimal separator"
+msgstr "Decimal separator"
+
+msgid "Include header row"
+msgstr "Include header row"
+
+msgid "Only abnormal results"
+msgstr "Only abnormal results"
+
+msgid "Export CSV"
+msgstr "Export CSV"
+
+msgid "Cancel"
+msgstr "Cancel"
+
+msgid "Tip: If your spreadsheet expects a different delimiter or decimal separator, adjust the options above before exporting."
+msgstr "Tip: If your spreadsheet expects a different delimiter or decimal separator, adjust the options above before exporting."
+
+msgid "Профил"
+msgstr "Profile"
+
+msgid "Профил — Настройки"
+msgstr "Profile — Settings"
+
+msgid "Публичен"
+msgstr "Public"
+
+msgid "Размер"
+msgstr "Size"
+
+msgid "Редакция"
+msgstr "Edit"
+
+msgid "Редакция на документ"
+msgstr "Edit document"
+
+msgid "Редакция на събитие"
+msgstr "Edit event"
+
+msgid "Редакция на тагове"
+msgstr "Edit tags"
+
+msgid "Редакция на тагове за документ"
+msgstr "Edit document tags"
+
+msgid "Редакция на тагове за събитие"
+msgstr "Edit event tags"
+
+msgid "Рецепти за изпълнение"
+msgstr "Prescriptions to fill"
+
+msgid "Създай линк за споделяне"
+msgstr "Create share link"
+
+msgid "Създай ново събитие на дата "
+msgstr "Create a new event on "
+
+msgid "Създай профил"
+msgstr "Create account"
+
+msgid "Създай своето досие сега"
+msgstr "Create your dossier now"
+
+msgid "Събитие"
+msgstr "Event"
+
+msgid "Събития"
+msgstr "Events"
+
+msgid "Съдържание / Файл"
+msgstr "Content / File"
+
+msgid "Съхранявай документите си, визуализирай резултати и споделяй временно с лекари."
+msgstr "Store your documents, visualize results, and share temporarily with doctors."
+
+msgid "Съобщение / Успех / Създадено успешно / Запазено успешно / Изтрито успешно"
+msgstr "Message / Success / Created successfully / Saved successfully / Deleted successfully"
+
+msgid "Табло"
+msgstr "Dashboard"
+
+msgid "Тип документ"
+msgstr "Document type"
+
+msgid "Тип: (в събитие) "
+msgstr "Type: (in event) "
+
+msgid "Търсене"
+msgstr "Search"
+
+msgid "Указания / Важно:"
+msgstr "Instructions / Important:"
+
+msgid "Указване на форматите (PDF/JPG/PNG)"
+msgstr "Format guidance (PDF/JPG/PNG)"
+
+msgid "Управление / Основна информация"
+msgstr "Management / Basic information"
+
+msgid "Фамилия (BG)"
+msgstr "Surname (BG)"
+
+msgid "Фамилия (EN)"
+msgstr "Surname (EN)"
+
+msgid "Филтър"
+msgstr "Filter"
+
+msgid "Хронология / История"
+msgstr "Chronology / History"
+
+msgid "Цел / Резултат"
+msgstr "Goal / Result"
+
+msgid "Часове / дни (във валидности)"
+msgstr "Hours / days (in validity)"
+
+msgid "Частен"
+msgstr "Private"
+
+msgid "Чииз / Избери файл / Choose file"
+msgstr "Choose file / Choose file / Choose file"
+
+msgid "Шеринг / Сподели"
+msgstr "Sharing / Share"
+
+msgid "Ще получите имейл с инструкции… (текстовете от password reset)"
+msgstr "You will receive an email with instructions… (password reset texts)"
+
+msgid "OCR текст"
+msgstr "OCR text"
+
+msgid "PDF (бутон/етикет)"
+msgstr "PDF (button/label)"
+
+msgid "CSV (етикет/бутон)"
+msgstr "CSV (label/button)"
+
+msgid "„или“ (междумет в форми)"
+msgstr "“or” (conjunction in forms)"
+
+msgid "„Преглед на медицинските специалисти.“"
+msgstr "“View medical specialists.”"
+
+msgid "„Списък с лекари“"
+msgstr "“List of doctors”"
+
+msgid "„Няма документи за показване.“"
+msgstr "“No documents to display.”"
+
+msgid "„Търсене по име на документ или таг…“"
+msgstr "“Search by document name or tag…”"
+
+msgid "Изход"
+msgstr "Logout"
+
+msgid "Маркирай като публично / Частно"
+msgstr "Mark as public / Private"
+
+msgid "Междинни резултати / Резултат"
+msgstr "Intermediate results / Result"
+
+msgid "Местоположение"
+msgstr "Location"
+
+msgid "Моля, изберете файл(ове)."
+msgstr "Please choose file(s)."
+
+msgid "Моля, поправете грешките по-долу."
+msgstr "Please correct the errors below."
+
+msgid "Наличност / Няма достатъчно данни за кръвни показатели."
+msgstr "Availability / Not enough blood test data."
+
+msgid "Налично резюме няма. / Няма налично резюме."
+msgstr "No summary available. / No available summary."
+
+msgid "Няма активни рецепти."
+msgstr "No active prescriptions."
+
+msgid "Няма насрочени прегледи."
+msgstr "No appointments scheduled."
+
+msgid "Няма качени документи за това събитие."
+msgstr "No documents uploaded for this event."
+
+msgid "Няма избрани файлове."
+msgstr "No files selected."
+
+msgid "Няма тагове"
+msgstr "No tags"
+
+msgid "Обнови / Запази промените"
+msgstr "Update / Save changes"
+
+msgid "Обобщение на документ"
+msgstr "Document summary"
+
+msgid "Ограничения: Позволено / Забранено"
+msgstr "Restrictions: Allowed / Forbidden"
+
+msgid "Одит / История на действия"
+msgstr "Audit / Action history"
+
+msgid "Око / Показване на парола (иконка—текст ако е изписан)"
+msgstr "Eye / Show password (icon—text if displayed)"
+
+msgid "Омни / или (междумет в форми)"
+msgstr "Omni / or (conjunction in forms)"
+
+msgid "Основна информация"
+msgstr "Basic information"
+
+msgid "От дата"
+msgstr "From date"
+
+msgid "Отвори"
+msgstr "Open"
+
+msgid "Отмени / Отказ"
+msgstr "Revoke / Cancel"
+
+msgid "Пакет / PDF / CSV"
+msgstr "Package / PDF / CSV"
 
 msgid "Парола"
 msgstr "Password"
 
+msgid "Паролата е сменена"
+msgstr "Password changed"
+
+msgid "Печат"
+msgstr "Print"
+
+msgid "Печат от CSV"
+msgstr "Print from CSV"
+
+msgid "Плъзни и пусни"
+msgstr "Drag and drop"
+
+msgid "Повтори новата парола"
+msgstr "Repeat new password"
+
+msgid "Повтори парола"
+msgstr "Repeat password"
+
+msgid "Позволено:"
+msgstr "Allowed:"
+
+msgid "Поле / Полета"
+msgstr "Field / Fields"
+
+msgid "Помощ / Информация"
+msgstr "Help / Information"
+
 msgid "Потребител"
+msgstr "User"
+
+msgid "Потребителско име"
 msgstr "Username"
 
-msgid "Запомни ме"
-msgstr "Remember me"
+msgid "Потребителско име или имейл"
+msgstr "Username or email"
+
+msgid "Премахни"
+msgstr "Remove"
+
+msgid "Премести "
+msgstr "Move "
+
+msgid "Преместване на документ "
+msgstr "Move document "
+
+msgid "Приемани медикаменти / Няма въведени медикаменти."
+msgstr "Medications taken / No medications entered."
+
+msgid "Прикачи към съществуващо събитие "
+msgstr "Attach to existing event "
+
+msgid "Преглед (Preview)"
+msgstr "Preview"
+
+msgid "Преглед на всички документи, които сте качили."
+msgstr "View all documents you have uploaded."
+
+msgid "Преглед на документ"
+msgstr "Document view"
+
+msgid "Преглед и управление на медицинското събитие и свързаните с него документи."
+msgstr "View and manage the medical event and its related documents."
+
+msgid "Презиме (BG)"
+msgstr "Middle name (BG)"
+
+msgid "Презиме (EN)"
+msgstr "Middle name (EN)"
+
+msgid "При избор на файлове: предупреждения за формати (PDF, JPG, JPEG, PNG)"
+msgstr "When selecting files: format warnings (PDF, JPG, JPEG, PNG)"
+
+msgid "Приложи / Изпрати"
+msgstr "Apply / Submit"
+
+msgid "Примирение / Генерирай линкове"
+msgstr "Reconciliation / Generate links"
+
+msgid "Пример: date,category,specialty,summary / indicator,YYYY-MM-DD,… (описателни, могат да останат непреводни)"
+msgstr "Example: date,category,specialty,summary / indicator,YYYY-MM-DD,… (descriptive, may remain untranslated)"
+
+msgid "Отмени"
+msgstr "Cancel"
+
+msgid "Към вход"
+msgstr "Back to login"
+
+msgid "Нова парола"
+msgstr "New password"
+
+msgid "Проверете пощата си"
+msgstr "Check your email"
+
+msgid "Ако съществува акаунт с този email, изпратихме инструкции за смяна на паролата."
+msgstr "If an account with this email exists, we have sent instructions to reset your password."
+
+msgid "Здравейте,"
+msgstr "Hello,"
+
+msgid "Получихме заявка за смяна на паролата за вашия профил в MedJ."
+msgstr "We received a request to change the password for your MedJ account."
+
+msgid "Ако това не сте вие, игнорирайте този имейл."
+msgstr "If this wasn’t you, please ignore this email."
+
+msgid "За да зададете нова парола, отворете линка:"
+msgstr "To set a new password, open the link:"
+
+msgid "Поздрави,"
+msgstr "Regards,"
+
+msgid "Екипът на MedJ"
+msgstr "The MedJ Team"
 
 msgid "Забравена парола"
 msgstr "Forgot password"
@@ -31,176 +579,417 @@ msgstr "Forgot password"
 msgid "Изпрати линк"
 msgstr "Send link"
 
-msgid "Проверете пощата си"
-msgstr "Check your email"
+msgid "Email (етикет, в момента е на английски, може също да се превежда)"
+msgstr "Email"
 
-msgid "Ако съществува акаунт с този email, изпратихме инструкции за смяна на паролата."
-msgstr "If an account with this email exists, we've sent password reset instructions."
+msgid "Смяна на паролата в MedJ"
+msgstr "Password change in MedJ"
 
-msgid "Нова парола"
-msgstr "New password"
+msgid "Акаунт"
+msgstr "Account"
 
-msgid "Повтори новата парола"
-msgstr "Repeat new password"
+msgid "Активиран"
+msgstr "Enabled"
 
-msgid "Запази"
-msgstr "Save"
+msgid "Активен"
+msgstr "Active"
 
-msgid "Паролата е сменена"
-msgstr "Password changed"
+msgid "Активирай споделяне"
+msgstr "Enable sharing"
 
-msgid "Към вход"
-msgstr "Back to sign in"
+msgid "Актуализирай профила"
+msgstr "Update profile"
 
-msgid "Към профила"
-msgstr "Back to profile"
+msgid "База знания"
+msgstr "Knowledge base"
 
-msgid "Споделен документ"
-msgstr "Shared Document"
+msgid "Български"
+msgstr "Bulgarian"
 
-msgid "Споделено събитие"
-msgstr "Shared Event"
+msgid "Валидност CSV (часове)"
+msgstr "CSV validity (hours)"
 
-msgid "Валиден до:"
-msgstr "Valid until:"
+msgid "Валидност PDF лаборатории (часове)"
+msgstr "PDF validity for labs (hours)"
 
-msgid "Отмени линка"
-msgstr "Revoke Link"
+msgid "Валидност PDF събития (часове)"
+msgstr "PDF validity for events (hours)"
 
-msgid "Сканирайте за отваряне на тази страница."
-msgstr "Scan to open this page."
+msgid "Важо: / Важно:"
+msgstr "Important: / Important:"
 
-msgid "Изтекъл"
-msgstr "Expired"
+msgid "Вдигни файл(ове) / Качи файл(ове)"
+msgstr "Upload file(s) / Add file(s)"
 
-msgid "Търсене по име на документ, тип, таг..."
-msgstr "Search by document name, type, tag..."
+msgid "Вход"
+msgstr "Login"
 
-msgid "Вид"
-msgstr "Type"
+msgid "Вид документ"
+msgstr "Document type"
 
-msgid "Наименование"
-msgstr "Title"
+msgid "Влез в профила си, за да продължиш"
+msgstr "Sign in to continue"
 
-msgid "Дата"
-msgstr "Date"
+msgid "Внимание"
+msgstr "Warning"
 
-msgid "Размер"
-msgstr "Size"
+msgid "Връщане към… / Назад"
+msgstr "Back to… / Back"
 
-msgid "Тагове"
-msgstr "Tags"
+msgid "Генерирай"
+msgstr "Generate"
 
-msgid "Действия"
-msgstr "Actions"
+msgid "Генерирай линкове"
+msgstr "Generate links"
 
-msgid "Изтегли"
-msgstr "Download"
+msgid "Генерирай PDF"
+msgstr "Generate PDF"
 
-msgid "Премести"
-msgstr "Move"
+msgid "Години / Рождена дата"
+msgstr "Years / Date of birth"
 
-msgid "Редактирай"
-msgstr "Edit"
+msgid "Грешка"
+msgstr "Error"
 
-msgid "Експорт като PDF"
-msgstr "Export as PDF"
+msgid "Грешка при качване"
+msgstr "Upload error"
 
-msgid "История"
-msgstr "History"
+msgid "Да / Не"
+msgstr "Yes / No"
 
-msgid "Запази език"
-msgstr "Save Language"
+msgid "Дата на качване"
+msgstr "Upload date"
 
-msgid "Табло"
-msgstr "Dashboard"
+msgid "Дата на документа"
+msgstr "Document date"
 
-msgid "Досие"
-msgstr "Casefile"
+msgid "Дата на събитие"
+msgstr "Event date"
 
-msgid "Л.Картон"
-msgstr "Personal Card"
+msgid "Деактивиран"
+msgstr "Disabled"
+
+msgid "Деактивирай споделяне"
+msgstr "Disable sharing"
+
+msgid "Детайли за документ"
+msgstr "Document details"
+
+msgid "Детайли за събитие"
+msgstr "Event details"
+
+msgid "Джипи / Личен лекар"
+msgstr "GP / Primary care physician"
+
+msgid "Доклад (събития)"
+msgstr "Report (events)"
 
 msgid "Документи"
 msgstr "Documents"
 
+msgid "Досиета / Досие"
+msgstr "Case files / Dossier"
+
+msgid "Достъп / Публичен линк"
+msgstr "Access / Public link"
+
+msgid "Други"
+msgstr "Other"
+
+msgid "Добави документ"
+msgstr "Add document"
+
+msgid "Добави лекар"
+msgstr "Add doctor"
+
+msgid "Дойч / English (US)"
+msgstr "Deutsch / English (US)"
+
+msgid "Държава / Град"
+msgstr "Country / City"
+
+msgid "Единица"
+msgstr "Unit"
+
+msgid "Експорт / Споделяне / Споделяне / Експорт"
+msgstr "Export / Share / Share / Export"
+
+msgid "Ел. поща / Имейл"
+msgstr "Email / Email"
+
+msgid "Епикризи"
+msgstr "Discharge summaries"
+
+msgid "Жена / Мъж / Пол"
+msgstr "Female / Male / Gender"
+
+msgid "Забележки"
+msgstr "Notes"
+
+msgid "Забранено: (смесване на PDF и изображения и т.н.)"
+msgstr "Forbidden: (mixing PDF and images, etc.)"
+
+msgid "Забравена парола?"
+msgstr "Forgot password?"
+
+msgid "Запазено успешно"
+msgstr "Saved successfully"
+
+msgid "Запомни ме"
+msgstr "Remember me"
+
+msgid "Затвори"
+msgstr "Close"
+
+msgid "Заявка изпратена / Проверете пощата си"
+msgstr "Request sent / Check your email"
+
+msgid "Здравейте, (в имейла за нулиране на парола)"
+msgstr "Hello, (in the password reset email)"
+
+msgid "Индикатор"
+msgstr "Indicator"
+
+msgid "Име (BG)"
+msgstr "Name (BG)"
+
+msgid "Име на файл"
+msgstr "File name"
+
+msgid "Име на показателя"
+msgstr "Indicator name"
+
+msgid "Имейл (етикет във форма)"
+msgstr "Email (form label)"
+
+msgid "Информация"
+msgstr "Information"
+
+msgid "История"
+msgstr "History"
+
+msgid "История на документи"
+msgstr "Document history"
+
+msgid "История на качванията"
+msgstr "Upload history"
+
+msgid "История на събития"
+msgstr "Event history"
+
 msgid "Качи"
 msgstr "Upload"
+
+msgid "Категория: (в събитие)"
+msgstr "Category: (in event)"
+
+msgid "Клон / Страница / Страници"
+msgstr "Branch / Page / Pages"
+
+msgid "Копирай линк"
+msgstr "Copy link"
+
+msgid "Копирано"
+msgstr "Copied"
+
+msgid "Кръвни изследвания"
+msgstr "Blood tests"
+
+msgid "Лабораторни"
+msgstr "Labs"
+
+msgid "Лабораторни изследвания"
+msgstr "Lab tests"
+
+msgid "Лабораторно изследване"
+msgstr "Lab test"
+
+msgid "Лекар"
+msgstr "Doctor"
+
+msgid "Лекари"
+msgstr "Doctors"
+
+msgid "Лична карта / Личен картон"
+msgstr "ID card / Personal card"
+
+msgid "Лични данни"
+msgstr "Personal data"
+
+msgid "Личният ти медицински дневник"
+msgstr "Your personal medical journal"
+
+msgid "Линк за нулиране (текст в имейл)"
+msgstr "Reset link (email text)"
+
+msgid "Локация / Местоположение"
+msgstr "Location / Address"
+
+msgid "English (US)"
+msgstr "English (US)"
+
+msgid "Регистрация"
+msgstr "Register"
+
+msgid "Ел. поща"
+msgstr "Email"
+
+msgid "създай своето досие сега"
+msgstr "Create your dossier now"
+
+msgid "Начало"
+msgstr "Home"
+
+msgid "Досие"
+msgstr "Dossier"
+
+msgid "Л.Картон"
+msgstr "Personal card"
 
 msgid "Сподели"
 msgstr "Share"
 
-msgid "Профил"
-msgstr "Profile"
+msgid "Страници"
+msgstr "Pages"
 
-msgid "История на качване"
-msgstr "Upload history"
+msgid "Настройки"
+msgstr "Settings"
 
-msgid "Изход"
-msgstr "Sign out"
+msgid "Смяна на парола"
+msgstr "Change password"
 
-msgid "Настройки и профил"
-msgstr "Settings & profile"
+msgid "Специалист"
+msgstr "Specialist"
 
-msgid "Профил и настройки"
-msgstr "Profile & settings"
+msgid "До дата"
+msgstr "To date"
 
-msgid "Управлявайте акаунта, личните данни и предпочитанията си."
-msgstr "Manage your account, personal data and preferences."
+msgid "Филтрирай"
+msgstr "Filter"
 
-msgid "Секции"
-msgstr "Sections"
+msgid "Изчисти"
+msgstr "Clear"
 
-msgid "Обща информация"
-msgstr "Account"
+msgid "пр. Холестерол, Ендокринолог"
+msgstr "e.g. Cholesterol, Endocrinologist"
 
-msgid "Базови настройки на акаунта."
-msgstr "Basic account settings."
+msgid "Търси"
+msgstr "Search"
 
-msgid "Потребителско име"
-msgstr "Username"
+msgid "Наименование"
+msgstr "Name"
 
-msgid "Запази промените"
-msgstr "Save changes"
+msgid "Няма документи за показване."
+msgstr "No documents to display."
 
-msgid "Личен профил"
-msgstr "Personal profile"
+msgid "Няма достатъчно данни за кръвни показатели."
+msgstr "Not enough blood indicator data."
 
-msgid "Демографски и контактни данни."
-msgstr "Demographic and contact data."
+msgid "Предстоящи прегледи"
+msgstr "Upcoming appointments"
 
-msgid "Дата на раждане"
+msgid "Приемани медикаменти"
+msgstr "Medications taken"
+
+msgid "Няма въведени медикаменти."
+msgstr "No medications entered."
+
+msgid "История на качените документи"
+msgstr "History of uploaded documents"
+
+msgid "Търсене по име на документ или таг..."
+msgstr "Search by document name or tag..."
+
+msgid "Все още нямате качени документи."
+msgstr "You don't have any uploaded documents yet."
+
+msgid "Качете първия си документ от тук"
+msgstr "Upload your first document here"
+
+msgid "Рождена дата"
 msgstr "Date of birth"
 
 msgid "Пол"
 msgstr "Gender"
 
-msgid "Изберете"
-msgstr "Select"
+msgid "Споделяне на личен картон"
+msgstr "Share personal card"
 
-msgid "Мъж"
-msgstr "Male"
+msgid "Споделянето е изключено."
+msgstr "Sharing is disabled."
 
-msgid "Жена"
-msgstr "Female"
+msgid "Имейл"
+msgstr "Email"
 
-msgid "Друг"
-msgstr "Other"
+msgid "Име (EN, по желание)"
+msgstr "Name (EN, optional)"
 
-msgid "Телефон"
-msgstr "Phone"
+msgid "Дата на раждане"
+msgstr "Date of birth"
 
-msgid "Адрес"
-msgstr "Address"
+msgid "Споделяне / Експорт"
+msgstr "Sharing / Export"
 
-msgid "Промяна на парола"
-msgstr "Change password"
+msgid "PDF събития"
+msgstr "PDF events"
 
-msgid "За да смените паролата си, отворете защитената форма."
-msgstr "Open the protected form to change your password."
+msgid "PDF лаборатории"
+msgstr "PDF labs"
 
-msgid "Смени паролата"
-msgstr "Change password"
+msgid "CSV"
+msgstr "CSV"
 
-msgid "Език"
-msgstr "Language"
+msgid "Резултат"
+msgstr "Result"
+
+msgid "Важно:"
+msgstr "Important:"
+
+msgid "един PDF"
+msgstr "one PDF"
+
+msgid "или"
+msgstr "or"
+
+msgid "много изображения (JPG/PNG)"
+msgstr "multiple images (JPG/PNG)"
+
+msgid "на същия документ."
+msgstr "for the same document."
+
+msgid "Забранено:"
+msgstr "Forbidden:"
+
+msgid "смесване на PDF и изображения едновременно или повече от един PDF."
+msgstr "mixing PDF and images at once or more than one PDF."
+
+msgid "Качи файл(ове)"
+msgstr "Upload file(s)"
+
+msgid "Напред"
+msgstr "Next"
+
+msgid "Има файлове с неподдържан формат. Позволени: PDF, JPG, JPEG, PNG."
+msgstr "Some files are of an unsupported format. Allowed: PDF, JPG, JPEG, PNG."
+
+msgid "Позволен е само един PDF."
+msgstr "Only one PDF is allowed."
+
+msgid "Не смесвайте PDF и изображения в едно качване."
+msgstr "Do not mix PDF and images in a single upload."
+
+msgid "Избрани файлове"
+msgstr "Selected files"
+
+msgid "Password changed"
+msgstr "Password changed"
+
+msgid "Your password was updated successfully."
+msgstr "Your password was updated successfully."
+
+msgid "Go to dashboard"
+msgstr "Go to dashboard"
+
+msgid "Текуща парола"
+msgstr "Current password"
+

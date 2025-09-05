@@ -1,0 +1,42 @@
+{% extends "basetemplates/base_app.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Профил — настройки" %}{% endblock %}
+
+{% block app_content %}
+<div class="mx-auto max-w-screen-xl space-y-6">
+  <div class="grid lg:grid-cols-12 gap-6">
+    <aside class="lg:col-span-3">
+      <nav class="space-y-1">
+        <a href="{% url 'medj:profile' %}" class="block px-3 py-2 rounded-lg bg-teal-50 text-teal-700 border-l-4 border-teal-500">{% trans "Профил" %}</a>
+        <a href="{% url 'medj:password_change' %}" class="block px-3 py-2 rounded-lg hover:bg-gray-50">{% trans "Парола" %}</a>
+        <a href="#" class="block px-3 py-2 rounded-lg pointer-events-none opacity-50">{% trans "Известия" %}</a>
+        <a href="#" class="block px-3 py-2 rounded-lg pointer-events-none opacity-50">{% trans "Интеграции" %}</a>
+      </nav>
+    </aside>
+
+    <section class="lg:col-span-9 bg-white rounded-2xl shadow p-6">
+      <h2 class="text-lg font-semibold text-gray-900 mb-6">{% trans "Профил" %}</h2>
+
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+        <div class="grid sm:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm text-gray-700 mb-1" for="{{ account_form.email.id_for_label }}">Email</label>
+            {{ account_form.email }}
+          </div>
+          <div>
+            <label class="block text-sm text-gray-700 mb-1" for="{{ account_form.username.id_for_label }}">{% trans "Потребителско име" %}</label>
+            {{ account_form.username }}
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2">
+          <a href="{% url 'medj:dashboard' %}" class="px-4 py-2 rounded-md border border-gray-300 bg-white">{% trans "Отмени" %}</a>
+          <button class="px-5 py-2 rounded-md bg-sky-700 text-white hover:bg-sky-800">{% trans "Запази" %}</button>
+        </div>
+      </form>
+    </section>
+  </div>
+</div>
+{% endblock %}

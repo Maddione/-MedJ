@@ -1,0 +1,14 @@
+{% load i18n static %}
+{% extends "basetemplates/base_app.html" %}
+
+{% block title %}{% trans "Password changed" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto space-y-6">
+  <h1 class="text-xl font-semibold">{% trans "Password changed" %}</h1>
+  <p class="text-sm opacity-80">{% trans "Your password was updated successfully." %}</p>
+  <a href="{% url 'medj:dashboard' %}" class="inline-block px-4 py-2 rounded-xl bg-blue-600 text-white">
+    {% trans "Go to dashboard" %}
+  </a>
+</div>
+{% endblock %}

@@ -1,4 +1,4 @@
-﻿import os
+import os
 
 env = os.getenv('DJANGO_ENVIRONMENT', 'dev')
 

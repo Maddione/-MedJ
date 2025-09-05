@@ -1,0 +1,43 @@
+{% extends "basetemplates/base_app.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Смяна на парола" %}{% endblock %}
+
+{% block app_content %}
+<div class="max-w-md mx-auto card-site space-y-4">
+  <h1 class="text-xl font-semibold">{% trans "Смяна на парола" %}</h1>
+
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+
+    <div>
+      <label class="block mb-1" for="{{ form.old_password.id_for_label }}">{% trans "Текуща парола" %}</label>
+      {{ form.old_password }}
+      {% if form.old_password.errors %}
+        <ul class="mt-1 text-sm text-red-600 space-y-1">{% for e in form.old_password.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+      {% endif %}
+    </div>
+
+    <div>
+      <label class="block mb-1" for="{{ form.new_password1.id_for_label }}">{% trans "Нова парола" %}</label>
+      {{ form.new_password1 }}
+      {% if form.new_password1.errors %}
+        <ul class="mt-1 text-sm text-red-600 space-y-1">{% for e in form.new_password1.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+      {% endif %}
+    </div>
+
+    <div>
+      <label class="block mb-1" for="{{ form.new_password2.id_for_label }}">{% trans "Повтори новата парола" %}</label>
+      {{ form.new_password2 }}
+      {% if form.new_password2.errors %}
+        <ul class="mt-1 text-sm text-red-600 space-y-1">{% for e in form.new_password2.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+      {% endif %}
+    </div>
+
+    <div class="flex items-center justify-end gap-2">
+      <a href="{% url 'medj:dashboard' %}" class="px-4 py-2 rounded-xl border border-primary/30 text-primaryDark bg-blockbg hover:bg-primary/5">{% trans "Отмени" %}</a>
+      <button type="submit" class="px-5 py-2 rounded-xl bg-primaryDark text-blockbg hover:opacity-90">{% trans "Запази" %}</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

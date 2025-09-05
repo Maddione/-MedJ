@@ -6,6 +6,10 @@ from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 from parler.models import TranslatableModel, TranslatedFields
+from django.db import models
+from django.contrib.auth.models import User
+import secrets
+
 
 class User(AbstractUser):
     email = models.EmailField(_("email address"), unique=True, blank=True, null=True)
@@ -26,6 +30,9 @@ class PatientProfile(models.Model):
     phone_number = models.CharField(max_length=64, blank=True, null=True)
     address = models.CharField(max_length=255, blank=True, null=True)
     blood_type = models.CharField(max_length=8, blank=True, null=True)
+    share_token = models.CharField(max_length=64, unique=True, blank=True, null=True)
+    share_enabled = models.BooleanField(default=False)
+
     def full_name(self, language_code="bg"):
         if language_code and language_code.lower().startswith("en") and self.first_name_en and self.last_name_en:
             parts = [self.first_name_en, self.middle_name_en or "", self.last_name_en]
@@ -34,6 +41,10 @@ class PatientProfile(models.Model):
         return " ".join([p for p in parts if p])
     def __str__(self):
         return self.full_name()
+
+    def ensure_share_token(self):
+        if not self.share_token:
+            self.share_token = secrets.token_urlsafe(20)
 
 class MedicalCategory(TranslatableModel):
     translations = TranslatedFields(
@@ -207,11 +218,33 @@ class LabIndicator(TranslatableModel):
     reference_high = models.FloatField(blank=True, null=True)
     def __str__(self):
         return self.safe_translation_getter("name", any_language=True)
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            base = self.safe_translation_getter("name", any_language=True) or ""
-            self.slug = slugify(base)[:255]
-        super().save(*args, **kwargs)
+
+        def save(self, *args, **kwargs):
+
+            if not self.slug:
+                try:
+                    base = self.safe_translation_getter("name", any_language=True) or ""
+                except Exception:
+                    base = ""
+
+                from django.utils.text import slugify as _slugify
+                from uuid import uuid4 as _uuid4
+                self.slug = (_slugify(base)[:255] if base else f"indicator-{_uuid4().hex[:12]}")
+            creating = not self.pk or self._state.adding
+
+            super().save(*args, **kwargs)
+
+            try:
+                base2 = self.safe_translation_getter("name", any_language=True) or ""
+            except Exception:
+                base2 = ""
+            if base2:
+                from django.utils.text import slugify as _slugify2
+                final = _slugify2(base2)[:255]
+                if final and self.slug != final:
+                    self.slug = final
+                    super().save(update_fields=["slug"])
+
     @classmethod
     def resolve(cls, label):
         q = (label or "").strip()

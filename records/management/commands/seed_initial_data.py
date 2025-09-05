@@ -4,24 +4,47 @@ from parler.utils.context import switch_language
 from records.models import DocumentType, MedicalCategory, MedicalSpecialty
 from django.utils.text import slugify
 
-def upsert_translated(model, slug, name_bg=None, name_en=None, is_active=True, description_bg=None, description_en=None, extra=None):
+from django.core.management.base import CommandError
+from django.utils.text import slugify
+from parler.utils.context import switch_language
+
+def upsert_translated(
+    model,
+    slug=None,
+    name_bg=None,
+    name_en=None,
+    is_active=True,
+    description_bg=None,
+    description_en=None,
+    extra=None,
+):
+
+    base_for_slug = (slug or name_en or name_bg or "").strip()
+    if not base_for_slug:
+        raise CommandError("upsert_translated: must provide at least slug or a name (bg/en).")
+
+    computed_slug = slugify(base_for_slug, allow_unicode=True)
+
     obj, _ = model.objects.update_or_create(
-        slug=slug,
-        defaults={"is_active": is_active, **(extra or {})},
+        slug=computed_slug,
+        defaults={"is_active": is_active, **(extra or {}),},
     )
-    if name_bg:
-        with switch_language(obj, "bg"):
-            obj.name = name_bg
-            if description_bg is not None:
-                obj.description = description_bg
+
+    def _set_lang(lang_code: str, name_val, desc_val):
+        if name_val is None and desc_val is None:
+            return
+        with switch_language(obj, lang_code):
+            if name_val is not None:
+                obj.name = name_val
+            if desc_val is not None and hasattr(obj, "description"):
+                obj.description = desc_val
             obj.save()
-    if name_en:
-        with switch_language(obj, "en-us"):
-            obj.name = name_en
-            if description_en is not None:
-                obj.description = description_en
-            obj.save()
+
+    _set_lang("bg", name_bg, description_bg)
+    _set_lang("en-us", name_en, description_en)
+
     return obj
+
 
 DOC_TYPES = [
     {"slug": "blood-tests", "bg": "Кръвни изследвания", "en": "Blood tests"},

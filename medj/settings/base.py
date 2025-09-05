@@ -1,4 +1,4 @@
-﻿from pathlib import Path
+from pathlib import Path
 import os
 from django.utils.translation import gettext_lazy as _
 
@@ -35,7 +35,6 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_browser_reload.middleware.BrowserReloadMiddleware",
     "records.middleware.onboarding.OnboardingMiddleware",
-
 ]
 
 ROOT_URLCONF = "medj.urls"
@@ -59,8 +58,6 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "MedJ2.wsgi.application"
-
 AUTH_USER_MODEL = "records.User"
 AUTHENTICATION_BACKENDS = [
     "records.auth_backends.EmailOrUsernameBackend",
@@ -77,7 +74,7 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = "bg"
 LANGUAGES = [
     ("bg", _("Български")),
-    ("en-us", "English (US)"),
+    ("en", ("English (US")),
 ]
 USE_I18N = True
 LOCALE_PATHS = [BASE_DIR / "locale"]
@@ -87,6 +84,7 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [BASE_DIR / "theme" / "static"]
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
@@ -104,7 +102,7 @@ SESSION_SAVE_EVERY_REQUEST = True
 PARLER_LANGUAGES = {
     None: (
         {"code": "bg"},
-        {"code": "en-us"},
+        {"code": "en"},
     ),
     "default": {
         "fallbacks": ["bg"],
@@ -130,4 +128,3 @@ DATABASES = {
 BACKUP_DB_ALIAS = "backup"
 
 WSGI_APPLICATION = "medj.wsgi.application"
-

@@ -1,88 +1,107 @@
-{% extends 'basetemplates/base_app.html' %}
-{% load static %}
+{% extends "basetemplates/base_app.html" %}
 {% load i18n %}
 
+{% block title %}{% trans "Личен картон" %}{% endblock %}
+
 {% block app_content %}
-<main class="bg-site-background min-h-screen p-4 md:p-8">
-    <div class="container mx-auto max-w-7xl">
-        <div class="bg-block-background p-6 rounded-3xl shadow-lg mb-8">
-            <h1 class="text-3xl font-bold text-gray-800">
-                {% trans "Личен картон" %}
-            </h1>
-            <p class="mt-2 text-gray-600">
-                {% trans "Вашата лична медицинска и контактна информация." %}
-            </p>
-        </div>
+<form method="post" class="max-w-6xl mx-auto space-y-10">
+  {% csrf_token %}
 
-        <div class="bg-block-background p-6 rounded-3xl shadow-lg">
-            <h2 class="text-2xl font-bold text-navbar-button-blue mb-6">{% trans "Основна информация" %}</h2>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div class="bg-creamy-main-content p-6 rounded-2xl shadow-md">
-                    <p class="text-gray-700 text-sm">{% trans "Име" %}</p>
-                    <p class="text-button-blue text-2xl font-bold mt-1"></p>
-                </div>
-                <div class="bg-creamy-main-content p-6 rounded-2xl shadow-md">
-                    <p class="text-gray-700 text-sm">{% trans "Години" %}</p>
-                    <p class="text-gray-800 text-2xl font-bold mt-1">33 {% trans "г." %}</p>
-                </div>
-                <div class="bg-creamy-main-content p-6 rounded-2xl shadow-md md:col-span-2">
-                    <p class="text-gray-700 text-sm">{% trans "Пол" %}</p>
-                    <p class="text-gray-800 text-2xl font-bold mt-1">{% trans "Мъж" %}</p>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div class="bg-creamy-main-content p-6 rounded-2xl shadow-md">
-                    <p class="text-gray-700 text-sm">{% trans "Височина" %}</p>
-                    <p class="text-gray-800 text-lg font-semibold mt-1">177 {% trans "см" %}</p>
-                </div>
-                <div class="bg-creamy-main-content p-6 rounded-2xl shadow-md">
-                    <p class="text-gray-700 text-sm">{% trans "Тегло" %}</p>
-                    <p class="text-gray-800 text-lg font-semibold mt-1">69 {% trans "кг" %}</p>
-                </div>
-                <div class="bg-creamy-main-content p-6 rounded-2xl shadow-md">
-                    <p class="text-gray-700 text-sm">{% trans "Кръвна група" %}</p>
-                    <p class="text-gray-800 text-lg font-semibold mt-1">B+</p>
-                </div>
-                <div class="bg-creamy-main-content p-6 rounded-2xl shadow-md">
-                    <p class="text-gray-700 text-sm">{% trans "Телефон" %}</p>
-                    <p class="text-gray-800 text-lg font-semibold mt-1">000000000</p>
-                </div>
-                <div class="bg-creamy-main-content p-6 rounded-2xl shadow-md md:col-span-2">
-                    <p class="text-gray-700 text-sm">{% trans "Адрес" %}</p>
-                    <p class="text-gray-800 text-lg font-semibold mt-1">{% trans "гр. София" %}</p>
-                </div>
-            </div>
-
-            <div class="bg-creamy-main-content p-6 rounded-2xl shadow-md mb-6">
-                <h3 class="text-lg font-semibold text-gray-700 mb-2">{% trans "Личен лекар" %}</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <p class="text-gray-700 text-sm">{% trans "Име" %}</p>
-                        <p class="text-gray-800 text-lg font-semibold mt-1">Д-р Димитър Димитров</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-700 text-sm">{% trans "Телефон" %}</p>
-                        <p class="text-gray-800 text-lg font-semibold mt-1">000000000</p>
-                    </div>
-                    <div class="md:col-span-2">
-                        <p class="text-gray-700 text-sm">{% trans "Адрес" %}</p>
-                        <p class="text-gray-800 text-lg font-semibold mt-1">{% trans "гр. София, 1345" %}</p>
-                    </div>
-                    <div class="md:col-span-2">
-                        <p class="text-gray-700 text-sm">{% trans "РЗОК" %}</p>
-                        <p class="text-gray-800 text-lg font-semibold mt-1">{% trans "гр. София" %}</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-8 flex justify-center">
-                <a href="{% url 'medj:profile' %}" class="px-6 py-3 bg-button-blue text-white rounded-lg shadow-md hover:bg-navbar-button-blue transition-colors font-semibold">
-                    {% trans "Редактирай профил" %}
-                </a>
-            </div>
-        </div>
+  <div class="rounded-3xl border border-black/10 shadow-sm p-8" style="background-color: var(--color-sitebg);">
+    <div class="flex items-end justify-between mb-8">
+      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-[var(--color-primaryDark)]">{% trans "Личен картон" %}</h1>
     </div>
-</main>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div class="space-y-2">
+        <label class="block text-sm font-semibold text-[var(--color-primaryDark)]">{% trans "Име (BG)" %}</label>
+        {{ profile_form.first_name_bg }}
+      </div>
+      <div class="space-y-2">
+        <label class="block text-sm font-semibold text-[var(--color-primaryDark)]">{% trans "Рождена дата" %}</label>
+        {{ profile_form.date_of_birth }}
+      </div>
+      <div class="space-y-2">
+        <label class="block text-sm font-semibold text-[var(--color-primaryDark)]">{% trans "Презиме (BG)" %}</label>
+        {{ profile_form.middle_name_bg }}
+      </div>
+      <div class="space-y-2">
+        <label class="block text-sm font-semibold text-[var(--color-primaryDark)]">{% trans "Пол" %}</label>
+        {{ profile_form.gender }}
+      </div>
+      <div class="md:col-span-2 space-y-2">
+        <label class="block text-sm font-semibold text-[var(--color-primaryDark)]">{% trans "Фамилия (BG)" %}</label>
+        {{ profile_form.last_name_bg }}
+      </div>
+    </div>
+  </div>
+
+  <div class="rounded-3xl border border-black/10 shadow-sm p-8" style="background-color: var(--color-sitebg);">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div class="space-y-2">
+        <label class="block text-sm font-semibold text-[var(--color-primaryDark)]">{% trans "Телефон" %}</label>
+        {{ profile_form.phone_number }}
+      </div>
+      <div class="space-y-2">
+        <label class="block text-sm font-semibold text-[var(--color-primaryDark)]">{% trans "Кръвна група" %}</label>
+        {{ profile_form.blood_type }}
+      </div>
+      <div class="md:col-span-3 space-y-2">
+        <label class="block text-sm font-semibold text-[var(--color-primaryDark)]">{% trans "Адрес" %}</label>
+        {{ profile_form.address }}
+      </div>
+    </div>
+  </div>
+
+  <div class="flex justify-end gap-3">
+    <a href="{% url 'medj:dashboard' %}" class="px-6 py-2.5 rounded-xl border border-black/10 text-[var(--color-primaryDark)]" style="background-color: var(--color-sitebg);">{% trans "Отмени" %}</a>
+    <button class="px-7 py-2.5 rounded-xl text-white font-semibold" style="background-color: var(--color-primaryDark);">{% trans "Запази" %}</button>
+  </div>
+</form>
+
+<button type="button" id="openShare" class="fixed right-7 bottom-7 h-24 w-24 rounded-full text-white shadow-2xl grid place-items-center ring-4 ring-white/70" style="background-color:#E84A3C; z-index:70">
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm11-2h5v5h-5V3zm2 2v1h1V5h-1zM3 13h5v5H3v-5zm2 2v1h1v-1H5zm8-2h2v2h-2v-2zm-2 4h2v2h-2v-2zm4 0h2v2h-2v-2zm4-4h2v2h-2v-2zm-6-2h4v2h-4v-2zm6 6h2v2h-2v-2z"/></svg>
+</button>
+
+<div id="shareModal" class="fixed inset-0 hidden items-center justify-center bg-black/40 z-50">
+  <div class="w-[560px] max-w-[92vw] rounded-2xl bg-white p-6 space-y-5">
+    {% if share_enabled and share_token %}
+      <div class="text-xl font-semibold text-[var(--color-primaryDark)]">{% trans "Споделяне на личен картон" %}</div>
+      <img class="mx-auto w-56 h-56" src="{% url 'medj:personalcard_qr' share_token %}" alt="qr">
+      <div class="space-y-2">
+        <input id="shareLink" class="w-full rounded-lg border px-3 py-2" value="{{ share_url }}" readonly>
+        <div class="flex justify-end gap-2">
+          <a href="{{ share_url }}" target="_blank" class="px-4 py-2 rounded-lg border">{% trans "Отвори" %}</a>
+          <button type="button" id="copyShare" class="px-4 py-2 rounded-lg text-white" style="background-color: var(--color-primaryDark);">{% trans "Копирай линк" %}</button>
+          <button type="button" id="closeShare" class="px-4 py-2 rounded-lg border">{% trans "Затвори" %}</button>
+        </div>
+      </div>
+    {% else %}
+      <div class="text-xl font-semibold text-[var(--color-primaryDark)]">{% trans "Споделяне на личен картон" %}</div>
+      <p class="text-sm text-gray-700">{% trans "Споделянето е изключено." %}</p>
+      <form method="post" action="{% url 'medj:personalcard_share_enable' %}" class="flex justify-end gap-2">
+        {% csrf_token %}
+        <button class="px-4 py-2 rounded-lg text-white" style="background-color: var(--color-primaryDark);">{% trans "Активирай споделяне" %}</button>
+        <button type="button" id="closeShare" class="px-4 py-2 rounded-lg border">{% trans "Затвори" %}</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+(function(){
+  var m=document.getElementById('shareModal');
+  var o=document.getElementById('openShare');
+  var c=document.getElementById('closeShare');
+  if(o){o.addEventListener('click',function(){m.classList.remove('hidden');m.classList.add('flex')})}
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){m.classList.add('hidden');m.classList.remove('flex')}})
+  if(c){c.addEventListener('click',function(){m.classList.add('hidden');m.classList.remove('flex')})}
+  var cp=document.getElementById('copyShare');
+  if(cp){cp.addEventListener('click',function(){
+    var i=document.getElementById('shareLink'); i.select(); i.setSelectionRange(0,99999); document.execCommand('copy');
+    cp.innerText='{{ _("Копирано") }}';
+    setTimeout(function(){cp.innerText='{{ _("Копирай линк") }}'},1200);
+  })}
+})();
+</script>
 {% endblock %}

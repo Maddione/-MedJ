@@ -1,75 +1,83 @@
-{% load static i18n %}
 {% extends "basetemplates/base.html" %}
+{% load static i18n %}
 
 {% block title %}MedJ{% endblock %}
 
 {% block nav_buttons %}
-<nav class="flex items-center gap-3">
-  <a href="{% url 'medj:dashboard' %}" class="px-4 py-2 rounded-md text-white/90 hover:bg-white/10 transition">{% trans "Табло" %}</a>
-  <a href="{% url 'medj:casefiles' %}" class="px-4 py-2 rounded-md text-white/90 hover:bg-white/10 transition">{% trans "Досие" %}</a>
-  <a href="{% url 'medj:personalcard' %}" class="px-4 py-2 rounded-md text-white/90 hover:bg-white/10 transition">{% trans "Лична карта" %}</a>
-  <a href="{% url 'medj:documents' %}" class="px-4 py-2 rounded-md text-white/90 hover:bg-white/10 transition">{% trans "Документи" %}</a>
-  <span class="mx-1 h-6 w-px bg-white/25"></span>
-  <a href="{% url 'medj:upload' %}" class="inline-flex items-center px-6 py-2 rounded-full font-bold text-white bg-[--color-primaryDark] shadow ring-1 ring-black/10 hover:brightness-110 transition">{% trans "Качи" %}</a>
-  <a href="{% url 'medj:share' %}" class="inline-flex items-center px-6 py-2 rounded-full font-bold text-white bg-[--color-success] shadow ring-1 ring-black/10 hover:brightness-110 transition">{% trans "Сподели" %}</a>
+<nav class="w-full flex items-center">
+  <div class="flex items-center gap-6">
+    <a href="{% url 'medj:dashboard' %}"
+       class="px-5 py-2 font-bold uppercase tracking-wide {% if request.resolver_match.url_name == 'dashboard' %}bg-[var(--color-blockbg)] text-[var(--color-primaryDark)] rounded-[28px] shadow-md{% else %}text-white hover:text-white/90{% endif %}">
+      {% trans "Табло" %}
+    </a>
+    <a href="{% url 'medj:casefiles' %}"
+       class="px-5 py-2 font-bold uppercase tracking-wide {% if request.resolver_match.url_name == 'casefiles' %}bg-[var(--color-blockbg)] text-[var(--color-primaryDark)] rounded-[28px] shadow-md{% else %}text-white hover:text-white/90{% endif %}">
+      {% trans "Досие" %}
+    </a>
+    <a href="{% url 'medj:personalcard' %}"
+       class="px-5 py-2 font-bold uppercase tracking-wide {% if request.resolver_match.url_name == 'personalcard' or request.resolver_match.url_name == 'personal_card' %}bg-[var(--color-blockbg)] text-[var(--color-primaryDark)] rounded-[28px] shadow-md{% else %}text-white hover:text-white/90{% endif %}">
+      {% trans "Л.Картон" %}
+    </a>
+    <a href="{% url 'medj:documents' %}"
+       class="px-5 py-2 font-bold uppercase tracking-wide {% if request.resolver_match.url_name == 'documents' %}bg-[var(--color-blockbg)] text-[var(--color-primaryDark)] rounded-[28px] shadow-md{% else %}text-white hover:text-white/90{% endif %}">
+      {% trans "Документи" %}
+    </a>
+  </div>
 </nav>
 {% endblock %}
 
 {% block nav_user %}
-<div class="relative" id="userMenuWrap">
-  <button id="userMenuBtn" class="flex items-center gap-2 px-3 py-2 rounded-lg text-white hover:bg-white/10">
-    <img src="{% static 'images/profileicon.png' %}" alt="profile" class="h-6 w-6 object-contain" style="width:24px;height:24px;">
-    <span class="font-semibold truncate max-w-[12rem]">{{ request.user.get_full_name|default:request.user.username }}</span>
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white/90" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 011.08 1.04l-4.25 4.25a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
-  </button>
-  <div id="userMenu" class="hidden absolute right-0 mt-2 w-56 z-50 rounded-xl shadow-md bg-[--color-blockbg] py-1 border border-[--color-primary]/20">
-    <a href="{% url 'medj:profile' %}" class="block px-4 py-2 text-[--color-primaryDark] hover:bg-[--color-sitebg]">{% trans "Профил" %}</a>
-    <div class="my-1 border-t border-[--color-primary]/10"></div>
-    <form method="post" action="{% url 'medj:logout' %}">
-      {% csrf_token %}
-      <button type="submit" class="w-full text-left px-4 py-2 text-red-600 hover:bg-[--color-sitebg]">{% trans "Изход" %}</button>
-    </form>
+<div class="ml-auto flex items-center gap-3">
+  <a href="{% url 'medj:upload' %}" class="px-5 py-2 rounded-2xl bg-primaryDark text-white hover:bg-primaryDark/90 transition">{% trans "Качи" %}</a>
+  <a href="{% url 'medj:share' %}" class="px-5 py-2 rounded-2xl bg-success text-white hover:bg-success/90 transition">{% trans "Сподели" %}</a>
+
+  <div class="relative" id="userMenuWrap">
+    <button id="userMenuBtn" class="flex items-center gap-2 px-3 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-white">
+      <img src="{% static 'images/profileicon.png' %}" class="w-6 h-6 rounded-full" alt="">
+      <span>{{ request.user.get_full_name|default:request.user.username }}</span>
+      <i class="fa-solid fa-chevron-down ml-1"></i>
+    </button>
+    <div id="userMenu" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl p-2 z-50">
+      <div class="px-3 py-2 text-xs font-semibold text-gray-500">{% trans "Страници" %}</div>
+      <a href="{% url 'medj:documents' %}" class="block px-3 py-2 rounded-lg hover:bg-black/5">{% trans "Документи" %}</a>
+      <a href="{% url 'medj:event_history' %}" class="block px-3 py-2 rounded-lg hover:bg-black/5">{% trans "История на събития" %}</a>
+      <a href="{% url 'medj:upload_history' %}" class="block px-3 py-2 rounded-lg hover:bg-black/5">{% trans "История на качванията" %}</a>
+      <a href="{% url 'medj:doctors' %}" class="block px-3 py-2 rounded-lg hover:bg-black/5">{% trans "Лекари" %}</a>
+      <a href="{% url 'medj:labtests' %}" class="block px-3 py-2 rounded-lg hover:bg-black/5">{% trans "Лабораторни изследвания" %}</a>
+      <div class="my-2 border-t border-black/10"></div>
+      <div class="px-3 py-2 text-xs font-semibold text-gray-500">{% trans "Профил" %}</div>
+      <a href="{% url 'medj:profile' %}" class="block px-3 py-2 rounded-lg hover:bg-black/5">{% trans "Настройки" %}</a>
+      <a href="{% url 'medj:password_change' %}" class="block px-3 py-2 rounded-lg hover:bg-black/5">{% trans "Смяна на парола" %}</a>
+      <div class="my-2 border-t border-black/10"></div>
+      <form method="post" action="{% url 'medj:logout' %}" class="px-2 pb-1">
+        {% csrf_token %}
+        <button class="w-full px-3 py-2 rounded-lg bg-success text-white hover:bg-success/90">{% trans "Изход" %}</button>
+      </form>
+    </div>
   </div>
 </div>
 <script>
 (function(){
-  var w=document.getElementById('userMenuWrap');var b=document.getElementById('userMenuBtn');var m=document.getElementById('userMenu');
-  if(!w||!b||!m) return;function h(){m.classList.add('hidden')}function t(){m.classList.toggle('hidden')}
-  b.addEventListener('click',function(e){e.stopPropagation();t()});document.addEventListener('click',h);
-  w.addEventListener('keydown',function(e){if(e.key==='Escape')h();if(e.key==='Enter'||e.key===' '){e.preventDefault();t()}})
-})();
-(function(){
-  var path=location.pathname||"/";
-  function show(id,steps){if(localStorage.getItem(id))return;var o=document.createElement('div');
-    o.id=id;o.className='fixed inset-0 z-[1000] bg-black/50 flex items-center justify-center p-4';
-    var c=document.createElement('div');c.className='w-full max-w-lg bg-white rounded-2xl shadow-xl p-6 space-y-4';
-    var i=0;var title=document.createElement('h3');title.className='text-xl font-bold text-gray-900';c.appendChild(title);
-    var body=document.createElement('p');body.className='text-gray-700';c.appendChild(body);
-    var bar=document.createElement('div');bar.className='w-full bg-gray-200 rounded-full h-2';var fill=document.createElement('div');fill.className='h-2 bg-[--color-primaryDark] rounded-full w-0';bar.appendChild(fill);c.appendChild(bar);
-    var row=document.createElement('div');row.className='flex justify-end gap-2';
-    var skip=document.createElement('button');skip.className='px-4 py-2 rounded-lg bg-gray-100 text-gray-700';skip.textContent='Пропусни';
-    var next=document.createElement('button');next.className='px-4 py-2 rounded-lg bg-[--color-primaryDark] text-white';next.textContent='Напред';
-    row.appendChild(skip);row.appendChild(next);c.appendChild(row);o.appendChild(c);document.body.appendChild(o);
-    function render(){var s=steps[i];title.textContent=s.t;body.textContent=s.b;fill.style.width=((i+1)/steps.length*100)+'%';next.textContent=i===steps.length-1?'Готово':'Напред'}
-    skip.onclick=function(){localStorage.setItem(id,'1');o.remove()};
-    next.onclick=function(){if(i<steps.length-1){i++;render()}else{localStorage.setItem(id,'1');o.remove()}};
-    render()}
-  if(path.endsWith('/profile/')){show('onb_profile',[
-    {t:'Профил',b:'Попълни имената си, дата на раждане и пол. Тези данни попълват личния картон.'},
-    {t:'Контакти',b:'Добави телефон и адрес за по-бърза комуникация.'},
-    {t:'Запази',b:'Натисни „Запази“, след което ще продължим към качване на първия документ.'}
-  ])}
-  if(path.endsWith('/upload/')){show('onb_upload',[
-    {t:'Качи документ',b:'Избери файл PDF/JPG/PNG.'},
-    {t:'Класификация',b:'Избери Специалност, Категория и Вид документ.'},
-    {t:'Преглед',b:'Потвърди и запази. Автоматично ще извлечем показатели и ще ги нормализираме.'}
-  ])}
+  var w=document.getElementById('userMenuWrap');
+  var b=document.getElementById('userMenuBtn');
+  var m=document.getElementById('userMenu');
+  if(!b||!m) return;
+  function t(e){ e.stopPropagation(); m.classList.toggle('hidden'); }
+  function d(e){ if(!w.contains(e.target)) m.classList.add('hidden'); }
+  b.addEventListener('click', t);
+  document.addEventListener('click', d);
 })();
 </script>
 {% endblock %}
 
 {% block body_content %}
-<div class="w-[98%] mx-auto bg-[--color-blockbg] rounded-3xl shadow-md flex-1 min-h-[calc(100vh-160px)] p-4">
+<div class="w-[98%] mx-auto bg-blockbg rounded-3xl shadow-md flex-1 min-h-[calc(100vh-160px)] p-4">
   {% block app_content %}{% endblock %}
 </div>
+{% endblock %}
+
+{% block scripts_extra %}
+<link rel="stylesheet" href="{% static 'css/onboarding_tour.css' %}">
+<script src="{% static 'js/password_toggle.js' %}"></script>
+<script src="{% static 'js/onboarding_tour.js' %}"></script>
 {% endblock %}

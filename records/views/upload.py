@@ -1,8 +1,10 @@
 from __future__ import annotations
-import os, json
+import os, json, uuid
+from io import BytesIO
 from decimal import Decimal
 from datetime import datetime
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.files.base import ContentFile
@@ -21,29 +23,108 @@ from .utils import (
     ocr_from_storage, anonymize, gpt_analyze, get_or_create_tags,
 )
 
+ALLOWED_EXTS = {".pdf", ".jpg", ".jpeg", ".png"}
+
+
+def _ext(name: str) -> str:
+    n = (name or "").lower()
+    i = n.rfind(".")
+    return n[i:] if i >= 0 else ""
+
+
+def _images_to_pdf_bytes(files) -> bytes:
+
+    try:
+        from PIL import Image
+    except Exception:
+        return b""
+
+    images = []
+    sorted_files = sorted(files, key=lambda f: (getattr(f, "name", "") or "").lower())
+    for f in sorted_files:
+        try:
+            im = Image.open(f)
+            if im.mode != "RGB":
+                im = im.convert("RGB")
+            images.append(im)
+        except Exception:
+            continue
+
+    if not images:
+        return b""
+    buf = BytesIO()
+    if len(images) == 1:
+        images[0].save(buf, format="PDF")
+    else:
+        images[0].save(buf, format="PDF", save_all=True, append_images=images[1:])
+    return buf.getvalue()
+
+
 @login_required
 def upload_page(request: HttpRequest) -> HttpResponse:
     form = DocumentUploadForm(user=request.user)
     return render(request, "main/upload.html", {"form": form, "step": "form"})
 
+
 @login_required
 def upload_preview(request: HttpRequest) -> HttpResponse:
 
     if request.method != "POST":
-
         return render(request, "main/upload.html", {"form": DocumentUploadForm(user=request.user), "step": "form"})
 
     form = DocumentUploadForm(request.POST, request.FILES, user=request.user)
     if not form.is_valid():
-
         return render(request, "main/upload.html", {"form": form, "step": "form"})
 
-    uploaded_file = request.FILES.get("file") or request.FILES.get("document_file")
-    if not uploaded_file:
-        form.add_error(None, "Моля, прикачете файл.")
+    files = list(request.FILES.getlist("files") or [])
+    if not files:
+        single = request.FILES.get("file") or request.FILES.get("document_file")
+        if single:
+            files = [single]
+
+    if not files:
+        form.add_error(None, "Моля, прикачете файл(ове).")
         return render(request, "main/upload.html", {"form": form, "step": "form"})
 
-    tmp_rel_path = save_temp_upload(uploaded_file)
+    pdfs, images, bad = 0, 0, 0
+    for f in files:
+        e = _ext(getattr(f, "name", ""))
+        if e not in ALLOWED_EXTS:
+            bad += 1
+        elif e == ".pdf":
+            pdfs += 1
+        else:
+            images += 1
+
+    if bad > 0:
+        form.add_error(None, "Има файлове с неподдържан формат. Позволени: PDF, JPG, JPEG, PNG.")
+        return render(request, "main/upload.html", {"form": form, "step": "form"})
+    if pdfs > 1:
+        form.add_error(None, "Позволен е само един PDF.")
+        return render(request, "main/upload.html", {"form": form, "step": "form"})
+    if pdfs == 1 and images > 0:
+        form.add_error(None, "Не смесвайте PDF и изображения в едно качване.")
+        return render(request, "main/upload.html", {"form": form, "step": "form"})
+
+    if pdfs == 1 and len(files) == 1:
+        uploaded_file = files[0]
+        tmp_rel_path = save_temp_upload(uploaded_file)
+        file_type = "pdf"
+        final_filename = uploaded_file.name
+    else:
+
+        pdf_bytes = _images_to_pdf_bytes(files)
+        if not pdf_bytes:
+
+            return JsonResponse(
+                {"ok": False, "error": "Липсва зависимост за обединение на изображения (Pillow). Добави 'Pillow>=10' в requirements и rebuild."},
+                status=400,
+            )
+        tmp_dir = getattr(settings, "TEMP_UPLOADS_DIR", "temp_uploads")
+        fname = f"merged-{uuid.uuid4().hex}.pdf"
+        tmp_rel_path = default_storage.save(os.path.join(tmp_dir, fname), ContentFile(pdf_bytes))
+        file_type = "pdf"
+        final_filename = fname
 
     ocr_text = (ocr_from_storage(tmp_rel_path) or "").strip()
     anonymized = anonymize(ocr_text)
@@ -54,7 +135,7 @@ def upload_preview(request: HttpRequest) -> HttpResponse:
     gpt_result = gpt_analyze(
         anonymized,
         doc_kind=getattr(doc_type, "slug", None) or getattr(doc_type, "pk", ""),
-        file_type=("pdf" if uploaded_file.name.lower().endswith(".pdf") else "image"),
+        file_type=file_type,
         specialty_name=(
             specialty.safe_translation_getter("name", any_language=True)
             if hasattr(specialty, "safe_translation_getter") else str(specialty)
@@ -76,7 +157,7 @@ def upload_preview(request: HttpRequest) -> HttpResponse:
         "user_tags": form.get_normalized_tags() if hasattr(form, "get_normalized_tags") else [],
         "gpt": gpt_result,
         "ocr_text": ocr_text,
-        "filename": uploaded_file.name,
+        "filename": final_filename,
     }
 
     if request.headers.get("x-requested-with") == "XMLHttpRequest":
@@ -99,10 +180,10 @@ def upload_preview(request: HttpRequest) -> HttpResponse:
         },
     )
 
+
 @login_required
 @transaction.atomic
 def upload_confirm(request: HttpRequest) -> HttpResponse:
-
     try:
         payload_raw = request.POST.get("payload") or request.body.decode("utf-8")
         payload = json.loads(payload_raw) if isinstance(payload_raw, str) else payload_raw
@@ -173,7 +254,6 @@ def upload_confirm(request: HttpRequest) -> HttpResponse:
             DocumentTag.objects.get_or_create(
                 document=document, tag=tag, defaults={"is_inherited": False}
             )
-
     for item in gpt.get("blood_test_results", []) or []:
         ind_name = (item.get("indicator_name") or item.get("indicator") or "").strip()
         if not ind_name:
@@ -210,7 +290,6 @@ def upload_confirm(request: HttpRequest) -> HttpResponse:
             value=value_dec if value_dec is not None else Decimal("0"),
             measured_at=event.event_date,
         )
-
     from ..models import Diagnosis, TreatmentPlan, NarrativeSectionResult, Medication
     for d in gpt.get("diagnosis", []) or []:
         if isinstance(d, dict):
@@ -247,7 +326,6 @@ def upload_confirm(request: HttpRequest) -> HttpResponse:
                     medical_event=event, name=name,
                     dosage=m.get("dosage") or None, start_date=event.event_date
                 )
-
     try:
         default_storage.delete(tmp_rel_path)
     except Exception:
@@ -258,9 +336,9 @@ def upload_confirm(request: HttpRequest) -> HttpResponse:
         return JsonResponse({"ok": True, "saved_event_id": event.id, "document_id": document.id})
     return render(request, "subpages/upload_confirm.html", {"saved_event_id": event.id})
 
+
 @login_required
 def upload_history(request: HttpRequest) -> HttpResponse:
-
     patient = require_patient_profile(request.user)
     docs = (
         Document.objects

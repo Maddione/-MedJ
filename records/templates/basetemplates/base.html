@@ -6,25 +6,25 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}MedJ{% endblock %}</title>
+  <style id="lang-icon-inline">img[src*="languageicon"]{height:28px;width:auto;display:inline-block;vertical-align:middle}img[src*="profileicon"]{width:28px;height:28px;display:inline-block;vertical-align:middle}</style>
   <link rel="stylesheet" href="{% static 'css/dist/output.css' %}">
   <link href="{% static 'fontawesome/css/all.min.css' %}" rel="stylesheet">
   <link rel="icon" href="{% static 'images/logo.svg' %}">
 </head>
 <body class="min-h-screen bg-sitebg flex flex-col">
   <header>
-    <div class="bg-primary h-[7.6vh] w-[98%] mx-auto px-6 flex items-center justify-between rounded-b-3xl">
-      <!-- Ляв блок: език + MedJ -->
-      <div class="flex items-center gap-3 h-full">
+    <div class="bg-primary h-[7.6vh] w-[98%] mx-auto px-2 flex items-center rounded-b-3xl">
+      <div class="flex items-center gap-3 h-full shrink-0">
         <div class="relative flex items-center h-full">
           <button type="button" id="langBtn" class="flex items-center justify-center">
-            <img id="langIcon" src="{% static 'images/languageicon.png' %}" alt="language">
+            <img id="langIcon" src="{% static 'images/languageicon.png' %}" alt="language" height="28">
           </button>
-          <div id="langMenu" class="hidden absolute top-full mt-2 w-56 z-50 rounded-lg shadow-md bg-blockbg py-1">
+          <div id="langMenu" class="hidden absolute top-full mt-2 w-56 z-50 rounded-lg shadow-md bg-white py-1">
             <form method="post" action="{% url 'set_language' %}" class="p-2">
               {% csrf_token %}
               <input type="hidden" name="next" value="{{ request.get_full_path }}">
               <button type="submit" name="language" value="bg" class="block w-full text-left px-4 py-2 rounded text-primaryDark hover:bg-sitebg">{% trans "Български" %}</button>
-              <button type="submit" name="language" value="en-us" class="block w-full text-left px-4 py-2 rounded text-primaryDark hover:bg-sitebg">{% trans "English (US)" %}</button>
+              <button type="submit" name="language" value="en" class="block w-full text-left px-4 py-2 rounded text-primaryDark hover:bg-sitebg">{% trans "English (US)" %}</button>
             </form>
           </div>
         </div>
@@ -33,11 +33,13 @@
         </a>
       </div>
 
-      <!-- Десен блок: навигационни бутони + потребителски дропдаун -->
-      <div class="flex items-center gap-2">
-        <nav class="flex items-center gap-2">
+      <div class="flex-1 flex items-center justify-center px-2">
+        <nav class="flex items-center gap-8 px-1">
           {% block nav_buttons %}{% endblock %}
         </nav>
+      </div>
+
+      <div class="shrink-0 flex items-center gap-2">
         {% block nav_user %}{% endblock %}
       </div>
     </div>
@@ -57,23 +59,10 @@
       });
       document.addEventListener('click', () => {
         if (!langMenu.classList.contains('hidden')) {
-            langMenu.classList.add('hidden');
+          langMenu.classList.add('hidden');
         }
       });
     }
-
-    function resizeLangIcon() {
-      const medj = document.getElementById("medjText");
-      const icon = document.getElementById("langIcon");
-      if (medj && icon) {
-        const targetWidth = medj.offsetWidth * 0.8;
-        const targetHeight = targetWidth * 0.79;
-        icon.style.width = targetWidth + "px";
-        icon.style.height = targetHeight + "px";
-      }
-    }
-    window.addEventListener("load", resizeLangIcon);
-    window.addEventListener("resize", resizeLangIcon);
   </script>
   {% block scripts_extra %}{% endblock %}
 </body>
