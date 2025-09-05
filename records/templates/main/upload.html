@@ -1,207 +1,70 @@
 {% extends "basetemplates/base_app.html" %}
 {% load i18n static %}
-
 {% block title %}{% trans "Качи" %}{% endblock %}
-
 {% block app_content %}
-
-<div id="upload-warning-zone" class="mb-4">
-  <div id="upload-one-doc-warning" class="rounded-3xl px-4 py-3 border border-amber-300 bg-amber-50 text-amber-900 text-sm">
-    <strong>{% trans "Важно:" %}</strong>
-    {% blocktrans %}Качвайте файлове, които принадлежат на <u>ЕДИН</u> документ.{% endblocktrans %}<br>
-    • {% trans "Позволено:" %} <em>{% trans "един PDF" %}</em> {% trans "или" %} <em>{% trans "много изображения (JPG/PNG)" %}</em> {% trans "на същия документ." %}<br>
-    • {% trans "Забранено:" %} {% trans "смесване на PDF и изображения едновременно или повече от един PDF." %}
-  </div>
-</div>
-
-<div class="rounded-3xl px-6 py-5 mb-8" style="background:#43B8CF;">
-  <div class="grid grid-cols-12 gap-4 items-center">
-    <div class="col-span-12 md:col-span-4">
-      <select id="sel_specialty"
-              class="w-full rounded-lg px-4 py-2 outline-none {% if form.errors.specialty %}ring-2 ring-[#D84137]{% endif %}"
-              style="background:#FDFEE9;color:#0A4E75">
-        <option value="" selected disabled>{% trans "Специалност" %}</option>
-        {% if specialties %}
-          {% for s in specialties %}
-            <option value="{{ s.id }}" {% if request.GET.specialty|default:'' == s.id|stringformat:"s" %}selected{% endif %}>{{ s.name }}</option>
-          {% endfor %}
-        {% endif %}
+<div class="bg-blockbg rounded-3xl p-6 mb-6">
+  <div class="grid grid-cols-12 gap-4 items-center bg-primary rounded-3xl px-6 py-4">
+    <div class="col-span-12 md:col-span-3">
+      <label class="text-white text-xl font-semibold">{% trans "През" %}</label>
+    </div>
+    <div class="col-span-12 md:col-span-3">
+      <select id="sel_period" class="w-full rounded-xl px-4 py-2 outline-none" disabled>
+        <option value="">{% trans "Изберете период" %}</option>
+        <option value="last_30">{% trans "Последни 30 дни" %}</option>
+        <option value="last_90">{% trans "Последни 3 месеца" %}</option>
+        <option value="custom">{% trans "Друга дата" %}</option>
       </select>
     </div>
-
-    <div class="col-span-12 md:col-span-4">
-      <select id="sel_category"
-              class="w-full rounded-lg px-4 py-2 outline-none {% if form.errors.category %}ring-2 ring-[#D84137]{% endif %}"
-              style="background:#FDFEE9;color:#0A4E75" disabled>
-        <option value="" selected disabled>{% trans "Категория" %}</option>
-        {% for c in categories %}
-          <option value="{{ c.id }}">{{ c.name }}</option>
-        {% endfor %}
+    <div class="col-span-12 md:col-span-3">
+      <select id="sel_doc_kind" class="w-full rounded-xl px-4 py-2 outline-none">
+        <option value="">{% trans "Вид документ" %}</option>
+        <option value="blood">{% trans "Кръвни изследвания" %}</option>
+        <option value="epicrisis">{% trans "Епикриза" %}</option>
+        <option value="prescription">{% trans "Рецепта" %}</option>
+        <option value="imaging">{% trans "Рентгенография" %}</option>
+        <option value="other">{% trans "Друг" %}</option>
       </select>
     </div>
-
-    <div class="col-span-12 md:col-span-4">
-      <select id="sel_doc_type"
-              class="w-full rounded-lg px-4 py-2 outline-none {% if form.errors.doc_type %}ring-2 ring-[#D84137]{% endif %}"
-              style="background:#FDFEE9;color:#0A4E75" disabled>
-        <option value="" selected disabled>{% trans "Вид документ" %}</option>
-        {% for d in doc_types %}
-          <option value="{{ d.id }}">{{ d.name }}</option>
-        {% endfor %}
+    <div class="col-span-12 md:col-span-3">
+      <select id="sel_specialty" class="w-full rounded-xl px-4 py-2 outline-none">
+        <option value="">{% trans "Назначено от" %}</option>
+        <option value="internal">{% trans "Обща медицина" %}</option>
+        <option value="endocrinology">{% trans "Ендокринология" %}</option>
+        <option value="cardiology">{% trans "Кардиология" %}</option>
+        <option value="neurology">{% trans "Неврология" %}</option>
       </select>
     </div>
   </div>
+  <div class="mx-auto w-full md:w-7/12 mt-10 bg-white/60 rounded-2xl p-6">
+    <div class="grid gap-3">
+      <input id="file_input" type="file" class="w-full rounded-xl border border-primary px-4 py-2 bg-white" multiple accept=".pdf,.jpg,.jpeg,.png">
+      <select id="sel_filetype" class="w-full rounded-xl px-4 py-2 outline-none">
+        <option value="">{% trans "Изберете тип файл" %}</option>
+        <option value="image">{% trans "Изображение" %}</option>
+        <option value="pdf">PDF</option>
+      </select>
+      <button id="btn_upload" class="w-full rounded-xl bg-primary/40 text-white py-3 text-lg font-semibold" disabled>{% trans "Качи" %}</button>
+    </div>
+  </div>
 </div>
 
-<div class="bg-block-background rounded-3xl p-6 shadow mb-6">
-  <h2 class="text-xl font-semibold text-navbar-button-blue mb-4">{% trans "Качи файл(ове)" %}</h2>
-  <input id="file_input" name="files" type="file" multiple accept=".pdf,.jpg,.jpeg,.png" class="w-full rounded-lg p-3 bg-[#EAEBDA] text-[#0A4E75]">
+<div id="preview_section" class="hidden bg-blockbg rounded-3xl p-6">
+  <div class="grid grid-cols-12 gap-6">
+    <div class="col-span-12 md:col-span-5">
+      <div id="preview_left" class="bg-white/70 rounded-2xl p-4 h-[520px] overflow-auto"></div>
+    </div>
+    <div class="col-span-12 md:col-span-7">
+      <div class="bg-white/70 rounded-2xl p-4 h-[520px] overflow-auto">
+        <div id="preview_right" class="text-primaryDark text-lg"></div>
+      </div>
+      <div class="mt-4 rounded-3xl px-6 py-4 bg-red-50 text-red-700 text-lg">
+        {% trans "Моля внимателно проверявайте текста преди одобрение" %}
+      </div>
+      <div class="mt-4">
+        <button id="btn_confirm" class="w-full rounded-3xl bg-primary text-white text-2xl font-bold py-4">{% trans "Одобри и анализирай..." %}</button>
+      </div>
+    </div>
+  </div>
 </div>
-
-<div class="flex items-center justify-between mb-10">
-  <button id="btn_upload" class="px-5 py-3 rounded-xl bg-checkgreen text-white disabled:opacity-50 disabled:pointer-events-none">{% trans "Напред" %}</button>
-  <a href="{% url 'medj:upload_history' %}" class="text-[#0A4E75] hover:underline">{% trans "История на качванията" %}</a>
-</div>
-
-<div id="preview_wrap" class="hidden bg-white rounded-3xl p-6 shadow mb-8">
-  <iframe id="pdf_preview" class="w-full h-[70vh] rounded-xl hidden"></iframe>
-  <img id="img_preview" class="w-full rounded-xl hidden" alt="">
-  <div id="file_list" class="text-sm mt-3 text-[#0A4E75]"></div>
-</div>
-
-<input type="hidden" id="hid_specialty">
-<input type="hidden" id="hid_category">
-<input type="hidden" id="hid_doc_type">
-
-<script>
-(function(){
-  var selSpec=document.getElementById('sel_specialty');
-  var selCat=document.getElementById('sel_category');
-  var selDoc=document.getElementById('sel_doc_type');
-  var btn=document.getElementById('btn_upload');
-  var inp=document.getElementById('file_input');
-  var hidSpec=document.getElementById('hid_specialty');
-  var hidCat=document.getElementById('hid_category');
-  var hidDoc=document.getElementById('hid_doc_type');
-  var prev=document.getElementById('preview_wrap');
-  var img=document.getElementById('img_preview');
-  var pdf=document.getElementById('pdf_preview');
-  var list=document.getElementById('file_list');
-
-  var ACCEPT={".pdf":1,".jpg":1,".jpeg":1,".png":1};
-
-  function ext(n){n=(n||"").toLowerCase();var i=n.lastIndexOf(".");return i>=0?n.slice(i):""}
-
-  function classify(files){
-    var pdfs=0,images=0,bad=0;
-    for(var i=0;i<files.length;i++){
-      var e=ext(files[i].name);
-      if(!ACCEPT[e]){bad++;continue}
-      if(e===".pdf") pdfs++; else images++;
-    }
-    return {pdfs:pdfs,images:images,bad:bad,total:files.length}
-  }
-
-  function validate(files){
-    if(!files||!files.length) return {ok:false,reason:"{% trans 'Няма избрани файлове.' %}"};
-    var c=classify(files);
-    if(c.bad>0) return {ok:false,reason:"{% trans 'Има файлове с неподдържан формат. Позволени: PDF, JPG, JPEG, PNG.' %}"};
-    if(c.pdfs>1) return {ok:false,reason:"{% trans 'Позволен е само един PDF.' %}"};
-    if(c.pdfs===1 && c.images>0) return {ok:false,reason:"{% trans 'Не смесвайте PDF и изображения в едно качване.' %}"};
-    return {ok:true,kind:(c.pdfs===1?"pdf":"images")};
-  }
-
-  function toggleButton(){
-    var ok=selSpec.value&&selCat.value&&selDoc.value&&(inp.files.length>0);
-    btn.disabled=!ok
-  }
-
-  selSpec.addEventListener('change',function(){
-    hidSpec.value=selSpec.value||'';
-    selCat.disabled=!selSpec.value;
-    selCat.value='';
-    hidCat.value='';
-    selDoc.disabled=true;
-    selDoc.value='';
-    hidDoc.value='';
-    toggleButton()
-  });
-
-  selCat.addEventListener('change',function(){
-    hidCat.value=selCat.value||'';
-    selDoc.disabled=!selCat.value;
-    selDoc.value='';
-    hidDoc.value='';
-    toggleButton()
-  });
-
-  selDoc.addEventListener('change',function(){
-    hidDoc.value=selDoc.value||'';
-    toggleButton()
-  });
-
-  inp.addEventListener('change',function(){
-    toggleButton();
-    list.innerHTML="";
-    if(!inp.files.length){prev.classList.add('hidden');img.classList.add('hidden');pdf.classList.add('hidden');return}
-    var res=validate(inp.files);
-    if(!res.ok){alert(res.reason);inp.value="";prev.classList.add('hidden');img.classList.add('hidden');pdf.classList.add('hidden');return}
-    prev.classList.remove('hidden');
-
-    var names=Array.prototype.map.call(inp.files,function(f){return f.name});
-    list.textContent="{% trans 'Избрани файлове' %} ("+inp.files.length+"): "+names.join(", ");
-
-    if(res.kind==="pdf" && inp.files.length===1){
-      pdf.src=URL.createObjectURL(inp.files[0]);
-      pdf.classList.remove('hidden');img.classList.add('hidden');
-    }else{
-      var first=null;
-      for(var i=0;i<inp.files.length;i++){ if(inp.files[i].type.indexOf("image/")==0){ first=inp.files[i]; break; } }
-      if(first){
-        var r=new FileReader();
-        r.onload=function(e){img.src=e.target.result;img.classList.remove('hidden');pdf.classList.add('hidden')};
-        r.readAsDataURL(first);
-      }else{
-        img.classList.add('hidden');pdf.classList.add('hidden');
-      }
-    }
-  });
-
-  btn.addEventListener('click',async function(){
-    var files=inp.files;
-    var v=validate(files);
-    if(!v.ok){alert(v.reason);return}
-
-    var fd=new FormData();
-    fd.append('specialty_id',hidSpec.value);
-    fd.append('category_id',hidCat.value);
-    fd.append('doc_type_id',hidDoc.value);
-    for(var i=0;i<files.length;i++){ fd.append('files', files[i]); }
-
-    var resp=await fetch("{% url 'medj:upload_preview' %}",{
-      method:'POST',
-      headers:{'X-CSRFToken':'{{ csrf_token }}'},
-      body:fd
-    });
-    if(!resp.ok){alert('{% trans "Грешка при качване" %}');return}
-    var data=await resp.json().catch(()=>null);
-    if(data && data.redirect_url){location.href=data.redirect_url; return;}
-    if(!data){ location.reload(); return; }
-    if(data.ok && data.next_url){ location.href=data.next_url; return; }
-    location.reload();
-  });
-
-  window.addEventListener('load',function(){
-    if(selSpec.value) selCat.disabled=false;
-    if(selSpec.value&&selCat.value) selDoc.disabled=false;
-    toggleButton()
-  });
-})();
-</script>
-
-{% endblock %}
-
-{% block scripts_extra %}
-{% load static %}
-<script src="{% static 'js/upload_logic.js' %}" defer></script>
+<script src="{% static 'js/upload_logic.js' %}"></script>
 {% endblock %}

@@ -6,11 +6,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}MedJ{% endblock %}</title>
-  <style id="lang-icon-inline">img[src*="languageicon"]{height:28px;width:auto;display:inline-block;vertical-align:middle}img[src*="profileicon"]{width:28px;height:28px;display:inline-block;vertical-align:middle}</style>
+
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
   <link rel="stylesheet" href="{% static 'css/dist/output.css' %}">
   <link href="{% static 'fontawesome/css/all.min.css' %}" rel="stylesheet">
   <link rel="icon" href="{% static 'images/logo.svg' %}">
+
+  <style id="lang-icon-inline">
+    img[src*="languageicon"]{height:28px;width:auto;display:inline-block;vertical-align:middle}
+    img[src*="profileicon"]{width:28px;height:28px;display:inline-block;vertical-align:middle}
+  </style>
 </head>
+
 <body class="min-h-screen bg-sitebg flex flex-col">
   <header>
     <div class="bg-primary h-[7.6vh] w-[98%] mx-auto px-2 flex items-center rounded-b-3xl">
@@ -49,6 +56,7 @@
     {% block body_content %}{% endblock %}
   </main>
 
+  <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}" defer></script>
   <script>
     const langBtn = document.getElementById('langBtn');
     const langMenu = document.getElementById('langMenu');
@@ -58,9 +66,7 @@
         langMenu.classList.toggle('hidden');
       });
       document.addEventListener('click', () => {
-        if (!langMenu.classList.contains('hidden')) {
-          langMenu.classList.add('hidden');
-        }
+        if (!langMenu.classList.contains('hidden')) langMenu.classList.add('hidden');
       });
     }
   </script>

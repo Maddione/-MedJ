@@ -1,0 +1,10 @@
+.form-input,
+input[type="text"], input[type="email"], input[type="tel"], input[type="date"],
+select, textarea {
+  background:#FFFFF5 !important;
+  color:#0A4E75;
+  border-radius:12px;
+  border:1px solid #43B8CF22;
+  padding:10px 12px;
+}
+.form-input::placeholder { color:#0A4E75AA; }

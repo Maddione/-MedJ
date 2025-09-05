@@ -1,10 +1,5 @@
 @import "tailwindcss";
-
-@source "../../records/templates/**/*.html"
-        "../../records/**/*.js"
-        "../../theme/static/js/**/*.js"
-        "../../theme/static_src/**/*.js";
-
+@source "../../records/templates/**/*.html" "../../medj/templates/**/*.html" "../../templates/**/*.html" "../../records/**/*.js" "../../theme/static/js/**/*.js";
 @theme {
   --color-sitebg: #EAEBDA;
   --color-blockbg: #FDFEE9;
@@ -13,3 +8,15 @@
   --color-success: #15BC11;
   --color-danger: #D84137;
 }
+.bg-sitebg{background:var(--color-sitebg)}
+.bg-blockbg{background:var(--color-blockbg)}
+.bg-primary{background:var(--color-primary)}
+.bg-primaryDark{background:var(--color-primaryDark)}
+.bg-success{background:var(--color-success)}
+.bg-danger{background:var(--color-danger)}
+.text-primary{color:var(--color-primary)}
+.text-primaryDark{color:var(--color-primaryDark)}
+.text-success{color:var(--color-success)}
+.text-danger{color:var(--color-danger)}
+.border-primary{border-color:var(--color-primary)}
+.ring-danger{--tw-ring-color:var(--color-danger)}
