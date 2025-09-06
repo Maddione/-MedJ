@@ -32,3 +32,4 @@ secrets/
 secrets/ocr-key-vision.json
 secrets/googleocr-key.txt
 secrets/openai-key.txt
+secrets/
