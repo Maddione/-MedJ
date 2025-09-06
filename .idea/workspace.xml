@@ -8,217 +8,43 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c486bb59-c79b-4440-8fcc-e0c5e6eda3dc" name="Changes" comment="perfect, DO NOT TOUCH AGAIN">
-      <change afterPath="$PROJECT_DIR$/docker/ocrapi/Dockerfile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docker/web/Dockerfile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docker/web/entrypoint.dev.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/theme/static/css/modules/forms.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.dockerignore" beforeDir="false" afterPath="$PROJECT_DIR$/.dockerignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.env.ocr" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/views/upload_api.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/auto_translate_po.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.dev.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker/compose/docker-compose.dev.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/en2bg_po.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/entrypoint.dev.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/fix_po_dedup.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker/web/entrypoint.dev.sh" beforeDir="false" afterPath="$PROJECT_DIR$/docker/web/entrypoint.dev.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/locale/bg/LC_MESSAGES/django.mo" beforeDir="false" afterPath="$PROJECT_DIR$/locale/bg/LC_MESSAGES/django.mo" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/locale/bg/LC_MESSAGES/django.po" beforeDir="false" afterPath="$PROJECT_DIR$/locale/bg/LC_MESSAGES/django.po" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/locale/en/LC_MESSAGES/django.po" beforeDir="false" afterPath="$PROJECT_DIR$/locale/en/LC_MESSAGES/django.po" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/medj/settings/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/settings/base.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ocrapi/dockerfile" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ocrapi/ocr-key-vision.json" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/dev-reset.ps1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/patch_po_headers.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rebuild_bg_po.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base_app.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_app.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base_auth.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_auth.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base_public.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_public.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/main/casefiles.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/casefiles.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/main/history.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/history.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/main/personalcard.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/personalcard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/main/share.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/share.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/templates/main/upload.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/upload.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/subpages/document_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/documentsubpages/document_detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/subpages/document_edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/documentsubpages/document_edit.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/subpages/document_edit_tags.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/documentsubpages/document_edit_tags.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/subpages/document_export_pdf.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/documentsubpages/document_export_pdf.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/subpages/document_move.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/documentsubpages/document_move.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/subpages/event_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/eventsubpages/event_detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/subpages/event_edit_tags.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/eventsubpages/event_edit_tags.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/subpages/event_export_pdf.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/eventsubpages/event_export_pdf.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/subpages/event_history.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/eventsubpages/event_history.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/subpages/labtest_edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/labtestssubpages/labtest_edit.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/subpages/labtests.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/labtestssubpages/labtests.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/subpages/labtests_export_csv.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/labtestssubpages/labtests_export_csv.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/subpages/medical_event_confirm_delete.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/eventsubpages/medical_event_confirm_delete.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/subpages/medical_event_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/eventsubpages/medical_event_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/documents.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/documents.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/events.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/events.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/personalcard.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/personalcard.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/share.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/share.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/views/upload.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/upload.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/css/autocomplete.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/css/base.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/css/changelists.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/css/dark_mode.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/css/dashboard.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/css/forms.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/css/login.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/css/nav_sidebar.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/css/responsive.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/css/responsive_rtl.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/css/rtl.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/css/unusable_password_field.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/css/vendor/select2/LICENSE-SELECT2.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/css/vendor/select2/select2.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/css/vendor/select2/select2.min.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/css/widgets.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/img/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/img/README.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/img/calendar-icons.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/img/gis/move_vertex_off.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/img/gis/move_vertex_on.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/img/icon-addlink.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/img/icon-alert.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/img/icon-calendar.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/img/icon-changelink.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/img/icon-clock.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/img/icon-deletelink.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/img/icon-hidelink.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/img/icon-no.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/img/icon-unknown-alt.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/img/icon-unknown.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/img/icon-viewlink.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/img/icon-yes.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/img/inline-delete.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/img/search.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/img/selector-icons.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/img/sorting-icons.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/img/tooltag-add.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/img/tooltag-arrowright.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/SelectBox.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/SelectFilter2.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/actions.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/admin/DateTimeShortcuts.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/admin/RelatedObjectLookups.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/autocomplete.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/calendar.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/cancel.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/change_form.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/collapse.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/core.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/filters.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/inlines.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/jquery.init.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/nav_sidebar.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/popup_response.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/prepopulate.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/prepopulate_init.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/theme.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/unusable_password_field.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/urlify.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/jquery/LICENSE.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/jquery/jquery.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/jquery/jquery.min.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/LICENSE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/af.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/ar.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/az.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/bg.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/bn.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/bs.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/ca.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/cs.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/da.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/de.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/dsb.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/el.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/en.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/es.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/et.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/eu.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/fa.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/fi.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/fr.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/gl.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/he.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/hi.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/hr.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/hsb.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/hu.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/hy.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/id.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/is.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/it.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/ja.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/ka.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/km.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/ko.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/lt.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/lv.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/mk.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/ms.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/nb.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/ne.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/nl.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/pl.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/ps.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/pt-BR.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/pt.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/ro.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/ru.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/sk.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/sl.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/sq.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/sr-Cyrl.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/sr.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/sv.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/th.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/tk.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/tr.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/uk.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/vi.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/zh-CN.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/i18n/zh-TW.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/select2.full.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/select2/select2.full.min.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/xregexp/LICENSE.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/xregexp/xregexp.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/admin/js/vendor/xregexp/xregexp.min.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/css/dist/output.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/css/onboarding_tour.css" beforeDir="false" afterPath="$PROJECT_DIR$/theme/static/css/modules/onboarding_tour.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/django-browser-reload/reload-listener.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/django-browser-reload/reload-worker.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/css/all.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/css/all.min.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/css/brands.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/css/brands.min.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/css/duotone.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/css/duotone.min.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/css/fontawesome.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/css/fontawesome.min.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/css/light.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/css/light.min.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/css/regular.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/css/regular.min.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/css/solid.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/css/solid.min.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/css/svg-with-js.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/css/svg-with-js.min.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/css/thin.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/css/thin.min.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/css/v4-shims.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/css/v4-shims.min.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/webfonts/fa-brands-400.ttf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/webfonts/fa-brands-400.woff" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/webfonts/fa-brands-400.woff2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/webfonts/fa-duotone-900.ttf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/webfonts/fa-duotone-900.woff" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/webfonts/fa-duotone-900.woff2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/webfonts/fa-light-300.ttf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/webfonts/fa-light-300.woff" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/webfonts/fa-light-300.woff2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/webfonts/fa-regular-400.ttf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/webfonts/fa-regular-400.woff" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/webfonts/fa-regular-400.woff2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/webfonts/fa-solid-900.ttf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/webfonts/fa-solid-900.woff" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/webfonts/fa-solid-900.woff2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/webfonts/fa-thin-100.ttf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/webfonts/fa-thin-100.woff" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/fontawesome/webfonts/fa-thin-100.woff2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/images/languageicon.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/images/logo.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/images/profileicon.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/js/event_detail_logic.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/js/flowbite.min.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/js/labtest_edit_logic.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/js/onboarding_tour.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/js/password_toggle.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/js/share_logic.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/js/upload_logic.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/staticfiles/parler/admin/parler_admin.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/theme/static/css/onboarding_tour.css" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/theme/static/js/onboarding_tour.js" beforeDir="false" afterPath="$PROJECT_DIR$/theme/static/js/onboarding_tour.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/theme/static/js/upload_logic.js" beforeDir="false" afterPath="$PROJECT_DIR$/theme/static/js/upload_logic.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/theme/static/vendor/bootstrap/css/bootstrap.min.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/theme/static/vendor/bootstrap/js/bootstrap.bundle.min.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/theme/static_src/styles.css" beforeDir="false" afterPath="$PROJECT_DIR$/theme/static_src/styles.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -235,8 +61,8 @@
         <option value="Dockerfile" />
         <option value="JavaScript File" />
         <option value="HTML File" />
-        <option value="Python Script" />
         <option value="CSS File" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>
@@ -348,11 +174,11 @@
       <recent name="C:\Users\444\AppData\Local\spicetify\CustomApps\library" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\444\PychamProjects\MedJ2.1\env" />
-      <recent name="C:\Users\444\PychamProjects\MedJ2.1\docker\web" />
-      <recent name="C:\Users\444\PychamProjects\MedJ2.1\docker\ocrapi" />
-      <recent name="C:\Users\444\PychamProjects\MedJ2.1\docker\compose" />
-      <recent name="C:\Users\444\PychamProjects\MedJ2.1\theme\static\css\modules" />
+      <recent name="C:\Users\444\PychamProjects\MedJ2.1\records\templates\subpages\eventsubpages" />
+      <recent name="C:\Users\444\PychamProjects\MedJ2.1\records\templates\subpages\labtestssubpages" />
+      <recent name="C:\Users\444\PychamProjects\MedJ2.1\records\templates\subpages" />
+      <recent name="C:\Users\444\PychamProjects\MedJ2.1\records\templates\subpages\documentsubpages" />
+      <recent name="C:\Users\444\PychamProjects\MedJ2.1\tools" />
     </key>
   </component>
   <component name="RunManager" selected="Django Server.MedJ">
@@ -463,7 +289,8 @@
       <workItem from="1756906676367" duration="70990000" />
       <workItem from="1757042096588" duration="307000" />
       <workItem from="1757042418741" duration="10747000" />
-      <workItem from="1757054661041" duration="3347000" />
+      <workItem from="1757054661041" duration="13232000" />
+      <workItem from="1757070390912" duration="19022000" />
     </task>
     <task id="LOCAL-00001" summary="2.1">
       <option name="closed" value="true" />
@@ -561,7 +388,15 @@
       <option name="project" value="LOCAL" />
       <updated>1757037697226</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="perfect, DO NOT TOUCH AGAIN">
+      <option name="closed" value="true" />
+      <created>1757060609987</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1757060609987</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -586,10 +421,6 @@
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/medj/urls.py</url>
-          <option name="timeStamp" value="2" />
-        </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/records/models.py</url>
           <option name="timeStamp" value="3" />

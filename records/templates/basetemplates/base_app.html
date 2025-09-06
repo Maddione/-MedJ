@@ -30,7 +30,6 @@
 <div class="ml-auto flex items-center gap-3">
   <a href="{% url 'medj:upload' %}" class="px-5 py-2 rounded-2xl bg-primaryDark text-white hover:bg-primaryDark/90 transition">{% trans "Качи" %}</a>
   <a href="{% url 'medj:share' %}" class="px-5 py-2 rounded-2xl bg-success text-white hover:bg-success/90 transition">{% trans "Сподели" %}</a>
-
   <div class="relative" id="userMenuWrap">
     <button id="userMenuBtn" class="flex items-center gap-2 px-3 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-white">
       <img src="{% static 'images/profileicon.png' %}" class="w-6 h-6 rounded-full" alt="">
@@ -74,10 +73,4 @@
 <div class="w-[98%] mx-auto bg-blockbg rounded-3xl shadow-md flex-1 min-h-[calc(100vh-160px)] p-4">
   {% block app_content %}{% endblock %}
 </div>
-{% endblock %}
-
-{% block scripts_extra %}
-<link rel="stylesheet" href="{% static 'css/onboarding_tour.css' %}">
-<script src="{% static 'js/password_toggle.js' %}"></script>
-<script src="{% static 'js/onboarding_tour.js' %}"></script>
 {% endblock %}

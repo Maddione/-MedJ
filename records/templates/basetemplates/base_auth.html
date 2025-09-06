@@ -1,25 +1,17 @@
 {% extends 'basetemplates/base.html' %}
 {% load static i18n %}
-
 {% block title %}MedJ{% endblock %}
-
 {% block nav_buttons %}
 <nav class="flex items-center gap-3">
-  <a href="{% url 'medj:login' %}" class="px-5 py-2 rounded-lg bg-primaryDark text-white hover:bg-primaryDark/90 transition">
-    {% trans "Вход" %}
-  </a>
-  <a href="{% url 'medj:register' %}" class="px-5 py-2 rounded-lg bg-blockbg text-primaryDark hover:bg-white transition">
-    {% trans "Регистрация" %}
-  </a>
+  <a href="{% url 'medj:login' %}" class="px-5 py-2 rounded-lg bg-primaryDark text-white hover:bg-primaryDark/90 transition">{% trans "Вход" %}</a>
+  <a href="{% url 'medj:register' %}" class="px-5 py-2 rounded-lg bg-blockbg text-primaryDark hover:bg-white transition">{% trans "Регистрация" %}</a>
 </nav>
 {% endblock %}
-
 {% block body_content %}
 <div class="w-[98%] mx-auto bg-blockbg rounded-3xl shadow-md flex-grow flex items-center justify-center py-6 px-4">
-  <div class="w-full max-w-md">
-    {% block public_content %}{% endblock %}
-  </div>
+  <div class="w-full max-w-md">{% block public_content %}{% endblock %}</div>
 </div>
-
+{% endblock %}
+{% block scripts_extra %}
 <script src="{% static 'js/password_toggle.js' %}"></script>
 {% endblock %}

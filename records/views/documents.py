@@ -30,7 +30,7 @@ def document_detail(request: HttpRequest, pk: int) -> HttpResponse:
         pk=pk,
         medical_event__patient=patient,
     )
-    return render(request, "subpages/document_detail.html", {"document": doc, "event": doc.medical_event})
+    return render(request, "subpages/documentsubpages/document_detail.html", {"document": doc, "event": doc.medical_event})
 
 @login_required
 def document_edit(request: HttpRequest, pk: int) -> HttpResponse:
@@ -44,7 +44,7 @@ def document_edit(request: HttpRequest, pk: int) -> HttpResponse:
             return redirect("medj:document_detail", pk=doc.pk)
     else:
         form = DocumentEditForm(instance=doc)
-    return render(request, "subpages/document_edit.html", {"document": doc, "form": form})
+    return render(request, "subpages/documentsubpages/document_edit.html", {"document": doc, "form": form})
 
 @login_required
 def document_edit_tags(request: HttpRequest, pk: int) -> HttpResponse:
@@ -60,7 +60,7 @@ def document_edit_tags(request: HttpRequest, pk: int) -> HttpResponse:
     else:
         from ..forms import DocumentTagForm
         form = DocumentTagForm(instance=doc)
-    return render(request, "subpages/document_edit_tags.html", {"form": form, "document": doc})
+    return render(request, "subpages/documentsubpages/document_edit_tags.html", {"form": form, "document": doc})
 
 @login_required
 def document_move(request: HttpRequest, pk: int) -> HttpResponse:
@@ -78,7 +78,7 @@ def document_move(request: HttpRequest, pk: int) -> HttpResponse:
     else:
         events = MedicalEvent.objects.filter(patient=patient).order_by("-event_date", "-id")
         form = MoveDocumentForm()
-        return render(request, "subpages/document_move.html", {"form": form, "events": events, "document": doc})
+        return render(request, "subpages/documentsubpages/document_move.html", {"form": form, "events": events, "document": doc})
     return redirect("medj:document_detail", pk=doc.pk)
 
 @login_required

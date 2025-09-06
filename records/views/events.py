@@ -32,7 +32,7 @@ def event_detail(request: HttpRequest, pk: int) -> HttpResponse:
         .select_related("indicator")
         .order_by("indicator__name", "measured_at")
     )
-    return render(request, "subpages/event_detail.html", {"medical_event": event, "measurements": measurements, "documents": event.documents.all()})
+    return render(request, "subpages/eventsubpages/event_detail.html", {"medical_event": event, "measurements": measurements, "documents": event.documents.all()})
 
 @login_required
 def event_history(request: HttpRequest, pk: int | None = None) -> HttpResponse:

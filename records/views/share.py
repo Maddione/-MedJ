@@ -28,8 +28,8 @@ def share_view(request: HttpRequest, token: str) -> HttpResponse:
     return render(request, "subpages/share_view.html", {"token": token})
 
 
-def share_revoke(request: HttpRequest) -> JsonResponse:
-    return JsonResponse({"ok": True})
+def share_revoke(request: HttpRequest, token: str) -> JsonResponse:
+    return JsonResponse({"ok": True, "token": str(token)})
 
 
 def healthcheck(request: HttpRequest) -> JsonResponse:
@@ -110,7 +110,7 @@ def create_share_token(request: HttpRequest) -> JsonResponse:
     return create_download_links(request)
 
 
-def share_qr(request: HttpRequest) -> HttpResponse:
+def share_qr(request: HttpRequest, token=None) -> HttpResponse:
     url = request.GET.get("url")
     if not url:
         return HttpResponseBadRequest("missing url")

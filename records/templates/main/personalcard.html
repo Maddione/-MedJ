@@ -1,107 +1,198 @@
 {% extends "basetemplates/base_app.html" %}
-{% load i18n %}
-
+{% load i18n widget_tweaks %}
 {% block title %}{% trans "Личен картон" %}{% endblock %}
 
 {% block app_content %}
-<form method="post" class="max-w-6xl mx-auto space-y-10">
+<form method="post" class="max-w-7xl mx-auto space-y-8" id="personalcard-form">
   {% csrf_token %}
 
-  <div class="rounded-3xl border border-black/10 shadow-sm p-8" style="background-color: var(--color-sitebg);">
-    <div class="flex items-end justify-between mb-8">
-      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-[var(--color-primaryDark)]">{% trans "Личен картон" %}</h1>
+  <div class="rounded-3xl p-2">
+    <div class="text-2xl font-bold text-[#0A1E4A] mb-4">{% trans "Основна информация" %}</div>
+
+    <div class="rounded-2xl p-5 mb-4" style="background:#FFFFF5; box-shadow:0 6px 14px rgba(10,30,74,.10), inset 0 0 0 1px rgba(10,30,74,.08)">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+        <div class="md:col-span-8">
+          <div class="text-lg font-bold text-[#082A55] mb-2 flex items-center gap-2">
+            <span>{% trans "Имена" %}</span><span class="text-red-600">*</span>
+          </div>
+          <div class="flex flex-row gap-2">
+            {% render_field profile_form.first_name_bg class+="w-full md:w-1/3 rounded-xl px-3 py-2 text-lg font-semibold text-[#155B76]" style="background:#FFFFF5;" %}
+            {% render_field profile_form.middle_name_bg class+="w-full md:w-1/3 rounded-xl px-3 py-2 text-lg font-semibold text-[#155B76]" style="background:#FFFFF5;" %}
+            {% render_field profile_form.last_name_bg class+="w-full md:w-1/3 rounded-xl px-3 py-2 text-lg font-semibold text-[#155B76]" style="background:#FFFFF5;" %}
+          </div>
+        </div>
+        <div class="md:col-span-4 grid grid-cols-2 gap-6">
+          <div>
+            <div class="text-lg font-bold text-[#082A55] mb-2 flex items-center gap-2">
+              <span>{% trans "Рождена дата" %}</span><span class="text-red-600">*</span>
+            </div>
+            {% render_field profile_form.date_of_birth class+="w-full rounded-xl px-3 py-2" style="background:#FFFFF5;" %}
+          </div>
+          <div>
+            <div class="text-lg font-bold text-[#082A55] mb-2">{% trans "Пол" %}</div>
+            {% render_field profile_form.gender class+="w-full rounded-xl px-3 py-2" style="background:#FFFFF5;" %}
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-      <div class="space-y-2">
-        <label class="block text-sm font-semibold text-[var(--color-primaryDark)]">{% trans "Име (BG)" %}</label>
-        {{ profile_form.first_name_bg }}
+    <div class="grid md:grid-cols-12 gap-4">
+      <div class="md:col-span-8 grid md:grid-cols-12 gap-4">
+        <div class="rounded-2xl p-5 md:col-span-3" style="background:#FFFFF5; box-shadow:0 6px 14px rgba(10,30,74,.10), inset 0 0 0 1px rgba(10,30,74,.08)">
+          <div class="text-lg font-bold text-[#082A55] mb-2">{% trans "Височина" %}</div>
+          {% render_field profile_form.height_cm class+="w-full rounded-xl px-3 py-2" placeholder="см" style="background:#FFFFF5;" %}
+        </div>
+        <div class="rounded-2xl p-5 md:col-span-3" style="background:#FFFFF5; box-shadow:0 6px 14px rgba(10,30,74,.10), inset 0 0 0 1px rgba(10,30,74,.08)">
+          <div class="text-lg font-bold text-[#082A55] mb-2">{% trans "Тегло" %}</div>
+          {% render_field profile_form.weight_kg class+="w-full rounded-xl px-3 py-2" placeholder="кг" style="background:#FFFFF5;" %}
+        </div>
+        <div class="rounded-2xl p-5 md:col-span-3" style="background:#FFFFF5; box-shadow:0 6px 14px rgba(10,30,74,.10), inset 0 0 0 1px rgba(10,30,74,.08)">
+          <div class="text-lg font-bold text-[#082A55] mb-2">{% trans "Кръвна група" %}</div>
+          {% render_field profile_form.blood_type class+="w-full rounded-xl px-3 py-2" style="background:#FFFFF5;" %}
+        </div>
+        <div class="rounded-2xl p-5 md:col-span-3" style="background:#FFFFF5; box-shadow:0 6px 14px rgba(10,30,74,.10), inset 0 0 0 1px rgba(10,30,74,.08)">
+          <div class="text-lg font-bold text-[#082A55] mb-2">{% trans "Телефон" %}</div>
+          {% render_field profile_form.phone_number class+="w-full rounded-xl px-3 py-2" style="background:#FFFFF5;" %}
+        </div>
       </div>
-      <div class="space-y-2">
-        <label class="block text-sm font-semibold text-[var(--color-primaryDark)]">{% trans "Рождена дата" %}</label>
-        {{ profile_form.date_of_birth }}
+      <div class="rounded-2xl p-5 md:col-span-4" style="background:#FFFFF5; box-shadow:0 6px 14px rgba(10,30,74,.10), inset 0 0 0 1px rgba(10,30,74,.08)">
+        <div class="text-lg font-bold text-[#082A55] mb-2">{% trans "Адрес" %}</div>
+        {% render_field profile_form.address class+="w-full rounded-xl px-3 py-2" style="background:#FFFFF5;" %}
       </div>
-      <div class="space-y-2">
-        <label class="block text-sm font-semibold text-[var(--color-primaryDark)]">{% trans "Презиме (BG)" %}</label>
-        {{ profile_form.middle_name_bg }}
-      </div>
-      <div class="space-y-2">
-        <label class="block text-sm font-semibold text-[var(--color-primaryDark)]">{% trans "Пол" %}</label>
-        {{ profile_form.gender }}
-      </div>
-      <div class="md:col-span-2 space-y-2">
-        <label class="block text-sm font-semibold text-[var(--color-primaryDark)]">{% trans "Фамилия (BG)" %}</label>
-        {{ profile_form.last_name_bg }}
+    </div>
+
+    <div class="rounded-2xl p-5 mt-4" style="background:#FFFFF5; box-shadow:0 6px 14px rgba(10,30,74,.10), inset 0 0 0 1px rgba(10,30,74,.08)">
+      <div class="grid md:grid-cols-12 gap-6">
+        <div class="md:col-span-4">
+          <div class="text-lg font-bold text-[#082A55] mb-2">{% trans "Общопрактикуващ лекар" %}</div>
+          {% render_field profile_form.gp_name class+="w-full rounded-xl px-3 py-2" style="background:#FFFFF5;" %}
+        </div>
+        <div class="md:col-span-3">
+          <div class="text-lg font-bold text-[#082A55] mb-2">{% trans "Телефон на лекаря" %}</div>
+          {% render_field profile_form.gp_phone class+="w-full rounded-xl px-3 py-2" style="background:#FFFFF5;" %}
+        </div>
+        <div class="md:col-span-3">
+          <div class="text-lg font-bold text-[#082A55] mb-2">{% trans "Адрес на лекаря" %}</div>
+          {% render_field profile_form.gp_address class+="w-full rounded-xl px-3 py-2" style="background:#FFFFF5;" %}
+        </div>
+        <div class="md:col-span-2">
+          <div class="text-lg font-bold text-[#082A55] mb-2">{% trans "РЗОК" %}</div>
+          {% render_field profile_form.rzok class+="w-full rounded-xl px-3 py-2" style="background:#FFFFF5;" %}
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="rounded-3xl border border-black/10 shadow-sm p-8" style="background-color: var(--color-sitebg);">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-      <div class="space-y-2">
-        <label class="block text-sm font-semibold text-[var(--color-primaryDark)]">{% trans "Телефон" %}</label>
-        {{ profile_form.phone_number }}
-      </div>
-      <div class="space-y-2">
-        <label class="block text-sm font-semibold text-[var(--color-primaryDark)]">{% trans "Кръвна група" %}</label>
-        {{ profile_form.blood_type }}
-      </div>
-      <div class="md:col-span-3 space-y-2">
-        <label class="block text-sm font-semibold text-[var(--color-primaryDark)]">{% trans "Адрес" %}</label>
-        {{ profile_form.address }}
-      </div>
-    </div>
+  <div class="flex justify-end gap-3" id="action-buttons">
+    <a href="{% url 'medj:dashboard' %}" class="px-6 py-2.5 rounded-xl border border-black/10 text-[#0A1E4A]" style="background:#F7F8EA">{% trans "Отмени" %}</a>
+    <button type="submit" class="px-7 py-2.5 rounded-xl text-white font-semibold" style="background:#0A4E75">{% trans "Запази" %}</button>
   </div>
 
-  <div class="flex justify-end gap-3">
-    <a href="{% url 'medj:dashboard' %}" class="px-6 py-2.5 rounded-xl border border-black/10 text-[var(--color-primaryDark)]" style="background-color: var(--color-sitebg);">{% trans "Отмени" %}</a>
-    <button class="px-7 py-2.5 rounded-xl text-white font-semibold" style="background-color: var(--color-primaryDark);">{% trans "Запази" %}</button>
+  <div class="flex justify-end mt-4">
+    <button type="button" id="openShare" class="w-24 h-24 rounded-full flex items-center justify-center text-white font-bold" style="background:#E64E3A">QR</button>
   </div>
 </form>
 
-<button type="button" id="openShare" class="fixed right-7 bottom-7 h-24 w-24 rounded-full text-white shadow-2xl grid place-items-center ring-4 ring-white/70" style="background-color:#E84A3C; z-index:70">
-  <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm11-2h5v5h-5V3zm2 2v1h1V5h-1zM3 13h5v5H3v-5zm2 2v1h1v-1H5zm8-2h2v2h-2v-2zm-2 4h2v2h-2v-2zm4 0h2v2h-2v-2zm4-4h2v2h-2v-2zm-6-2h4v2h-4v-2zm6 6h2v2h-2v-2z"/></svg>
-</button>
-
 <div id="shareModal" class="fixed inset-0 hidden items-center justify-center bg-black/40 z-50">
-  <div class="w-[560px] max-w-[92vw] rounded-2xl bg-white p-6 space-y-5">
+  <div class="w-[480px] max-w-[92vw] rounded-2xl p-5 space-y-4">
     {% if share_enabled and share_token %}
-      <div class="text-xl font-semibold text-[var(--color-primaryDark)]">{% trans "Споделяне на личен картон" %}</div>
-      <img class="mx-auto w-56 h-56" src="{% url 'medj:personalcard_qr' share_token %}" alt="qr">
-      <div class="space-y-2">
-        <input id="shareLink" class="w-full rounded-lg border px-3 py-2" value="{{ share_url }}" readonly>
-        <div class="flex justify-end gap-2">
-          <a href="{{ share_url }}" target="_blank" class="px-4 py-2 rounded-lg border">{% trans "Отвори" %}</a>
-          <button type="button" id="copyShare" class="px-4 py-2 rounded-lg text-white" style="background-color: var(--color-primaryDark);">{% trans "Копирай линк" %}</button>
-          <button type="button" id="closeShare" class="px-4 py-2 rounded-lg border">{% trans "Затвори" %}</button>
-        </div>
+      <img class="mx-auto w-40 h-40" src="{% url 'medj:personalcard_qr' token=share_token %}" alt="qr">
+      <input id="shareLink" class="w-full rounded-lg border px-3 py-2" value="{{ share_url }}" readonly>
+      <div class="flex justify-end gap-2">
+        <button type="button" id="copyShare" class="px-4 py-2 rounded-lg text-white" style="background-color: var(--color-primaryDark);">{% trans "Копирай линк" %}</button>
+        <button type="button" id="closeShare" class="px-4 py-2 rounded-lg border">{% trans "Затвори" %}</button>
       </div>
     {% else %}
-      <div class="text-xl font-semibold text-[var(--color-primaryDark)]">{% trans "Споделяне на личен картон" %}</div>
       <p class="text-sm text-gray-700">{% trans "Споделянето е изключено." %}</p>
-      <form method="post" action="{% url 'medj:personalcard_share_enable' %}" class="flex justify-end gap-2">
+      <form method="post" action="{% url 'medj:personalcard_share_enable' %}">
         {% csrf_token %}
         <button class="px-4 py-2 rounded-lg text-white" style="background-color: var(--color-primaryDark);">{% trans "Активирай споделяне" %}</button>
-        <button type="button" id="closeShare" class="px-4 py-2 rounded-lg border">{% trans "Затвори" %}</button>
       </form>
+      <div class="flex justify-end">
+        <button type="button" id="closeShare" class="px-4 py-2 rounded-lg border">{% trans "Затвори" %}</button>
+      </div>
     {% endif %}
   </div>
 </div>
 
 <script>
 (function(){
-  var m=document.getElementById('shareModal');
-  var o=document.getElementById('openShare');
-  var c=document.getElementById('closeShare');
-  if(o){o.addEventListener('click',function(){m.classList.remove('hidden');m.classList.add('flex')})}
-  document.addEventListener('keydown',function(e){if(e.key==='Escape'){m.classList.add('hidden');m.classList.remove('flex')}})
-  if(c){c.addEventListener('click',function(){m.classList.add('hidden');m.classList.remove('flex')})}
-  var cp=document.getElementById('copyShare');
-  if(cp){cp.addEventListener('click',function(){
-    var i=document.getElementById('shareLink'); i.select(); i.setSelectionRange(0,99999); document.execCommand('copy');
-    cp.innerText='{{ _("Копирано") }}';
-    setTimeout(function(){cp.innerText='{{ _("Копирай линк") }}'},1200);
-  })}
+  var form = document.getElementById('personalcard-form');
+  var actions = document.getElementById('action-buttons');
+  var openBtn = document.getElementById('openShare');
+  var modal = document.getElementById('shareModal');
+  var closeBtn = document.getElementById('closeShare');
+  var copyBtn = document.getElementById('copyShare');
+  var linkEl = document.getElementById('shareLink');
+
+  function clearErrors(){
+    document.querySelectorAll('.field-error').forEach(function(el){ el.remove(); });
+    document.querySelectorAll('input,select,textarea').forEach(function(el){ el.classList.remove('ring-2','ring-red-500'); });
+  }
+
+  function showErrors(errors){
+    Object.keys(errors || {}).forEach(function(name){
+      var field = form.querySelector('[name="'+name+'"]');
+      if(!field) return;
+      var msg = Array.isArray(errors[name]) ? errors[name].join(' ') : String(errors[name]);
+      var note = document.createElement('div');
+      note.className = 'field-error text-red-600 text-sm mt-1';
+      note.textContent = msg;
+      field.classList.add('ring-2','ring-red-500');
+      field.parentElement.appendChild(note);
+    });
+  }
+
+  if(form){
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      clearErrors();
+      var fd = new FormData(form);
+      fetch("{% url 'medj:personalcard' %}", {
+        method: 'POST',
+        headers: {'X-Requested-With': 'XMLHttpRequest'},
+        body: fd
+      }).then(async function(r){
+        if(r.ok){
+          actions.classList.add('hidden');
+          return;
+        }
+        var j = await r.json().catch(function(){});
+        showErrors(j && j.errors ? j.errors : {});
+      }).catch(function(){});
+    });
+  }
+
+  if(openBtn){
+    openBtn.addEventListener('click', function(e){
+      e.preventDefault();
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    });
+  }
+  if(closeBtn){
+    closeBtn.addEventListener('click', function(){
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    });
+  }
+  if(modal){
+    modal.addEventListener('click', function(e){
+      if(e.target === modal){
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    });
+  }
+  if(copyBtn && linkEl){
+    copyBtn.addEventListener('click', function(){
+      try{
+        navigator.clipboard.writeText(linkEl.value);
+        copyBtn.textContent = "{{ _('Копирано!') }}";
+        setTimeout(function(){ copyBtn.textContent = "{{ _('Копирай линк') }}"; }, 1200);
+      }catch(e){}
+    });
+  }
 })();
 </script>
 {% endblock %}
