@@ -28,7 +28,6 @@ node_modules/
 env/.env.ocr
 env/
 *.env
-secrets/
 secrets/ocr-key-vision.json
 secrets/googleocr-key.txt
 secrets/openai-key.txt
