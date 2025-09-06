@@ -1,187 +1,260 @@
 # MedJ — Персонален здравен дневник
 
-## MedJ е Django-базиран уебсайт за централизирано съхранение, обработка и визуализация на лична медицинска информация. Чрез използване на OCR (Google Cloud Vision API) и AI проектът автоматизира извличането на данни от документи и представянето им по ясен и споделяем начин. Проектът е разработен като магистърска теза в ТУ-София.
+MedJ е Django приложение за централизирано съхранение, обработка и визуализация на лична медицинска информация. Поддържа OCR (Google Cloud Vision с Flask fallback), анонимизация преди AI анализ, структурирани данни (лабораторни), споделяне и експорт (PDF/CSV).
 
-# Технологии
-Python 3.13 
+## Съдържание
 
-Django 5.0.6 (или 5.2.3, според някои логове) 
+* [Технологии](#технологии)
+* [Каноничен поток](#каноничен-поток)
+* [Политики и формати](#политики-и-формати)
+* [Инсталация](#инсталация)
+* [Конфигурация на среда](#конфигурация-на-среда)
+* [Старт на средата за разработка](#старт-на-средата-за-разработка)
+* [Основни страници](#основни-страници)
+* [API ендпойнти](#api-ендпойнти)
+* [Експорт](#експорт)
+* [Споделяне](#споделяне)
+* [UI насоки](#ui-насоки)
+* [Тестове и CI](#тестове-и-ci)
+* [Често срещани проблеми](#често-срещани-проблеми)
+* [Автор](#автор)
 
-Google Cloud Vision API (за OCR) 
-OpenAI GPT-4o (за AI анализ и структуриране на данни) 
-SQLite (за база данни в разработка) 
-PostgreSQL (планиран за продукция) 
-Tailwind CSS (за frontend стилизиране) 
-HTML (Django Templates) 
-JavaScript (за frontend интерактивност)
-Git (за контрол на версиите) 
+## Технологии
 
+* Python 3.11+
+* Django 5.x
+* Google Cloud Vision API
+* Flask OCR fallback
+* OpenAI GPT-4o
+* SQLite за dev / PostgreSQL за prod
+* Tailwind CSS, Django Templates, JavaScript
 
-# Основни функционалности
-Качване на PDF или изображения на медицински документи 
-OCR обработка чрез Google Cloud Vision API 
-Автоматично извличане на структурирани данни (лабораторни показатели като TSH, глюкоза, хемоглобин; диагнози; планове за лечение; наративни секции) 
-Анонимизиране на чувствителна информация в текста след извличане на нужните данни.
-Обобщения и групиране по медицински отрасъл, тип документ и дата 
-Визуализация на стойности по дати (например кръвни показатели в графики) 
-Потребителски профили с възможност за родител/настойник режим 
-Генериране на споделяеми отчети (PDF или QR линк) (предстои) 
-## Автор
-## Таня Узунова, 961324004 ТУ-София
+## Каноничен поток
 
-Този проект е част от магистърска теза: „Персонален здравен дневник – цялата медицинска информация на едно място“ 
+### 1) Upload & OCR
 
-## Примерен изглед на сайта
- 
+* UI: Category → Specialty → Doc Type → File → File Kind.
+* Ако има Events със същата комбинация (Category+Specialty+Doc Type), показва се dropdown за избор по `event_date`.
+* Backend: `POST /api/upload/ocr/` първо Vision OCR, при неуспех Flask OCR.
+* Отговор: `{"ocr_text":"...", "source":"vision|flask"}` и editable поле за OCR текста.
 
+### 2) Analyze (с анонимизация)
 
-## Клониране на репозиторията
+* Backend: `POST /api/upload/analyze/`
+* Вход: редактираният OCR текст + `specialty_id`.
+* Анонимизацията се прилага преди подаване към LLM.
+* Отговор:
 
-1.Отворете терминал и изпълнете:
+```json
+{
+  "summary": "...",
+  "data": {
+    "summary": "...",
+    "event_date": "YYYY-MM-DD",
+    "detected_specialty": "...",
+    "suggested_tags": ["..."],
+    "blood_test_results": [
+      {"indicator_name":"...","value":"...","unit":"...","reference_range":"...","measured_at":"YYYY-MM-DDTHH:mm:ss"}
+    ],
+    "diagnosis": "...",
+    "treatment_plan": "...",
+    "doctors": ["..."],
+    "date_created": "YYYY-MM-DD"
+  }
+}
+```
 
-Bash
+* UI: editable поле за Summary.
 
-git clone https://github.com/Maddione/MedJ2.0.git
-cd MedJ2.0
+### 3) Confirm & Save
 
-2. Настройка на виртуална среда
+* Backend: `POST /api/upload/confirm/`
+* Транзакционно:
 
-Препоръчително е да използвате виртуална среда за изолиране на зависимостите.
+  * Ако не е избрано Event → създава ново с `event_date = today`.
+  * Document се свързва към Event и пази финален текст, summary, файл, mime, size, owner.
+  * Ако `analysis.data.date_created` е подадено → запис в `date_created` и авто-таг `date:dd-mm-yyyy`.
+  * Тагове:
 
-Bash
+    * Перманентни: `document_kind`, `specialty`, `category`, `doc_type`, `creation date(dd-mm-yyyy)` (не-редактируеми).
+    * Редактируеми: от `suggested_tags` или въведени от потребителя.
+    * Наследяване само Document → Event (union).
+  * Лабораторни: нормализация към `LabIndicator` и `LabTestMeasurement` (float стойности, референтни граници, `measured_at`), FK към Event.
+* Отговор: `{"ok": true, "event_id": ..., "document_id": ...}`
+* UI: редирект към `/upload/history/`.
 
+### 4) History & Casefiles
+
+* `/upload/history/` — списък на Documents с филтри.
+* `/casefiles/` — списък на Events, групиращи Document-и.
+
+### 5) Sharing & Export
+
+* ShareLink: токен, срок, парола, scope, формат; публичен read-only `/s/<token>/`.
+* Export: PDF (с темплейти), CSV (`dd-mm-yyyy`).
+
+## Политики и формати
+
+* Анонимизация: винаги преди AI; потребителските редакции се пазят.
+* Дати: вътрешно ISO; външно навсякъде `dd-mm-yyyy`.
+* Събития: Event е родител; множество Documents към едно Event.
+* Тагове: перманентни vs. редактируеми; наследяване само Document → Event.
+* Лабораторни: единна таблица; `measured_at` нормализиран; подходящ за времеви серии.
+
+## Инсталация
+
+```bash
+git clone https://github.com/Maddione/MedJ.git
+cd MedJ
 python -m venv .venv
-На Windows:
-Bash
-
 .\.venv\Scripts\activate
-На macOS/Linux:
-Bash
-
-source .venv/bin/activate
-
-3. Инсталиране на зависимости
-
-След като виртуалната среда е активирана, инсталирайте Python и Node.js зависимостите.
-
-Инсталиране на Python пакети:
-
-Bash
-
 pip install -r requirements.txt
-Инсталиране на Node.js пакети (за Tailwind CSS):
-
-Bash
-
 npm install
+```
 
-4. Конфигурация на проекта
+## Конфигурация на среда
 
-Създайте .env файл във вашата коренна директория (MedJ2.0/), за да съхранявате чувствителни променливи.
-
-Създайте файл на име .env и добавете следното съдържание, като замените примерните стойности с вашите:
-
-DJANGO_SECRET_KEY=your_very_secret_django_key_here
+```
+DJANGO_SECRET_KEY=...
 DJANGO_DEBUG=True
 DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost
 
-OPENAI_API_KEY=your_openai_api_key_here
-GOOGLE_CLOUD_VISION_KEY=your_google_cloud_vision_key_here
+OPENAI_API_KEY=...
+OPENAI_CHAT_MODEL=gpt-4o
+OPENAI_API_KEY_FILE=optional/path/to/file
 
-DJANGO_ENVIRONMENT=dev
-Генерирайте DJANGO_SECRET_KEY: Можете да използвате онлайн генератор или Django shell.
+GOOGLE_APPLICATION_CREDENTIALS=/path/to/gcp-vision.json
+OCR_SERVICE_URL=http://localhost:5001
 
-Въведете вашите API ключове за OpenAI и Google Cloud Vision.
+DJANGO_SETTINGS_MODULE=medj.settings
+```
 
-5. Настройка на база данни и миграции
+PDF темплейти:
 
-Преди да стартирате сървъра, трябва да подготвите базата данни.
+* `records/pdf_templates/pdf-template-twopage-bg.pdf`
+* `records/pdf_templates/pdf-template-twopage-eng.pdf`
 
-Bash
+## Старт на средата за разработка
 
-# Изтрийте стари миграции и база данни за чист старт (само ако е първоначална настройка и нямате важни данни!)
-# ВНИМАНИЕ: Това ще изтрие всички данни!
-# del db.sqlite3
-# del MedJ\migrations\000*
-# del __pycache__ - във всички директории
-
-# Създаване на миграции за вашето приложение
-python manage.py makemigrations MedJ
-
-# Прилагане на миграциите към базата данни
-python manage.py migrate
-Създайте суперпотребител за достъп до административния панел:
-
-Bash
-
-python manage.py createsuperuser
-
-6. Стартиране на Tailwind CSS компилатора
-7. 
-Tailwind CSS изисква процес на компилация. Трябва да го стартирате в отделен терминал и да го оставите да работи по време на разработка.
-
-Отворете първи терминал в коренната директория на проекта.
-
-Активирайте виртуалната среда: .\.venv\Scripts\activate
-
-Стартирайте Tailwind в режим на наблюдение:
-
-Bash
-
+```bash
 npm run watch:css
-Този процес ще генерира MedJ/static/css/output.css.
-
-7. Стартиране на Django сървъра
-
-Отворете втори терминал в коренната директория на проекта.
-
-Активирайте виртуалната среда: .\.venv\Scripts\activate
-
-Стартирайте Django сървъра:
-
-Bash
-
+python manage.py migrate
+python manage.py createsuperuser
 python manage.py runserver
-По подразбиране приложението ще е достъпно на http://127.0.0.1:8000/.
+```
 
-8. Първоначално попълване на данни (административен панел)
+Админ: `http://127.0.0.1:8000/admin/`
 
-След като сървърът работи, е важно да попълните някои начални данни, за да може приложението да функционира правилно, особено страницата за качване.
+## Основни страници
 
-Достъпете административния панел: http://127.0.0.1:8000/admin/
-Влезте с акаунта на суперпотребителя.
-Критично: Попълнете данни в следните модели:
-Medical Categories: Добавете вашите основни категории (напр. "Резултати от изследвания", "Обобщени документи от лекар", "Образна и функционална диагностика", "Административни документи", "Други").
-Medical Specialties: Добавете вашите конкретни специалности (напр. "Кръвни изследвания", "Епикриза", "Кардиология", "ЯМР") и ги свържете с правилните категории. Уверете се, че имате поне няколко специалности, свързани с всяка категория, която планирате да използвате.
-Practitioners: Добавете няколко примерни лекари/специалисти (напр. "Д-р Иван Иванов", "Д-р Мария Стефанова").
-Document Tags: Можете да добавите някои начални тагове, ако искате, въпреки че системата генерира системни тагове автоматично.
+* `/upload/`
+* `/upload/history/`
+* `/casefiles/`
+* `/s/<token>/`
 
-9. Тестване на основните функционалности
+## API ендпойнти
 
-10. След като попълните данните:
+### Upload/Analyze/Confirm
 
-Тествайте страницата за качване (/upload/):
+* `POST /api/upload/ocr/`
+* `POST /api/upload/analyze/`
+* `POST /api/upload/confirm/`
+* `GET  /api/events/suggest/?category_id=&specialty_id=&doc_type_id=`
 
-Отидете на http://127.0.0.1:8000/upload/
-Направете Hard Reload (принудително презареждане) на страницата (Ctrl + Shift + R на Windows/Linux или Cmd + Shift + R на Mac), за да заредите най-новите промени.
-Проверете визията: Уверете се, че дизайнът е според мокъпа – цветове, закръгляния, подредба на блоковете.
-Проверете падащите менюта: Трябва да са попълнени с данните, които въведохте в админ панела. Менюто "Медицинска категория" трябва да се активира след избор на "Тип на събитието", а "Специалност/Изследване" - след избор на "Категория".
-Тествайте бутона "Качи и анализирай документа": Той трябва да е неактивен, докато всички задължителни полета не са попълнени.
-Качете примерен файл (изображение или PDF):
-Попълнете всички падащи менюта.
-Изберете файл.
-Изберете типа на файла (изображение/PDF).
-Натиснете "Качи и анализирай документа".
-Наблюдавайте: Трябва да видите spinner на бутона.
-Преглед на OCR текста: След OCR, страницата трябва да се обнови, показвайки OCR текста за редакция и визуализация на документа.
-Финализиране на анализа:
-Можете да редактирате текста.
-Натиснете "Одобри и анализирай с AI".
-Наблюдавайте: Трябва да видите spinner.
-Преглед на резултатите: След успешно анализиране, трябва да видите секция с обобщение и (ако има) HTML таблица с резултати. Проверете дали данните (особено лабораторните резултати) са запазени правилно в административния панел за събитието.
-Тествайте други страници:
+### Share
 
-http://127.0.0.1:8000/dashboard/: Проверете визията и дали показват последните събития (ако има).
-http://127.0.0.1:8000/medical-events/: Проверете списъка с медицински събития.
-http://127.0.0.1:8000/medical-events/<UUID>/detail/: Кликнете на събитие, за да видите детайлите. Проверете дали всички данни (лабораторни резултати, наративни секции и т.н.) се показват.
-http://127.0.0.1:8000/upload-history/: Проверете списъка с качени документи.
+* `POST /api/share/create/`
+* `GET  /api/share/history/`
+* `POST /api/share/revoke/<token>/`
+* `GET  /api/share/qr/<token>.png`
+* Публичен: `GET /s/<token>/`
+
+### Export
+
+* `GET /api/export/csv/?event_id=...`
+* PDF: именовани маршрути, използвани от UI:
+
+  * `document_export_pdf`
+  * `event_export_pdf`
+
+## Експорт
+
+### CSV (лабораторни)
+
+Формат на редовете:
+
+```
+event_id,event_date,indicator_name,value,unit,reference_low,reference_high,measured_at,tags
+```
+
+Всички дати в CSV са `dd-mm-yyyy`.
+
+### PDF
+
+Рендер на съдържание върху `pdf-template-twopage-<bg|eng>.pdf`. Всички визуализирани дати са `dd-mm-yyyy`.
+
+## Споделяне
+
+`ShareLink` полета:
+
+* `token, owner, object_type (event|document), object_id, scope, format, expires_at, password_hash, created_at, status`
+
+Ендпойнти:
+
+* Създаване: `POST /api/share/create/` → връща URL `/s/<token>/` и QR PNG
+* История: `GET /api/share/history/`
+* Отмяна: `POST /api/share/revoke/<token>/`
+
+## UI насоки
+
+### Идентификатори и селектори (Upload)
+
+* Избори: `#categorySelect` или `#sel_category`, `#specialtySelect` или `#sel_specialty`, `#docTypeSelect` или `#sel_doc_type`
+* Файл: `#fileInput` или `#file_input`
+* File Kind: `#fileKindSelect` или `#file_kind`
+* Съществуващо събитие: `#existingEventWrap` + `#existingEventSelect`
+* Редакция: `#ocrText`, `#summaryText`
+* Бутони: `#btnOCR`, `#btnAnalyze`, `#btnConfirm` (съвместим и с `#btn_upload`)
+
+### Цветова тема
+
+```
+--color-sitebg: #EAEBDA
+--color-blockbg: #FDFEE9
+--color-primary: #43B8CF
+--color-primaryDark: #0A4E75
+--color-success: #15BC11
+--color-danger: #D84137
+```
+
+## Тестове и CI
+
+Локално:
+
+```bash
+python manage.py test -v 2
+```
+
+GitHub Actions:
+
+* `.github/workflows/django.yml`
+
+Покритие:
+
+* Upload: OCR/Analyze/Confirm/Suggest
+* Confirm: перманентни и редактируеми тагове, наследяване Document→Event, labs нормализация, `date_created`
+* Share: create/history/revoke, публичен `/s/<token>/`
+* Export: CSV и PDF
+
+## Често срещани проблеми
+
+* Vision OCR не връща текст: проверете `GOOGLE_APPLICATION_CREDENTIALS`.
+* Flask OCR недостъпен: проверете `OCR_SERVICE_URL` и `/ocr`.
+* LLM ключ: задайте `OPENAI_API_KEY` или `OPENAI_API_KEY_FILE`.
+* Несъответствие на ID-та в Upload HTML/JS: поддържат се `sel_*` и новите ID-та.
+* Дати: външно винаги `dd-mm-yyyy`.
+
+## Автор
+
+Таня Узунова, 961324004, ТУ-София
+Магистърска теза „Персонален здравен дневник – цялата медицинска информация на едно място“.

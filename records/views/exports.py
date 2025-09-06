@@ -1,9 +1,10 @@
 from __future__ import annotations
 import io, os, csv, json, time
 from pathlib import Path
+from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
+from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.utils.translation import get_language
 from django.core import signing
@@ -79,6 +80,33 @@ def _token_ok(request: HttpRequest, kind: str) -> bool:
             return False
     return True
 
+def _ddmmyyyy(d):
+    if not d:
+        return ""
+    if isinstance(d, str):
+        for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%d.%m.%Y"):
+            try:
+                return datetime.strptime(d, fmt).strftime("%d-%m-%Y")
+            except Exception:
+                continue
+        try:
+            return datetime.fromisoformat(d).strftime("%d-%m-%Y")
+        except Exception:
+            return d
+    try:
+        return d.strftime("%d-%m-%Y")
+    except Exception:
+        return ""
+
+def _event_tags_text(ev):
+    names = []
+    if hasattr(ev, "tags"):
+        for t in ev.tags.all().order_by("id"):
+            nm = getattr(t, "safe_translation_getter", lambda *a, **k: None)("name", any_language=True) or getattr(t, "name", "") or ""
+            if nm:
+                names.append(nm)
+    return ", ".join(names)
+
 @login_required
 def document_export_pdf(request: HttpRequest, pk: int) -> HttpResponse:
     doc = get_object_or_404(Document, pk=pk, owner=request.user)
@@ -108,6 +136,38 @@ def event_export_pdf(request: HttpRequest, pk: int) -> HttpResponse:
     pdf_bytes = render_template_to_pdf(request, "subpages/event_export_pdf.html", context)
     pdf_bytes = _overlay_bytes_with_template(pdf_bytes, _template_pdf_path(request))
     return pdf_response(f"event_{pk}.pdf", pdf_bytes, inline=True)
+
+@login_required
+def export_csv(request: HttpRequest) -> HttpResponse:
+    event_id = request.GET.get("event_id")
+    if not event_id:
+        return HttpResponseBadRequest("missing_event_id")
+    ev = get_object_or_404(MedicalEvent, pk=event_id, patient__user=request.user)
+    labs_qs = getattr(ev, "lab_measurements", None)
+    rows = []
+    if hasattr(labs_qs, "select_related"):
+        for m in labs_qs.select_related("indicator").order_by("measured_at", "id"):
+            ind = m.indicator
+            name = getattr(ind, "safe_translation_getter", lambda *a, **k: None)("name", any_language=True) or getattr(ind, "name", "")
+            rows.append([
+                ev.id,
+                _ddmmyyyy(ev.event_date),
+                name,
+                getattr(m, "value", ""),
+                getattr(ind, "unit", ""),
+                getattr(ind, "reference_low", ""),
+                getattr(ind, "reference_high", ""),
+                _ddmmyyyy(getattr(m, "measured_at", None)),
+                _event_tags_text(ev),
+            ])
+    out = io.StringIO()
+    w = csv.writer(out)
+    w.writerow(["event_id","event_date","indicator_name","value","unit","reference_low","reference_high","measured_at","tags"])
+    for r in rows:
+        w.writerow(r)
+    resp = HttpResponse(out.getvalue(), content_type="text/csv; charset=utf-8")
+    resp["Content-Disposition"] = f'attachment; filename="event_{ev.id}_labs.csv"'
+    return resp
 
 def print_csv(request: HttpRequest) -> HttpResponse:
     if not request.user.is_authenticated and not _token_ok(request, "print_csv"):

@@ -65,22 +65,32 @@
       </div>
 
       <div class="bg-blockbg rounded-2xl p-4 shadow-sm">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label class="block mb-1 text-sm text-primaryDark">{% trans "От дата" %}</label>
-            <input type="date" name="date_from" value="{{ selected.date_from }}" class="bg-white border border-gray-300 text-sm rounded-lg w-full p-2.5">
-          </div>
-          <div>
-            <label class="block mb-1 text-sm text-primaryDark">{% trans "До дата" %}</label>
-            <input type="date" name="date_to" value="{{ selected.date_to }}" class="bg-white border border-gray-300 text-sm rounded-lg w-full p-2.5">
-          </div>
+        <div class="text-primaryDark font-bold mb-3">{% trans "Филтри" %}</div>
+        <div class="space-y-2">
+          <input type="date" name="date_from" value="{{ selected.date_from }}" class="w-full h-10 rounded-xl px-3 border border-gray-300">
+          <input type="date" name="date_to" value="{{ selected.date_to }}" class="w-full h-10 rounded-xl px-3 border border-gray-300">
+          <input type="text" name="q" value="{{ selected.q }}" placeholder="{% trans 'Търси' %}" class="w-full h-10 rounded-xl px-3 border border-gray-300">
+          <select name="sort" class="w-full h-10 rounded-xl px-3 border border-gray-300">
+            <option value="date_desc" {% if selected.sort == 'date_desc' %}selected{% endif %}>{% trans "По дата ↓" %}</option>
+            <option value="date_asc" {% if selected.sort == 'date_asc' %}selected{% endif %}>{% trans "По дата ↑" %}</option>
+            <option value="type_asc" {% if selected.sort == 'type_asc' %}selected{% endif %}>{% trans "По вид ↑" %}</option>
+            <option value="type_desc" {% if selected.sort == 'type_desc' %}selected{% endif %}>{% trans "По вид ↓" %}</option>
+            <option value="name_asc" {% if selected.sort == 'name_asc' %}selected{% endif %}>{% trans "По име ↑" %}</option>
+            <option value="name_desc" {% if selected.sort == 'name_desc' %}selected{% endif %}>{% trans "По име ↓" %}</option>
+            <option value="spec_asc" {% if selected.sort == 'spec_asc' %}selected{% endif %}>{% trans "По специалист ↑" %}</option>
+            <option value="spec_desc" {% if selected.sort == 'spec_desc' %}selected{% endif %}>{% trans "По специалист ↓" %}</option>
+          </select>
         </div>
-        <button type="submit" class="mt-4 w-full text-white font-semibold rounded-lg text-sm px-5 py-2.5" style="background:#43B8CF">
-          {% trans "Филтрирай" %}
-        </button>
-        <a href="{% url 'medj:casefiles' %}" class="block text-center mt-2 rounded-lg text-sm px-5 py-2.5" style="color:#0A4E75">
-          {% trans "Изчисти" %}
-        </a>
+
+        <div class="mt-3">
+          <button type="submit" class="w-full text-center rounded-lg text-sm px-5 py-2.5 text-white" style="background:#43B8CF">
+            {% trans "Филтрирай" %}
+          </button>
+          <a href="{% url 'medj:casefiles' %}" class="block text-center mt-2 rounded-lg text-sm px-5 py-2.5" style="color:#0A4E75">
+            {% trans "Изчисти" %}
+          </a>
+        </div>
+
       </div>
 
     </form>
@@ -93,54 +103,34 @@
       {% for v in selected.tags %}<input type="hidden" name="tags" value="{{ v }}">{% endfor %}
       {% if selected.date_from %}<input type="hidden" name="date_from" value="{{ selected.date_from }}">{% endif %}
       {% if selected.date_to %}<input type="hidden" name="date_to" value="{{ selected.date_to }}">{% endif %}
+      {% if selected.q %}<input type="hidden" name="q" value="{{ selected.q }}">{% endif %}
       {% if selected.sort %}<input type="hidden" name="sort" value="{{ selected.sort }}">{% endif %}
 
-      <div class="flex items-center gap-3">
-        <input type="text" name="q" value="{{ selected.q }}" placeholder="{% trans 'пр. Холестерол, Ендокринолог' %}"
-               class="flex-1 bg-white border border-gray-300 rounded-lg p-2.5 text-sm">
-        <button type="submit" class="rounded-full p-2.5" title="{% trans 'Търси' %}" style="background:#43B8CF">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="#FDFEE9"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.3-4.3M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0z"/></svg>
-        </button>
+      <div class="flex items-center justify-between">
+        <div class="text-primaryDark font-bold">{% trans "Резултати" %}</div>
+        <div class="text-sm text-primaryDark opacity-70">
+          {% if selected.date_from or selected.date_to %}
+            {% if selected.date_from and selected.date_to %}
+              {% trans "Период" %}: {{ selected.date_from }} – {{ selected.date_to }}
+            {% elif selected.date_from %}
+              {% trans "От" %}: {{ selected.date_from }}
+            {% else %}
+              {% trans "До" %}: {{ selected.date_to }}
+            {% endif %}
+          {% endif %}
+        </div>
       </div>
     </form>
 
-{% if grouped %}
-<div class="bg-blockbg rounded-2xl p-2 shadow-sm">
-  <div class="flex items-center gap-2 px-2">
-    <div class="grid grid-cols-12 w-full text-primaryDark font-semibold">
-
-      <a href="{% url 'medj:casefiles' %}?{% for v in selected.category %}category={{v}}&{% endfor %}{% for v in selected.specialty %}specialty={{v}}&{% endfor %}{% for v in selected.tags %}tags={{v}}&{% endfor %}{% if selected.q %}q={{selected.q|urlencode}}&{% endif %}{% if selected.date_from %}date_from={{selected.date_from}}&{% endif %}{% if selected.date_to %}date_to={{selected.date_to}}&{% endif %}sort={% if selected.sort == 'date_desc' %}date_asc{% else %}date_desc{% endif %}"
-         class="col-span-3 px-3 py-2 rounded-lg inline-flex items-center gap-1" style="background:#0A4E75; color:#FDFEE9">
-        {% trans "Дата" %}{% if selected.sort == 'date_desc' %} ↑{% elif selected.sort == 'date_asc' %} ↓{% endif %}
-      </a>
-
-      <a href="{% url 'medj:casefiles' %}?{% for v in selected.category %}category={{v}}&{% endfor %}{% for v in selected.specialty %}specialty={{v}}&{% endfor %}{% for v in selected.tags %}tags={{v}}&{% endfor %}{% if selected.q %}q={{selected.q|urlencode}}&{% endif %}{% if selected.date_from %}date_from={{selected.date_from}}&{% endif %}{% if selected.date_to %}date_to={{selected.date_to}}&{% endif %}sort={% if selected.sort == 'type_desc' %}type_asc{% else %}type_desc{% endif %}"
-         class="col-span-2 px-3 py-2 rounded-lg inline-flex items-center gap-1" style="background:#0A4E75; color:#FDFEE9">
-        {% trans "Вид" %}{% if selected.sort == 'type_desc' %} ↑{% elif selected.sort == 'type_asc' %} ↓{% endif %}
-      </a>
-
-      <a href="{% url 'medj:casefiles' %}?{% for v in selected.category %}category={{v}}&{% endfor %}{% for v in selected.specialty %}specialty={{v}}&{% endfor %}{% for v in selected.tags %}tags={{v}}&{% endfor %}{% if selected.q %}q={{selected.q|urlencode}}&{% endif %}{% if selected.date_from %}date_from={{selected.date_from}}&{% endif %}{% if selected.date_to %}date_to={{selected.date_to}}&{% endif %}sort={% if selected.sort == 'name_desc' %}name_asc{% else %}name_desc{% endif %}"
-         class="col-span-5 px-3 py-2 rounded-lg inline-flex items-center gap-1" style="background:#0A4E75; color:#FDFEE9">
-        {% trans "Наименование" %}{% if selected.sort == 'name_desc' %} ↑{% elif selected.sort == 'name_asc' %} ↓{% endif %}
-      </a>
-
-      <a href="{% url 'medj:casefiles' %}?{% for v in selected.category %}category={{v}}&{% endfor %}{% for v in selected.specialty %}specialty={{v}}&{% endfor %}{% for v in selected.tags %}tags={{v}}&{% endfor %}{% if selected.q %}q={{selected.q|urlencode}}&{% endif %}{% if selected.date_from %}date_from={{selected.date_from}}&{% endif %}{% if selected.date_to %}date_to={{selected.date_to}}&{% endif %}sort={% if selected.sort == 'spec_desc' %}spec_asc{% else %}spec_desc{% endif %}"
-         class="col-span-2 px-3 py-2 rounded-lg inline-flex items-center gap-1" style="background:#0A4E75; color:#FDFEE9">
-        {% trans "Специалист" %}{% if selected.sort == 'spec_desc' %} ↑{% elif selected.sort == 'spec_asc' %} ↓{% endif %}
-      </a>
-
-    </div>
-  </div>
-
-
-      {% for group in grouped %}
-      <div class="px-4 pt-4">
-        <div class="text-primaryDark font-bold mb-2">{{ group.label }}</div>
-        <div class="divide-y divide-[#0A4E75]/30">
-          {% for d in group.items %}
+    {% if grouped %}
+      {% for g in grouped %}
+      <div class="bg-blockbg rounded-2xl p-4 shadow-sm">
+        <div class="text-primaryDark font-bold mb-2">{{ g.label }}</div>
+        <div>
+          {% for d in g.items %}
           <a href="{% url 'medj:event_detail' d.event_id %}" class="block py-4 hover:bg-white/50 rounded-xl">
             <div class="grid grid-cols-12 items-start gap-2 text-primaryDark">
-              <div class="col-span-3">{{ d.date|date:"d.m.Y" }}</div>
+              <div class="col-span-3">{{ d.date|date:"d-m-Y" }}</div>
               <div class="col-span-2">{{ d.type_name }}</div>
               <div class="col-span-5">{{ d.title }}</div>
               <div class="col-span-2">{{ d.specialist }}</div>
@@ -155,7 +145,6 @@
         </div>
       </div>
       {% endfor %}
-    </div>
     {% else %}
     <div class="bg-blockbg rounded-2xl p-6 shadow-sm text-primaryDark">{% trans "Няма документи за показване." %}</div>
     {% endif %}

@@ -98,4 +98,5 @@ urlpatterns = [
     path("print/pdf/", login_required(print_pdf), name="print_pdf"),
 
     path("doctors/", login_required(TemplateView.as_view(template_name="subpages/doctors.html")), name="doctors"),
+    path("api/", include("records.urls_api")),
 ]

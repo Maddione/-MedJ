@@ -48,7 +48,14 @@
         {% for o in doc_types %}
           <option value="{{ o.id }}">{{ o.name }}</option>
         {% endfor %}
+
+    <div id="existingEventWrap" class="hidden mb-4">
+      <label for="existingEventSelect" class="block text-sm font-semibold text-[#0A1E4A] mb-1">{% trans "Съществуващо събитие" %}</label>
+      <select id="existingEventSelect" class="ui-select h-11 rounded-xl px-4 border border-gray-300">
+        <option value="">{% trans "—" %}</option>
       </select>
+    </div>
+</select>
     </div>
 
     <div id="req_warn" class="hidden rounded-2xl p-4 mb-6 text-white" style="background:#E64E3A">
@@ -94,6 +101,26 @@
       </div>
     </div>
   </div>
+
+  <div class="mt-8 rounded-2xl p-6" style="background:#FFFFF5; box-shadow: 0 10px 14px rgba(10,30,74,.10), inset 0 0 0 1px rgba(10,30,74,.08)">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div>
+        <div class="text-sm text-[#0A1E4A] font-semibold mb-2">{% trans "OCR Текст" %} <span id="ocrSourceInfo" class="text-xs opacity-60 ml-2"></span></div>
+        <textarea id="ocrText" class="w-full h-64 rounded-xl px-4 py-3 border border-gray-300" placeholder="{% trans 'Тук ще се появи OCR текстът. Може да редактирате.' %}"></textarea>
+      </div>
+      <div>
+        <div class="text-sm text-[#0A1E4A] font-semibold mb-2">{% trans "Резюме" %} <span id="analysisMeta" class="text-xs opacity-60 ml-2"></span></div>
+        <textarea id="summaryText" class="w-full h-64 rounded-xl px-4 py-3 border border-gray-300" placeholder="{% trans 'Тук ще се появи резюмето от анализа. Може да редактирате.' %}"></textarea>
+      </div>
+    </div>
+    <div id="analysisPayload" data-json="{}" class="hidden"></div>
+    <div class="mt-4 flex gap-3">
+      <button id="btnOCR" class="px-4 h-11 rounded-xl text-white" style="background:#0A4E75">{% trans "OCR" %}</button>
+      <button id="btnAnalyze" class="px-4 h-11 rounded-xl text-white" style="background:#43B8CF">{% trans "Анализ" %}</button>
+      <button id="btnConfirm" class="px-4 h-11 rounded-xl text-white" style="background:#15BC11">{% trans "Запази" %}</button>
+    </div>
+  </div>
+
 </form>
 
 <div id="ob_upload" class="hidden fixed inset-0 z-50 bg-black/50 p-4">

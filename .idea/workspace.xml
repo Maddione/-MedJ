@@ -8,43 +8,43 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c486bb59-c79b-4440-8fcc-e0c5e6eda3dc" name="Changes" comment="perfect, DO NOT TOUCH AGAIN">
-      <change afterPath="$PROJECT_DIR$/records/views/upload_api.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tools/auto_translate_po.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.githubdjango.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ENVIRONMENT.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/management/commands/backfill_event_tags.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/management/commands/expire_shares.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/management/commands/optimize_indexes.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/services/llm/anonymizer.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/services/llm/gpt_client.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/subpages/share_history.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templates/subpages/share_public.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/templatetags/date_formats.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/tests/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/tests/test_api_upload.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/tests/test_confirm_flow.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/tests/test_share_and_export.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/urls_api.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/urls_pages.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/views/api_upload.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/views/share_api.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/theme/static/js/filters.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/theme/static/js/share_tokens.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker/web/entrypoint.dev.sh" beforeDir="false" afterPath="$PROJECT_DIR$/docker/web/entrypoint.dev.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/locale/bg/LC_MESSAGES/django.mo" beforeDir="false" afterPath="$PROJECT_DIR$/locale/bg/LC_MESSAGES/django.mo" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/locale/bg/LC_MESSAGES/django.po" beforeDir="false" afterPath="$PROJECT_DIR$/locale/bg/LC_MESSAGES/django.po" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/locale/en/LC_MESSAGES/django.po" beforeDir="false" afterPath="$PROJECT_DIR$/locale/en/LC_MESSAGES/django.po" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base_app.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_app.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base_auth.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_auth.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base_public.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_public.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ocrapi/anonymizer.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ocrapi/gpt_client.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/services/upload_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/services/upload_flow.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/templates/main/casefiles.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/casefiles.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/main/history.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/history.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/main/personalcard.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/personalcard.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/main/share.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/share.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/templates/main/upload.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/upload.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/document_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/documentsubpages/document_detail.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/document_edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/documentsubpages/document_edit.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/document_edit_tags.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/documentsubpages/document_edit_tags.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/document_export_pdf.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/documentsubpages/document_export_pdf.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/document_move.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/documentsubpages/document_move.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/event_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/eventsubpages/event_detail.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/event_edit_tags.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/eventsubpages/event_edit_tags.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/event_export_pdf.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/eventsubpages/event_export_pdf.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/event_history.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/eventsubpages/event_history.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/labtest_edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/labtestssubpages/labtest_edit.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/labtests.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/labtestssubpages/labtests.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/labtests_export_csv.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/labtestssubpages/labtests_export_csv.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/medical_event_confirm_delete.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/eventsubpages/medical_event_confirm_delete.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/medical_event_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/eventsubpages/medical_event_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/subpages/eventsubpages/event_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/eventsubpages/event_detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/subpages/upload_history.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/upload_history.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/views/documents.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/documents.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/views/events.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/events.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/views/personalcard.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/personalcard.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/views/share.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/share.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/views/upload.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/upload.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/theme/static/js/onboarding_tour.js" beforeDir="false" afterPath="$PROJECT_DIR$/theme/static/js/onboarding_tour.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/casefiles.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/casefiles.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/exports.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/exports.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/upload_api.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scrub.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/theme/static/js/upload_logic.js" beforeDir="false" afterPath="$PROJECT_DIR$/theme/static/js/upload_logic.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,9 +59,9 @@
       <list>
         <option value="TypeScript File" />
         <option value="Dockerfile" />
-        <option value="JavaScript File" />
-        <option value="HTML File" />
         <option value="CSS File" />
+        <option value="HTML File" />
+        <option value="JavaScript File" />
         <option value="Python Script" />
       </list>
     </option>
@@ -83,44 +83,55 @@
 }</component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/.env" root0="SKIP_INSPECTION" />
-    <setting file="file://$PROJECT_DIR$/Dockerfile" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/docker-compose.dev.yml" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/entrypoint.dev.sh" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/medj/settings/base.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/medj/settings/dev.py" root0="SKIP_INSPECTION" />
-    <setting file="file://$PROJECT_DIR$/ocrapi/Dockerfile" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/ocrapi/requirements-ocr.txt" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/admin.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/apps.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/auth_backends.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/constants.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/forms.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/records/management/commands/backfill_event_tags.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/management/commands/bootstrap_site.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/records/management/commands/expire_shares.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/records/management/commands/optimize_indexes.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/management/commands/seed_initial_data.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/management/commands/sync_taxonomy_tags.py" root0="SKIP_INSPECTION" />
-    <setting file="file://$PROJECT_DIR$/records/models.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/records/models.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/services/csv_to_pdf.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/services/labs_utils.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/records/services/llm/anonymizer.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/records/services/llm/gpt_client.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/services/tags.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/services/upload_flow.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/signals.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/records/templatetags/date_formats.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/records/tests/test_api_upload.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/records/tests/test_confirm_flow.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/records/tests/test_share_and_export.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/urls.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/records/urls_api.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/records/urls_pages.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/utils/db_checks.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/utils/labs.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/__init__.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/api.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/records/views/api_upload.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/views/auth.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/records/views/casefiles.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/views/documents.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/events.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/records/views/exports.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/records/views/exports.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/views/labs.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/pages_profile.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/pages_public.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/share.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/records/views/share_api.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/views/share_csv.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/upload.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/utils.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/requirements.txt" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/theme/static/js/filters.js" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/theme/static/js/share_logic.js" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/theme/static_src/styles.css" root0="FORCE_HIGHLIGHTING" />
   </component>
@@ -174,11 +185,11 @@
       <recent name="C:\Users\444\AppData\Local\spicetify\CustomApps\library" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\444\PychamProjects\MedJ2.1\theme\static\js" />
+      <recent name="C:\Users\444\PychamProjects\MedJ2.1" />
+      <recent name="C:\Users\444\PychamProjects\MedJ2.1\static\js" />
+      <recent name="C:\Users\444\PychamProjects\MedJ2.1\records\services" />
       <recent name="C:\Users\444\PychamProjects\MedJ2.1\records\templates\subpages\eventsubpages" />
-      <recent name="C:\Users\444\PychamProjects\MedJ2.1\records\templates\subpages\labtestssubpages" />
-      <recent name="C:\Users\444\PychamProjects\MedJ2.1\records\templates\subpages" />
-      <recent name="C:\Users\444\PychamProjects\MedJ2.1\records\templates\subpages\documentsubpages" />
-      <recent name="C:\Users\444\PychamProjects\MedJ2.1\tools" />
     </key>
   </component>
   <component name="RunManager" selected="Django Server.MedJ">
@@ -396,7 +407,39 @@
       <option name="project" value="LOCAL" />
       <updated>1757060609987</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="perfect, DO NOT TOUCH AGAIN">
+      <option name="closed" value="true" />
+      <created>1757158686203</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1757158686203</updated>
+    </task>
+    <task id="LOCAL-00015" summary="perfect, DO NOT TOUCH AGAIN">
+      <option name="closed" value="true" />
+      <created>1757160770384</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1757160770384</updated>
+    </task>
+    <task id="LOCAL-00016" summary="perfect, DO NOT TOUCH AGAIN">
+      <option name="closed" value="true" />
+      <created>1757165162730</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1757165162730</updated>
+    </task>
+    <task id="LOCAL-00017" summary="perfect, DO NOT TOUCH AGAIN">
+      <option name="closed" value="true" />
+      <created>1757165173368</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1757165173368</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

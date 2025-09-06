@@ -1,115 +1,94 @@
 from django.contrib import admin
-from django.contrib.auth import get_user_model
-from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
-from parler.admin import TranslatableAdmin
 from .models import (
-    PatientProfile, MedicalCategory, MedicalSpecialty, DocumentType, Tag,
-    MedicalEvent, EventTag, Document, DocumentTag, Diagnosis, TreatmentPlan,
-    NarrativeSectionResult, Medication, LabIndicator, LabTestMeasurement,
-    DocumentShare, ShareToken, LabIndicatorAlias
+    PatientProfile, MedicalCategory, MedicalSpecialty, DocumentType,
+    Tag, MedicalEvent, EventTag, Document, DocumentTag,
+    Diagnosis, NarrativeNote, Medication,
+    LabIndicator, LabIndicatorAlias, LabTestMeasurement,
+    ShareLink, OcrLog
 )
-
-User = get_user_model()
-
-@admin.register(User)
-class UserAdmin(DjangoUserAdmin):
-    list_display = ("username", "email", "email_verified", "is_staff", "is_active")
-    search_fields = ("username", "email")
-    fieldsets = DjangoUserAdmin.fieldsets + (("Profile", {"fields": ("phone", "email_verified")}),)
 
 @admin.register(PatientProfile)
 class PatientProfileAdmin(admin.ModelAdmin):
-    list_display = ("user", "first_name_bg", "last_name_bg", "date_of_birth", "gender")
-    search_fields = ("user__username", "user__email", "first_name_bg", "last_name_bg")
+    list_display = ("user", "share_enabled", "share_token")
+    search_fields = ("user__username", "user__email")
 
 @admin.register(MedicalCategory)
-class MedicalCategoryAdmin(TranslatableAdmin):
-    list_display = ("__str__", "slug", "is_active", "order")
-    list_filter = ("is_active",)
-    search_fields = ("translations__name", "slug")
-    ordering = ("order", "id")
+class MedicalCategoryAdmin(admin.ModelAdmin):
+    list_display = ("id",)
+    search_fields = ("translations__name",)
 
 @admin.register(MedicalSpecialty)
-class MedicalSpecialtyAdmin(TranslatableAdmin):
-    list_display = ("__str__", "is_active", "order")
-    list_filter = ("is_active",)
+class MedicalSpecialtyAdmin(admin.ModelAdmin):
+    list_display = ("id",)
     search_fields = ("translations__name",)
-    ordering = ("order", "id")
 
 @admin.register(DocumentType)
-class DocumentTypeAdmin(TranslatableAdmin):
-    list_display = ("__str__", "slug", "is_active")
-    list_filter = ("is_active",)
-    search_fields = ("translations__name", "slug")
+class DocumentTypeAdmin(admin.ModelAdmin):
+    list_display = ("id",)
+    search_fields = ("translations__name",)
 
 @admin.register(Tag)
-class TagAdmin(TranslatableAdmin):
-    list_display = ("__str__", "slug", "kind", "is_active")
+class TagAdmin(admin.ModelAdmin):
+    list_display = ("slug", "kind", "is_active")
     list_filter = ("kind", "is_active")
     search_fields = ("translations__name", "slug")
 
 @admin.register(MedicalEvent)
 class MedicalEventAdmin(admin.ModelAdmin):
-    list_display = ("id", "patient", "specialty", "event_date", "created_at")
-    list_filter = ("specialty", "event_date", "created_at")
-    search_fields = ("patient__user__username", "patient__first_name_bg", "patient__last_name_bg")
+    list_display = ("id", "patient", "owner", "specialty", "category", "doc_type", "event_date")
+    list_filter = ("specialty", "category", "doc_type", "event_date")
+    search_fields = ("patient__user__username",)
 
 @admin.register(EventTag)
 class EventTagAdmin(admin.ModelAdmin):
     list_display = ("event", "tag")
     list_filter = ("tag__kind",)
-    search_fields = ("event__patient__user__username", "tag__translations__name")
 
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
-    list_display = ("id", "owner", "medical_event", "specialty", "category", "doc_type", "document_date", "uploaded_at")
+    list_display = ("id", "owner", "medical_event", "specialty", "category", "doc_type", "date_created", "uploaded_at", "doc_kind")
     list_filter = ("specialty", "category", "doc_type", "doc_kind", "uploaded_at")
-    search_fields = ("owner__username", "summary", "notes", "original_ocr_text")
-    readonly_fields = ("sha256",)
+    search_fields = ("id", "sha256")
 
 @admin.register(DocumentTag)
 class DocumentTagAdmin(admin.ModelAdmin):
-    list_display = ("document", "tag", "is_inherited")
-    list_filter = ("is_inherited", "tag__kind")
-    search_fields = ("document__owner__username", "tag__translations__name")
+    list_display = ("document", "tag", "is_inherited", "is_permanent")
+    list_filter = ("is_inherited", "is_permanent", "tag__kind")
 
 @admin.register(Diagnosis)
 class DiagnosisAdmin(admin.ModelAdmin):
-    list_display = ("medical_event", "code", "diagnosed_at")
-    search_fields = ("code", "text")
+    list_display = ("medical_event", "code")
 
-@admin.register(TreatmentPlan)
-class TreatmentPlanAdmin(admin.ModelAdmin):
-    list_display = ("medical_event", "start_date", "end_date")
-
-@admin.register(NarrativeSectionResult)
-class NarrativeSectionResultAdmin(admin.ModelAdmin):
+@admin.register(NarrativeNote)
+class NarrativeNoteAdmin(admin.ModelAdmin):
     list_display = ("medical_event", "title")
 
 @admin.register(Medication)
 class MedicationAdmin(admin.ModelAdmin):
-    list_display = ("medical_event", "name", "start_date", "end_date")
-
-class LabIndicatorAliasInline(admin.TabularInline):
-    model = LabIndicatorAlias
-    extra = 1
+    list_display = ("medical_event", "name")
 
 @admin.register(LabIndicator)
-class LabIndicatorAdmin(TranslatableAdmin):
-    inlines = [LabIndicatorAliasInline]
-    list_display = ("__str__", "unit", "reference_low", "reference_high")
-    search_fields = ("translations__name",)
+class LabIndicatorAdmin(admin.ModelAdmin):
+    list_display = ("slug", "unit", "reference_low", "reference_high", "is_active")
+    search_fields = ("translations__name", "slug")
+    list_filter = ("is_active",)
+
+@admin.register(LabIndicatorAlias)
+class LabIndicatorAliasAdmin(admin.ModelAdmin):
+    list_display = ("indicator", "alias", "alias_norm")
+    search_fields = ("alias", "alias_norm")
 
 @admin.register(LabTestMeasurement)
 class LabTestMeasurementAdmin(admin.ModelAdmin):
-    list_display = ("medical_event", "indicator", "value", "measured_at", "is_abnormal")
+    list_display = ("medical_event", "indicator", "value", "measured_at")
     list_filter = ("indicator", "measured_at")
 
-@admin.register(DocumentShare)
-class DocumentShareAdmin(admin.ModelAdmin):
-    list_display = ("document", "token", "created_at", "expires_at", "is_active")
-    readonly_fields = ("token", "created_at")
+@admin.register(ShareLink)
+class ShareLinkAdmin(admin.ModelAdmin):
+    list_display = ("token", "owner", "object_type", "object_id", "format", "status", "expires_at", "created_at")
+    list_filter = ("object_type", "format", "status")
 
-@admin.register(ShareToken)
-class ShareTokenAdmin(admin.ModelAdmin):
-    list_display = ("document", "token", "created_at", "expires_at", "is_active")
+@admin.register(OcrLog)
+class OcrLogAdmin(admin.ModelAdmin):
+    list_display = ("user", "document", "source", "duration_ms", "created_at")
+    list_filter = ("source", "created_at")

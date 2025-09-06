@@ -1,0 +1,58 @@
+{% extends "basetemplates/base_app.html" %}
+{% load static i18n %}
+
+{% block app_content %}
+<div class="max-w-5xl mx-auto">
+  <div class="bg-blockbg rounded-2xl p-6 shadow-sm mb-6">
+    <div class="text-primaryDark text-2xl font-bold">{% trans "История на споделянията" %}</div>
+    <div class="text-primaryDark opacity-70 mt-1">{% trans "Линкове, срокове и статус" %}</div>
+  </div>
+
+  <div class="bg-blockbg rounded-2xl p-4 shadow-sm">
+    <div id="shareList" class="space-y-3"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+(function(){
+  async function j(u,o){const r=await fetch(u,o||{credentials:"same-origin"});if(!r.ok)throw new Error("bad");return await r.json()}
+  function tokenCard(it){
+    const s=it.status||""; const e=it.expires_at||""; const u=it.url||"#";
+    return '<div class="p-4 rounded-xl" style="background:#FFFFF5; box-shadow: 0 10px 14px rgba(10,30,74,.08);">'
+      + '<div class="flex items-center justify-between"><div class="text-[#0A1E4A] font-semibold">'
+      + it.object_type + ' #' + it.object_id + '</div><div class="text-sm">' + s + ' · ' + e + '</div></div>'
+      + '<div class="mt-2 break-all"><a href="'+u+'" class="underline" target="_blank">'+u+'</a></div>'
+      + '<div class="mt-3 flex gap-2"><button data-token="'+(it.token||'')+'" class="btn-revoke px-3 h-10 rounded-lg text-white" style="background:#D84137">{{ _("Отмени") }}</button></div>'
+      + '</div>';
+  }
+  function csrf(){
+    const i=document.querySelector('input[name="csrfmiddlewaretoken"]');
+    if(i) return i.value;
+    const m=document.cookie.match(/csrftoken=([^;]+)/); return m?m[1]:"";
+  }
+  async function loadHistory(){
+    const box=document.getElementById("shareList"); if(!box) return;
+    try{
+      const data=await j("/api/share/history/");
+      const items=data.results||[];
+      box.innerHTML = items.length ? items.map(tokenCard).join("") : '<div class="text-[#0A1E4A] opacity-70">{{ _("Няма споделяния.") }}</div>';
+      document.querySelectorAll(".btn-revoke").forEach(b=>{
+        b.addEventListener("click", async ()=>{
+          const t=b.getAttribute("data-token")||"";
+          if(!t) return;
+          try{
+            await j("/api/share/revoke/"+encodeURIComponent(t)+"/", {method:"POST", headers:{"X-CSRFToken":csrf()}, credentials:"same-origin"});
+            loadHistory();
+          }catch(e){}
+        });
+      });
+    }catch(e){
+      box.innerHTML = '<div class="text-[#0A1E4A] opacity-70">{{ _("Грешка при зареждане.") }}</div>';
+    }
+  }
+  document.addEventListener("DOMContentLoaded", loadHistory);
+})();
+</script>
+{% endblock %}
