@@ -14,7 +14,9 @@
 .disabled-ui { opacity:.4 !important; pointer-events:none !important; }
 </style>
 
-<form id="upload-form" method="post" enctype="multipart/form-data" class="upload-page max-w-8xl mx-auto space-y-8">
+<form id="upload-form" method="post" enctype="multipart/form-data"
+      class="upload-page max-w-8xl mx-auto space-y-8"
+      data-upload-ocr-url="{% url 'medj:upload_ocr' %}">
   {% csrf_token %}
 
   <div class="w-full max-w-8xl mx-auto rounded-2xl p-8 mt-16">
@@ -39,7 +41,7 @@
         {% endfor %}
       </select>
 
-      <span class="text-2xl font-extrabод text-[#0A1E4A]">{% trans "беше назначено " %}</span>
+      <span class="text-2xl font-extrabold text-[#0A1E4A]">{% trans "беше назначено " %}</span>
 
       <select id="sel_doc_type" name="doc_type" class="ui-select h-12 min-w-[220px] rounded-xl px-4 border border-gray-300 disabled-ui" disabled aria-disabled="true">
         <option value="" selected disabled>{% trans "Вид документ" %}</option>
@@ -107,198 +109,6 @@
 </div>
 {% endblock %}
 
-{% block extra_js %}
-<script>
-(function(){
-  var form = document.getElementById('upload-form');
-  var selCat = document.getElementById('sel_category');
-  var selSpec = document.getElementById('sel_specialty');
-  var selDoc = document.getElementById('sel_doc_type');
-  var fileBtn = document.getElementById('file_btn');
-  var fileInput = document.getElementById('file_input');
-  var fileKind = document.getElementById('file_kind');
-  var btnUpload = document.getElementById('btn_upload');
-  var warn = document.getElementById('req_warn');
-  var warnList = document.getElementById('req_list');
-  var previewPlaceholder = document.getElementById('preview_placeholder');
-  var previewImg = document.getElementById('preview_img');
-  var previewPdf = document.getElementById('preview_pdf');
-  var previewMeta = document.getElementById('preview_meta');
-
-  function hasValue(selectEl){ return !!selectEl && selectEl.selectedIndex > 0; }
-
-  function setDisabled(el, disabled){
-    if(!el) return;
-    el.disabled = !!disabled;
-    el.setAttribute('aria-disabled', disabled ? 'true':'false');
-    el.classList.toggle('disabled-ui', !!disabled);
-  }
-
-  function setDisabledLabel(labelEl, disabled){
-    if(!labelEl) return;
-    if(disabled){ labelEl.classList.add('disabled-ui'); labelEl.setAttribute('data-disabled','true'); }
-    else { labelEl.classList.remove('disabled-ui'); labelEl.removeAttribute('data-disabled'); }
-  }
-
-  function clearPreview(){
-    if(previewImg){ previewImg.src = ""; previewImg.classList.add('hidden'); }
-    if(previewPdf){ previewPdf.data = ""; previewPdf.classList.add('hidden'); }
-    if(previewPlaceholder){ previewPlaceholder.classList.remove('hidden'); }
-    if(previewMeta){ previewMeta.textContent = ""; }
-  }
-
-  function showRequirements(){
-    var missing = [];
-    if(!hasValue(selCat)) missing.push("{% trans 'Категория' %}");
-    if(!hasValue(selSpec)) missing.push("{% trans 'Специалност' %}");
-    if(!hasValue(selDoc)) missing.push("{% trans 'Вид документ' %}");
-    if(fileInput.disabled || !fileInput.value) missing.push("{% trans 'Документ за качване' %}");
-    if(!hasValue(fileKind)) missing.push("{% trans 'Тип файл' %}");
-    warnList.innerHTML = missing.map(function(m){ return "<li>• " + m + "</li>"; }).join("");
-    if(missing.length){ warn.classList.remove('hidden'); } else { warn.classList.add('hidden'); }
-  }
-
-  function updateStates(){
-    var hasCat = hasValue(selCat);
-    setDisabled(selSpec, !hasCat);
-    if(!hasCat) selSpec.selectedIndex = 0;
-
-    var hasSpec = hasCat && hasValue(selSpec);
-    setDisabled(selDoc, !hasSpec);
-    if(!hasSpec) selDoc.selectedIndex = 0;
-
-    var hasDocType = hasSpec && hasValue(selDoc);
-    if(hasDocType){
-      setDisabled(fileInput, false);
-      setDisabledLabel(fileBtn, false);
-    }else{
-      setDisabled(fileInput, true);
-      fileInput.value = "";
-      setDisabledLabel(fileBtn, true);
-      clearPreview();
-      setDisabled(fileKind, true);
-      fileKind.selectedIndex = 0;
-      setDisabled(btnUpload, true);
-    }
-    showRequirements();
-  }
-
-  selCat.addEventListener('change', updateStates);
-  selSpec.addEventListener('change', updateStates);
-  selDoc.addEventListener('change', updateStates);
-
-  document.addEventListener('click', function(e){
-    var el = e.target;
-    var blocked = false;
-    if(el.closest('#file_btn') && fileBtn.getAttribute('data-disabled') === 'true') blocked = true;
-    if(el.tagName === 'SELECT' && (el.disabled || el.getAttribute('aria-disabled') === 'true')) blocked = true;
-    if(el.tagName === 'BUTTON' && (el.disabled || el.getAttribute('aria-disabled') === 'true')) blocked = true;
-    var parentDisabled = el.closest('.disabled-ui,[data-disabled="true"],[aria-disabled="true"]');
-    if(parentDisabled) blocked = true;
-    if(blocked){
-      e.preventDefault();
-      e.stopPropagation();
-      showRequirements();
-    }
-  }, true);
-
-  function renderPreview(file){
-    clearPreview();
-    if(!file) return;
-    var url = URL.createObjectURL(file);
-    previewPlaceholder.classList.add('hidden');
-    var name = file.name || "";
-    var kb = (file.size/1024).toFixed(1);
-    previewMeta.textContent = name + " — " + kb + " KB";
-    var lower = name.toLowerCase();
-    if(file.type === 'application/pdf' || lower.endsWith('.pdf')){
-      previewPdf.data = url;
-      previewPdf.classList.remove('hidden');
-    }else if(file.type.startsWith('image/')){
-      previewImg.src = url;
-      previewImg.classList.remove('hidden');
-    }else{
-      var link = document.createElement('a');
-      link.href = url; link.target = "_blank";
-      link.textContent = "{% trans 'Преглед/Сваляне на файл' %}";
-      previewPlaceholder.classList.add('hidden');
-      previewPdf.classList.add('hidden');
-      previewImg.classList.add('hidden');
-      document.getElementById('preview_box').appendChild(link);
-    }
-  }
-
-  fileInput.addEventListener('change', function(){
-    if(fileInput.files && fileInput.files.length){
-      setDisabled(fileKind, false);
-      renderPreview(fileInput.files[0]);
-      setDisabled(btnUpload, true);
-    }else{
-      setDisabled(fileKind, true);
-      fileKind.selectedIndex = 0;
-      setDisabled(btnUpload, true);
-      clearPreview();
-    }
-    showRequirements();
-  });
-
-  fileKind.addEventListener('change', function(){
-    if(hasValue(fileKind) && fileInput.files && fileInput.files.length){
-      setDisabled(btnUpload, false);
-    }else{
-      setDisabled(btnUpload, true);
-    }
-    showRequirements();
-  });
-
-  if(!localStorage.getItem('ob_upload_done')){
-    var ob = document.getElementById('ob_upload');
-    ob.classList.remove('hidden');
-    document.getElementById('ob2_ok').addEventListener('click', function(){
-      localStorage.setItem('ob_upload_done','1');
-      ob.classList.add('hidden');
-    });
-  }
-
-  var leavingWarned = false;
-  var started = false;
-  window.addEventListener('beforeunload', function (e) {
-    if(started && !leavingWarned){
-      e.preventDefault();
-      e.returnValue = '';
-      return '';
-    }
-  });
-  form.addEventListener('change', function(){ started = true; });
-
-  form.addEventListener('submit', function(e){
-    e.preventDefault();
-    started = true;
-    showRequirements();
-    if(fileInput.disabled || !fileInput.value || !hasValue(fileKind) || !hasValue(selCat) || !hasValue(selSpec) || !hasValue(selDoc)){
-      return;
-    }
-    var fd = new FormData(form);
-    var csrf = document.querySelector('input[name=csrfmiddlewaretoken]')?.value || '';
-    fetch("{% url 'medj:upload' %}", {
-      method:'POST',
-      headers:{'X-Requested-With':'XMLHttpRequest','X-CSRFToken':csrf},
-      body: fd
-    }).then(r=>r.json()).then(function(j){
-      if(j && j.ok){
-        leavingWarned = true;
-        window.location.href = j.next || "{% url 'medj:upload' %}";
-        return;
-      }
-      warnList.innerHTML = "<li>• " + (j && j.error ? j.error : "{% trans 'Грешка при качване' %}") + "</li>";
-      warn.classList.remove('hidden');
-    }).catch(function(){
-      warnList.innerHTML = "<li>• {% trans 'Грешка при връзката.' %}</li>";
-      warn.classList.remove('hidden');
-    });
-  });
-
-  updateStates();
-})();
-</script>
+{% block scripts_extra %}
+<script src="{% static 'js/upload_logic.js' %}?v={% now "U" %}"></script>
 {% endblock %}

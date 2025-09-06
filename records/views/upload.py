@@ -33,14 +33,10 @@ def _id_to_name(model, id_str):
 @login_required
 @require_http_methods(["GET"])
 def upload(request):
-    doc_types   = _q_names(DocumentType)
+    doc_types = _q_names(DocumentType)
     specialties = _q_names(MedicalSpecialty)
-    categories  = _q_names(MedicalCategory)
-    return render(request, "main/upload.html", {
-        "doc_types": doc_types,
-        "specialties": specialties,
-        "categories": categories
-    })
+    categories = _q_names(MedicalCategory)
+    return render(request, "main/upload.html", {"doc_types": doc_types, "specialties": specialties, "categories": categories})
 
 def _merge_lines(a, b):
     seen, out = set(), []
@@ -55,11 +51,7 @@ def _call_flask_ocr(dj_file, ctx):
     url = os.getenv("OCR_SERVICE_URL", "http://ocr:5000/ocr")
     dj_file.seek(0)
     files = {"file": (dj_file.name, dj_file.read(), dj_file.content_type or "application/octet-stream")}
-    data = {
-        "event_type": ctx.get("event_type",""),
-        "category_name": ctx.get("category_name",""),
-        "specialty_name": ctx.get("specialty_name",""),
-    }
+    data = {"event_type": ctx.get("event_type",""), "category_name": ctx.get("category_name",""), "specialty_name": ctx.get("specialty_name","")}
     try:
         r = requests.post(url, files=files, data=data, timeout=90)
         if r.status_code != 200:
@@ -67,8 +59,7 @@ def _call_flask_ocr(dj_file, ctx):
         if "application/json" in r.headers.get("content-type",""):
             p = r.json()
             if isinstance(p, dict):
-                return (p.get("ocr_text") or p.get("text") or p.get("full_text")
-                        or p.get("data",{}).get("raw_text","") or "").strip()
+                return (p.get("ocr_text") or p.get("text") or p.get("full_text") or p.get("data",{}).get("raw_text","") or "").strip()
         return (r.text or "").strip()
     except Exception:
         return ""
@@ -133,11 +124,14 @@ def _fallback_extract(text, specialty_hint):
 @require_http_methods(["POST"])
 def upload_ocr(request):
     files = request.FILES.getlist("files")
+    if not files and request.FILES.get("file"):
+        files = [request.FILES["file"]]
     if not files:
         return HttpResponseBadRequest("No files")
     doc_name = _id_to_name(DocumentType, request.POST.get("doc_type",""))
     spec_name = _id_to_name(MedicalSpecialty, request.POST.get("specialty",""))
-    cat_name = _id_to_name(MedicalCategory, request.POST.get("med_category",""))
+    cat_id = request.POST.get("med_category","") or request.POST.get("category","")
+    cat_name = _id_to_name(MedicalCategory, cat_id)
     ctx = {"event_type": doc_name, "specialty_name": spec_name, "category_name": cat_name}
     merged = ""
     for f in files:
