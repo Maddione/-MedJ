@@ -44,8 +44,8 @@ from .views.doctors_views import doctors_suggest
 app_name = "medj"
 
 urlpatterns = [
-    path("", TemplateView.as_view(template_name="main/index.html"), name="landingpage"),
-    path("login/", RememberLoginView.as_view(template_name="registration/login.html"), name="login"),
+    path("", TemplateView.as_view(template_name="basetemplates/landingpage.html"), name="landingpage"),
+    path("login/", RememberLoginView.as_view(template_name="auth/login.html"), name="login"),
     path("logout/", LogoutView.as_view(next_page=reverse_lazy("medj:login")), name="logout"),
     path("register/", RegisterView.as_view(), name="register"),
     path(

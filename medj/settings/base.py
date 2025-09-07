@@ -16,6 +16,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "parler",
     "records",
+    "widget_tweaks",
 ]
 
 MIDDLEWARE = [
