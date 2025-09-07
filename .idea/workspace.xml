@@ -8,37 +8,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c486bb59-c79b-4440-8fcc-e0c5e6eda3dc" name="Changes" comment="perfect, DO NOT TOUCH AGAIN">
-      <change afterPath="$PROJECT_DIR$/records/views/doctors_views.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/records/views/doctors_api.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker/compose/docker-compose.dev.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker/compose/docker-compose.dev.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker/ocrapi/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/docker/ocrapi/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker/web/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/docker/web/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker/web/entrypoint.dev.sh" beforeDir="false" afterPath="$PROJECT_DIR$/docker/web/entrypoint.dev.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/medj/settings/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/settings/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/medj/settings/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/settings/base.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/medj/settings/prod.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/settings/prod.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ocrapi/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/ocrapi/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ocrapi/requirements-ocr.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ocrapi/requirements-ocr.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/forms.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/middleware/onboarding.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/management/middleware/onboarding.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/migrations/0001_initial.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/services/csv_to_pdf.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/management/services/csv_to_pdf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/services/labs_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/management/services/labs_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/services/llm/anonymizer.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/management/services/llm/anonymizer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/services/llm/gpt_client.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/management/services/llm/gpt_client.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/services/pdf.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/management/services/pdf.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/services/print_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/management/services/print_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/services/tags.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/management/services/tags.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/services/upload_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/management/services/upload_flow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/signals.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/signals.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/urls_api.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/urls_pages.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/management/services/upload_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/management/services/upload_flow.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/views/api_upload.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/api_upload.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/views/exports.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/exports.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/theme/static/js/upload_logic.js" beforeDir="false" afterPath="$PROJECT_DIR$/theme/static/js/upload_logic.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -111,6 +85,7 @@
     <setting file="file://$PROJECT_DIR$/records/views/api_upload.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/views/auth.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/casefiles.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/records/views/doctors_api.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/views/doctors_views.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/views/documents.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/events.py" root0="FORCE_HIGHLIGHTING" />
@@ -440,7 +415,15 @@
       <option name="project" value="LOCAL" />
       <updated>1757184892083</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="perfect, DO NOT TOUCH AGAIN">
+      <option name="closed" value="true" />
+      <created>1757203537474</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1757203537475</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

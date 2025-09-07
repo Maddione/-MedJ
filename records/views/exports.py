@@ -4,7 +4,7 @@ from pathlib import Path
 from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, FileResponse, HttpResponseForbidden, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.utils.translation import get_language
 from django.core import signing
@@ -14,6 +14,11 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from ..models import Document, MedicalEvent
+
+try:
+    from records.services import exports as sexp
+except Exception:
+    sexp = None
 
 _SIGNER_SALT = "medj.share"
 
@@ -75,15 +80,6 @@ def _ddmmyyyy(d):
     except Exception:
         return ""
 
-def _event_tags_text(ev):
-    names = []
-    if hasattr(ev, "tags"):
-        for t in ev.tags.all().order_by("id"):
-            nm = getattr(t, "safe_translation_getter", lambda *a, **k: None)("name", any_language=True) or getattr(t, "name", "") or ""
-            if nm:
-                names.append(nm)
-    return ", ".join(names)
-
 def _font_name():
     try:
         pdfmetrics.registerFont(TTFont("DejaVuSans", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"))
@@ -122,56 +118,6 @@ def pdf_response(filename: str, pdf_bytes: bytes, inline: bool = True) -> HttpRe
     resp["Content-Disposition"] = f'{disp}; filename="{filename}"'
     return resp
 
-def events_csv_to_pdf(csv_bytes_io: io.BytesIO) -> bytes:
-    csv_bytes_io.seek(0)
-    try:
-        rows = list(csv.reader(io.StringIO(csv_bytes_io.read().decode("utf-8"))))
-    except Exception:
-        rows = []
-    buf = io.BytesIO()
-    c = canvas.Canvas(buf, pagesize=A4)
-    c.setFont(_font_name(), 12)
-    c.drawString(40, 800, "Events")
-    c.setFont(_font_name(), 10)
-    y = 780
-    for r in rows:
-        line = " | ".join(str(x) for x in r)
-        c.drawString(40, y, line[:110])
-        y -= 14
-        if y < 60:
-            c.showPage()
-            c.setFont(_font_name(), 10)
-            y = 800
-    c.showPage()
-    c.save()
-    buf.seek(0)
-    return buf.getvalue()
-
-def labs_csv_to_pdf(csv_bytes_io: io.BytesIO) -> bytes:
-    csv_bytes_io.seek(0)
-    try:
-        rows = list(csv.reader(io.StringIO(csv_bytes_io.read().decode("utf-8"))))
-    except Exception:
-        rows = []
-    buf = io.BytesIO()
-    c = canvas.Canvas(buf, pagesize=A4)
-    c.setFont(_font_name(), 12)
-    c.drawString(40, 800, "Labs")
-    c.setFont(_font_name(), 10)
-    y = 780
-    for r in rows:
-        line = " | ".join(str(x) for x in r)
-        c.drawString(40, y, line[:110])
-        y -= 14
-        if y < 60:
-            c.showPage()
-            c.setFont(_font_name(), 10)
-            y = 800
-    c.showPage()
-    c.save()
-    buf.seek(0)
-    return buf.getvalue()
-
 def _token_ok(request, kind: str) -> bool:
     t = request.GET.get("t")
     if not t:
@@ -198,6 +144,13 @@ def _token_ok(request, kind: str) -> bool:
 
 @login_required
 def document_export_pdf(request, pk: int):
+    if sexp and hasattr(sexp, "document_pdf"):
+        doc = get_object_or_404(Document, pk=pk, owner=request.user)
+        try:
+            pdf_bytes = sexp.document_pdf(request, doc)
+        except Exception:
+            return HttpResponseBadRequest("export_error")
+        return pdf_response(f"document_{pk}.pdf", pdf_bytes, inline=True)
     doc = get_object_or_404(Document, pk=pk, owner=request.user)
     context = {"document": doc, "user": request.user}
     pdf_bytes = render_template_to_pdf(request, "subpages/document_export_pdf.html", context)
@@ -206,85 +159,74 @@ def document_export_pdf(request, pk: int):
 
 @login_required
 def event_export_pdf(request, pk: int):
+    if sexp and hasattr(sexp, "event_pdf"):
+        ev = get_object_or_404(MedicalEvent, pk=pk, patient__user=request.user)
+        try:
+            pdf_bytes = sexp.event_pdf(request, ev)
+        except Exception:
+            return HttpResponseBadRequest("export_error")
+        return pdf_response(f"event_{pk}.pdf", pdf_bytes, inline=True)
     event = get_object_or_404(
         MedicalEvent.objects.select_related("patient__user", "specialty").prefetch_related("documents", "tags"),
         pk=pk, patient__user=request.user
     )
-    diagnoses = getattr(event, "diagnoses", None)
-    treatment_plans = getattr(event, "treatment_plans", None)
-    narrative_sections = getattr(event, "narrative_sections", None)
-    labs_qs = getattr(event, "lab_measurements", None)
-    context = {
-        "event": event,
-        "diagnoses": list(diagnoses.all()) if hasattr(diagnoses, "all") else [],
-        "treatment_plans": list(treatment_plans.all()) if hasattr(treatment_plans, "all") else [],
-        "narrative_sections": list(narrative_sections.all()) if hasattr(narrative_sections, "all") else [],
-        "documents": list(event.documents.all()) if hasattr(event, "documents") else [],
-        "labs": list(labs_qs.select_related("indicator").all()) if hasattr(labs_qs, "all") else [],
-    }
+    context = {"event": event}
     pdf_bytes = render_template_to_pdf(request, "subpages/event_export_pdf.html", context)
     pdf_bytes = _overlay_bytes_with_template(pdf_bytes, _template_pdf_path(request))
     return pdf_response(f"event_{pk}.pdf", pdf_bytes, inline=True)
 
 @login_required
 def export_csv(request):
-    event_id = request.GET.get("event_id")
-    if not event_id:
-        return HttpResponseBadRequest("missing_event_id")
-    ev = get_object_or_404(MedicalEvent, pk=event_id, patient__user=request.user)
-    labs_qs = getattr(ev, "lab_measurements", None)
-    rows = []
-    if hasattr(labs_qs, "select_related"):
-        for m in labs_qs.select_related("indicator").order_by("measured_at", "id"):
-            ind = m.indicator
-            name = getattr(ind, "safe_translation_getter", lambda *a, **k: None)("name", any_language=True) or getattr(ind, "name", "")
-            rows.append([
-                ev.id,
-                _ddmmyyyy(ev.event_date),
-                name,
-                getattr(m, "value", ""),
-                getattr(ind, "unit", ""),
-                getattr(ind, "reference_low", ""),
-                getattr(ind, "reference_high", ""),
-                _ddmmyyyy(getattr(m, "measured_at", None)),
-                _event_tags_text(ev),
-            ])
-    out = io.StringIO()
-    w = csv.writer(out)
-    w.writerow(["event_id","event_date","indicator_name","value","unit","reference_low","reference_high","measured_at","tags"])
-    for r in rows:
-        w.writerow(r)
-    resp = HttpResponse(out.getvalue(), content_type="text/csv; charset=utf-8")
-    resp["Content-Disposition"] = f'attachment; filename="event_{ev.id}_labs.csv"'
-    return resp
+    if sexp and hasattr(sexp, "event_csv"):
+        event_id = request.GET.get("event_id")
+        if not event_id:
+            return HttpResponseBadRequest("missing_event_id")
+        ev = get_object_or_404(MedicalEvent, pk=event_id, patient__user=request.user)
+        try:
+            csv_bytes = sexp.event_csv(ev)
+        except Exception:
+            return HttpResponseBadRequest("export_error")
+        resp = HttpResponse(csv_bytes, content_type="text/csv; charset=utf-8")
+        resp["Content-Disposition"] = f'attachment; filename="event_{ev.id}_labs.csv"'
+        return resp
+    return HttpResponseBadRequest("service_unavailable")
 
 def print_csv(request):
+    if sexp and hasattr(sexp, "print_csv_bytes"):
+        try:
+            csv_bytes = sexp.print_csv_bytes(request)
+        except Exception:
+            return HttpResponseBadRequest("export_error")
+        resp = HttpResponse(csv_bytes, content_type="text/csv; charset=utf-8")
+        resp["Content-Disposition"] = 'attachment; filename="export.csv"'
+        return resp
     if not request.user.is_authenticated and not _token_ok(request, "print_csv"):
         return HttpResponseForbidden()
-    labs = request.GET.get("labs")
     out = io.StringIO()
     w = csv.writer(out)
-    if labs:
-        w.writerow(["date", "indicator", "value", "unit", "reference_low", "reference_high", "abn"])
-    else:
-        w.writerow(["date", "category", "specialty", "summary"])
+    w.writerow(["date", "category", "specialty", "summary"])
     resp = HttpResponse(out.getvalue(), content_type="text/csv; charset=utf-8")
     resp["Content-Disposition"] = 'attachment; filename="export.csv"'
     return resp
 
 def print_pdf(request):
+    if sexp and hasattr(sexp, "print_pdf_bytes"):
+        try:
+            pdf_bytes = sexp.print_pdf_bytes(request)
+        except Exception:
+            return HttpResponseBadRequest("export_error")
+        resp = HttpResponse(pdf_bytes, content_type="application/pdf")
+        resp["Content-Disposition"] = 'inline; filename="export.pdf"'
+        return resp
     if not request.user.is_authenticated and not _token_ok(request, "print_pdf"):
         return HttpResponseForbidden()
-    labs = request.GET.get("labs")
-    if labs:
-        buf = io.StringIO()
-        csv.writer(buf).writerow(["indicator", "value", "unit", "reference_low", "reference_high", "abn"])
-        generated = labs_csv_to_pdf(io.BytesIO(buf.getvalue().encode("utf-8")))
-        pdf_bytes = _overlay_bytes_with_template(generated, _template_pdf_path(request))
-        return pdf_response("labs.pdf", pdf_bytes, inline=True)
-    else:
-        buf = io.StringIO()
-        csv.writer(buf).writerow(["date", "category", "specialty", "summary"])
-        generated = events_csv_to_pdf(io.BytesIO(buf.getvalue().encode("utf-8")))
-        pdf_bytes = _overlay_bytes_with_template(generated, _template_pdf_path(request))
-        return pdf_response("events.pdf", pdf_bytes, inline=True)
+    buf = io.BytesIO()
+    c = canvas.Canvas(buf, pagesize=A4)
+    c.setFont(_font_name(), 14)
+    c.drawString(40, 800, "Export")
+    c.showPage()
+    c.save()
+    buf.seek(0)
+    pdf_bytes = buf.getvalue()
+    pdf_bytes = _overlay_bytes_with_template(pdf_bytes, _template_pdf_path(request))
+    return pdf_response("export.pdf", pdf_bytes, inline=True)
