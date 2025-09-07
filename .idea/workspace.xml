@@ -9,16 +9,7 @@
   <component name="ChangeListManager">
     <list default="true" id="c486bb59-c79b-4440-8fcc-e0c5e6eda3dc" name="Changes" comment="perfect, DO NOT TOUCH AGAIN">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/management/services/upload_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/management/services/upload_flow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/subpages/share_public.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/share_public.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/views/api_upload.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/api_upload.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/views/doctors_views.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/doctors_views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/views/exports.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/exports.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/views/share_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/share_api.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/theme/static/js/upload_logic.js" beforeDir="false" afterPath="$PROJECT_DIR$/theme/static/js/upload_logic.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -83,7 +74,7 @@
     <setting file="file://$PROJECT_DIR$/records/tests/test_api_upload.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/tests/test_confirm_flow.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/tests/test_share_and_export.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/records/urls.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/records/urls.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/utils/db_checks.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/utils/labs.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/__init__.py" root0="SKIP_INSPECTION" />
@@ -438,7 +429,15 @@
       <option name="project" value="LOCAL" />
       <updated>1757207061764</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="perfect, DO NOT TOUCH AGAIN">
+      <option name="closed" value="true" />
+      <created>1757211151735</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1757211151735</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
