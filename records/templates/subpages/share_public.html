@@ -1,89 +1,110 @@
-{% extends "basetemplates/base_app.html" %}
-{% load i18n %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Споделен преглед</title>
+  <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <div class="max-w-3xl mx-auto p-6">
+    <h1 class="text-2xl font-semibold mb-4">Споделен преглед</h1>
 
-{% block app_content %}
-<div class="max-w-4xl mx-auto">
-
-  <div class="bg-blockbg rounded-2xl p-6 shadow-sm mb-6">
-    <div class="text-primaryDark text-2xl font-bold">{% trans "Споделено досие" %}</div>
-    <div class="text-primaryDark opacity-70 mt-1">
-      {% if event %}{% trans "Събитие" %} #{{ event.id }}{% endif %}
-      {% if document %} · {% trans "Документ" %} #{{ document.id }}{% endif %}
-      · {{ share.scope|default:"full" }}
-    </div>
-  </div>
-
-  {% if need_password %}
-  <div class="bg-blockbg rounded-2xl p-6 shadow-sm">
-    <form method="post" action=".">
-      {% csrf_token %}
-      <div class="text-primaryDark font-semibold mb-2">{% trans "Въведете парола за достъп" %}</div>
-      <input type="password" name="password" class="w-full h-11 rounded-xl px-4 border border-gray-300" placeholder="{% trans 'Парола' %}">
-      {% if wrong_password %}
-      <div class="mt-2 text-sm" style="color:#D84137">{% trans "Невалидна парола." %}</div>
-      {% endif %}
-      <div class="mt-4">
-        <button class="px-4 h-11 rounded-xl text-white" style="background:#43B8CF">{% trans "Потвърди" %}</button>
-      </div>
-    </form>
-  </div>
-  {% else %}
-
-  {% if event %}
-  <div class="bg-blockbg rounded-2xl p-4 shadow-sm mb-4">
-    <div class="text-primaryDark font-semibold mb-2">{% trans "Събитие" %}</div>
-    <div class="text-primaryDark">{% trans "Дата" %}: {{ event.event_date|date:"d-m-Y" }}</div>
-    <div class="text-primaryDark">{% trans "Специалност" %}: {{ event.specialty.name }}</div>
-  </div>
-  {% endif %}
-
-  {% if document and scope != "labs" %}
-  <div class="bg-blockbg rounded-2xl p-4 shadow-sm mb-4">
-    <div class="text-primaryDark font-semibold mb-2">{% trans "Резюме" %}</div>
-    <div class="text-primaryDark">{{ document.summary|default:_("Няма резюме") }}</div>
-    <div class="text-primaryDark mt-2">{% trans "Дата" %}: {{ document.date_created|date:"d-m-Y" }}</div>
-    <div class="mt-3">
-      <a href="{{ document.file.url }}" target="_blank" class="inline-flex items-center px-3 py-2 rounded-lg text-white" style="background:#43B8CF">{% trans "Изтегли файла" %}</a>
-    </div>
-  </div>
-  {% endif %}
-
-  {% if event and (scope == "full" or scope == "labs") %}
-  <div class="bg-blockbg rounded-2xl p-4 shadow-sm">
-    <div class="text-primaryDark font-semibold mb-3">{% trans "Лабораторни резултати" %}</div>
-    {% if labs %}
-    <div class="overflow-x-auto rounded-2xl border border-gray-200">
-      <table class="min-w-full text-left text-primaryDark">
-        <thead class="bg-white">
-          <tr>
-            <th class="px-4 py-2">{% trans "Показател" %}</th>
-            <th class="px-4 py-2">{% trans "Стойност" %}</th>
-            <th class="px-4 py-2">{% trans "Единица" %}</th>
-            <th class="px-4 py-2">{% trans "Реф. ниска" %}</th>
-            <th class="px-4 py-2">{% trans "Реф. висока" %}</th>
-            <th class="px-4 py-2">{% trans "Дата" %}</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-          {% for m in labs %}
-          <tr>
-            <td class="px-4 py-2">{{ m.indicator.name }}</td>
-            <td class="px-4 py-2">{{ m.value }}</td>
-            <td class="px-4 py-2">{{ m.indicator.unit }}</td>
-            <td class="px-4 py-2">{{ m.indicator.reference_low }}</td>
-            <td class="px-4 py-2">{{ m.indicator.reference_high }}</td>
-            <td class="px-4 py-2">{{ m.measured_at|date:"d-m-Y" }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+    {% if need_password %}
+      <form method="post" class="bg-white rounded-xl shadow p-4 space-y-3">
+        {% csrf_token %}
+        <div class="text-sm {% if wrong_password %}text-red-600{% else %}text-gray-700{% endif %}">
+          {% if wrong_password %}Невалидна парола{% else %}Въведете парола за достъп{% endif %}
+        </div>
+        <input type="password" name="password" class="w-full border rounded px-3 py-2" placeholder="Парола">
+        <button type="submit" class="px-4 py-2 rounded bg-blue-600 text-white">Отвори</button>
+      </form>
     {% else %}
-    <div class="text-primaryDark opacity-70">{% trans "Няма лабораторни данни." %}</div>
+      <div class="bg-white rounded-xl shadow p-4 space-y-6">
+        <div class="flex items-center justify-between">
+          <div class="text-sm text-gray-500">Токен: {{ share.token }}</div>
+          <div class="text-sm text-gray-500">Обхват: {{ scope }}</div>
+        </div>
+
+        {% if document %}
+          <section class="space-y-2">
+            <h2 class="text-xl font-semibold">Документ #{{ document.id }}</h2>
+            <div class="text-sm text-gray-600">Събитие: {{ document.medical_event_id }}</div>
+            <div class="text-sm text-gray-600">Дата на документа: {% if document.date_created %}{{ document.date_created|date:"d-m-Y" }}{% endif %}</div>
+            <div>
+              <div class="font-medium">Резюме</div>
+              <div class="prose max-w-none">{{ document.summary|default_if_none:""|linebreaksbr }}</div>
+            </div>
+            {% if scope != "summary" %}
+              <div>
+                <div class="font-medium">Текст</div>
+                <div class="prose max-w-none whitespace-pre-wrap">{{ document.original_ocr_text|default_if_none:"" }}</div>
+              </div>
+            {% endif %}
+            <div>
+              <div class="font-medium">Тагове</div>
+              <div class="flex flex-wrap gap-2">
+                {% for t in document.tags.all %}
+                  <span class="px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">{{ t.slug }}</span>
+                {% empty %}
+                  <span class="text-sm text-gray-400">Няма</span>
+                {% endfor %}
+              </div>
+            </div>
+          </section>
+        {% elif event %}
+          <section class="space-y-2">
+            <h2 class="text-xl font-semibold">Събитие #{{ event.id }}</h2>
+            <div class="text-sm text-gray-600">Дата на събитие: {% if event.event_date %}{{ event.event_date|date:"d-m-Y" }}{% endif %}</div>
+            <div>
+              <div class="font-medium">Тагове</div>
+              <div class="flex flex-wrap gap-2">
+                {% for t in event.tags.all %}
+                  <span class="px-2 py-1 rounded-full bg-gray-100 text-gray-700 text-xs">{{ t.slug }}</span>
+                {% empty %}
+                  <span class="text-sm text-gray-400">Няма</span>
+                {% endfor %}
+              </div>
+            </div>
+          </section>
+        {% endif %}
+
+        {% if scope == "labs" or labs %}
+          <section class="space-y-3">
+            <h3 class="text-lg font-semibold">Лабораторни</h3>
+            {% if labs %}
+              <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                  <thead>
+                    <tr class="text-left text-gray-600">
+                      <th class="py-2 pr-4">Показател</th>
+                      <th class="py-2 pr-4">Стойност</th>
+                      <th class="py-2 pr-4">Единица</th>
+                      <th class="py-2 pr-4">Дата</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for m in labs %}
+                      <tr class="border-t">
+                        <td class="py-2 pr-4">{{ m.indicator.slug }}</td>
+                        <td class="py-2 pr-4">{{ m.value }}</td>
+                        <td class="py-2 pr-4">{{ m.indicator.unit|default_if_none:"" }}</td>
+                        <td class="py-2 pr-4">{% if m.measured_at %}{{ m.measured_at|date:"d-m-Y" }}{% endif %}</td>
+                      </tr>
+                    {% empty %}
+                      <tr><td colspan="4" class="py-3 text-gray-400">Няма лабораторни записи</td></tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% else %}
+              <div class="text-sm text-gray-500">Няма лабораторни данни</div>
+            {% endif %}
+          </section>
+        {% endif %}
+      </div>
     {% endif %}
   </div>
-  {% endif %}
-
-  {% endif %}
-</div>
-{% endblock %}
+</body>
+</html>

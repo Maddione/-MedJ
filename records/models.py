@@ -14,13 +14,17 @@ class PatientProfile(models.Model):
     middle_name_en = models.CharField(max_length=120, blank=True, null=True)
     last_name_en = models.CharField(max_length=120, blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
-    phone_number = models.CharField(max_length=64, blank=True, null=True)
+    sex = models.CharField(max_length=20, blank=True, null=True)
+    blood_type = models.CharField(max_length=10, blank=True, null=True)
+    height_cm = models.PositiveIntegerField(blank=True, null=True)
+    weight_kg = models.PositiveIntegerField(blank=True, null=True)
     address = models.CharField(max_length=255, blank=True, null=True)
+    phone = models.CharField(max_length=64, blank=True, null=True)
     share_enabled = models.BooleanField(default=False)
     share_token = models.CharField(max_length=64, blank=True, null=True, unique=True)
 
     def __str__(self):
-        return self.user.get_username()
+        return f"{self.user.username}"
 
 
 class MedicalCategory(TranslatableModel):
@@ -141,18 +145,12 @@ class Document(models.Model):
     doc_kind = models.CharField(max_length=16, choices=DOC_KIND_CHOICES, default="other")
     sha256 = models.CharField(max_length=64, blank=True, null=True, db_index=True)
     original_ocr_text = models.TextField(blank=True, null=True)
-    summary = models.CharField(max_length=255, blank=True, null=True)
+    summary = models.TextField(blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
     tags = models.ManyToManyField("records.Tag", through="records.DocumentTag", related_name="documents", blank=True)
 
     def __str__(self):
         return f"{self.id}"
-
-    def attach_permanent_tag(self, tag):
-        DocumentTag.objects.get_or_create(document=self, tag=tag, defaults={"is_inherited": False, "is_permanent": True})
-
-    def attach_editable_tag(self, tag):
-        DocumentTag.objects.get_or_create(document=self, tag=tag, defaults={"is_inherited": False, "is_permanent": False})
 
 
 class DocumentTag(models.Model):
@@ -180,9 +178,8 @@ class NarrativeNote(models.Model):
 class Medication(models.Model):
     medical_event = models.ForeignKey("records.MedicalEvent", on_delete=models.CASCADE, related_name="medications")
     name = models.CharField(max_length=255)
-    dosage = models.CharField(max_length=255, blank=True, null=True)
-    start_date = models.DateField(blank=True, null=True)
-    end_date = models.DateField(blank=True, null=True)
+    dose = models.CharField(max_length=255, blank=True, null=True)
+    frequency = models.CharField(max_length=255, blank=True, null=True)
 
 
 class LabIndicator(TranslatableModel):
@@ -202,8 +199,8 @@ class LabIndicator(TranslatableModel):
 
 class LabIndicatorAlias(models.Model):
     indicator = models.ForeignKey("records.LabIndicator", on_delete=models.CASCADE, related_name="aliases")
-    alias = models.CharField(max_length=255, db_index=True)
-    alias_norm = models.SlugField(max_length=255, db_index=True)
+    alias = models.CharField(max_length=255)
+    alias_norm = models.CharField(max_length=255, db_index=True)
 
     class Meta:
         unique_together = ("indicator", "alias_norm")
@@ -219,14 +216,14 @@ class LabTestMeasurement(models.Model):
     def abnormal_flag(self):
         lo = self.indicator.reference_low
         hi = self.indicator.reference_high
-        v = self.value
-        if v is None or (lo is None and hi is None):
-            return None
-        if lo is not None and v < lo:
-            return "low"
-        if hi is not None and v > hi:
-            return "high"
-        return "normal"
+        if lo is not None and self.value < lo:
+            return "L"
+        if hi is not None and self.value > hi:
+            return "H"
+        return ""
+
+    def __str__(self):
+        return f"{self.indicator.slug}={self.value}"
 
 
 class ShareLink(models.Model):
@@ -254,16 +251,55 @@ class OcrLog(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
-def get_indicator_canonical_tag(indicator):
-    from django.utils.text import slugify
-    if indicator is None:
-        return None
-    try:
-        name = getattr(indicator, "safe_translation_getter", lambda *a, **k: None)("name", any_language=True) or getattr(indicator, "name", "") or ""
-    except Exception:
-        name = getattr(indicator, "name", "") or ""
-    base = slugify(name) or f"indicator-{getattr(indicator, 'id', '') or 'x'}"
-    slug = f"indicator:{base}"
+class Practitioner(models.Model):
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="practitioners")
+    full_name = models.CharField(max_length=255)
+    specialty = models.ForeignKey("records.MedicalSpecialty", on_delete=models.SET_NULL, related_name="practitioners", blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["owner", "full_name"]),
+            models.Index(fields=["owner", "specialty"]),
+        ]
+        unique_together = ("owner", "full_name", "specialty")
+
+    def __str__(self):
+        return self.full_name
+
+
+class DocumentPractitioner(models.Model):
+    ROLE_CHOICES = (("author", "author"), ("mentioned", "mentioned"))
+    document = models.ForeignKey("records.Document", on_delete=models.CASCADE, related_name="document_practitioners")
+    practitioner = models.ForeignKey("records.Practitioner", on_delete=models.CASCADE, related_name="document_links")
+    role = models.CharField(max_length=16, choices=ROLE_CHOICES, default="author")
+    is_primary = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ("document", "practitioner", "role")
+        indexes = [models.Index(fields=["document", "is_primary"])]
+
+    def __str__(self):
+        return f"{self.document_id}-{self.practitioner_id}-{self.role}"
+
+
+def normalize_alias(s):
+    if not s:
+        return ""
+    return "".join(ch.lower() for ch in s if ch.isalnum() or ch in (" ", "-", "_")).strip()
+
+
+def get_or_create_indicator_alias(indicator, alias):
+    alias_norm = normalize_alias(alias)
+    obj, _ = LabIndicatorAlias.objects.get_or_create(indicator=indicator, alias_norm=alias_norm, defaults={"alias": alias})
+    if obj.alias != alias:
+        obj.alias = alias
+        obj.save(update_fields=["alias"])
+    return obj
+
+
+def get_or_create_system_tag_by_slug(slug, name=None):
     try:
         return Tag.objects.get(slug=slug)
     except Tag.DoesNotExist:

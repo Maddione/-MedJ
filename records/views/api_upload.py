@@ -1,13 +1,14 @@
+import base64
 import json
-import time
 import os
+import time
 import requests
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
-from django.utils.timezone import now
 from django.utils.dateparse import parse_date
+from django.utils.timezone import now
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from ..models import OcrLog, MedicalEvent, MedicalCategory, MedicalSpecialty, DocumentType, Document
@@ -61,7 +62,7 @@ def _ocr_with_flask(fileobj, filename):
         files = {"file": (filename, fileobj.read())}
         r = requests.post(url.rstrip("/") + "/ocr", files=files, timeout=60)
         j = r.json() if r.ok else {}
-        return j.get("ocr_text") or ""
+        return j.get("ocr_text") or j.get("text") or ""
     except Exception:
         return ""
 
@@ -74,7 +75,7 @@ def upload_ocr(request):
         return HttpResponseBadRequest("missing file")
     started = time.time()
     text = ""
-    source = "flask"
+    source = "vision"
     if svc and hasattr(svc, "vision_ocr_first_fallback_flask"):
         try:
             text, source = svc.vision_ocr_first_fallback_flask(f)
@@ -124,7 +125,15 @@ def upload_analyze(request):
     except Exception:
         return HttpResponseBadRequest("invalid json")
     text = payload.get("text") or ""
-    specialty_id = payload.get("specialty")
+    specialty_id = payload.get("specialty") or payload.get("specialty_id")
+    specialty_name = ""
+    if specialty_id:
+        sp = MedicalSpecialty.objects.filter(id=specialty_id).first()
+        if sp:
+            try:
+                specialty_name = sp.safe_translation_getter("name", any_language=True) or ""
+            except Exception:
+                specialty_name = ""
     result = None
     try:
         from records.services.llm import anonymizer as anonymizer_mod
@@ -140,11 +149,17 @@ def upload_analyze(request):
             anon = anonymizer_mod.anonymize(text) or text
         except Exception:
             anon = text
-    if gpt_client_mod and hasattr(gpt_client_mod, "analyze"):
-        try:
-            result = gpt_client_mod.analyze(anon, specialty_id=specialty_id) or None
-        except Exception:
-            result = None
+    if gpt_client_mod:
+        fn = None
+        if hasattr(gpt_client_mod, "analyze_text"):
+            fn = gpt_client_mod.analyze_text
+        elif hasattr(gpt_client_mod, "analyze"):
+            fn = gpt_client_mod.analyze
+        if fn:
+            try:
+                result = fn(anon, specialty_name=specialty_name) if "specialty_name" in fn.__code__.co_varnames else fn(anon, specialty_id=specialty_id)
+            except Exception:
+                result = None
     if isinstance(result, dict) and "summary" in result and "data" in result:
         return JsonResponse(result)
     summary = (text or "").strip().splitlines()
@@ -152,7 +167,7 @@ def upload_analyze(request):
     data = {
         "summary": summary,
         "event_date": now().date().strftime("%Y-%m-%d"),
-        "detected_specialty": "",
+        "detected_specialty": specialty_name,
         "suggested_tags": [],
         "blood_test_results": [],
         "diagnosis": "",
@@ -167,33 +182,64 @@ def upload_analyze(request):
 @login_required
 @transaction.atomic
 def upload_confirm(request):
-    try:
-        payload = json.loads(request.body.decode("utf-8"))
-    except Exception:
-        return HttpResponseBadRequest("invalid json")
-    meta = payload.get("meta") or {}
-    analysis = payload.get("analysis") or {}
-    final_text = payload.get("final_text") or ""
-    final_summary = analysis.get("summary") or (analysis.get("data", {}).get("summary") if isinstance(analysis.get("data"), dict) else "") or ""
-    event_id = meta.get("event_id")
+    content_type = request.META.get("CONTENT_TYPE", "")
+    meta = {}
+    analysis = {}
+    final_text = ""
+    final_summary = ""
+    file_obj = None
+    file_mime = ""
+    file_kind = ""
+    doctor_block = {}
+
+    if "multipart/form-data" in content_type:
+        meta_raw = request.POST.get("meta")
+        analysis_raw = request.POST.get("analysis")
+        final_text = request.POST.get("final_text") or ""
+        final_summary = request.POST.get("final_summary") or ""
+        try:
+            meta = json.loads(meta_raw) if meta_raw else {}
+            analysis = json.loads(analysis_raw) if analysis_raw else {}
+        except Exception:
+            return HttpResponseBadRequest("invalid meta/analysis")
+        file_obj = request.FILES.get("file")
+        file_mime = getattr(file_obj, "content_type", "") if file_obj else ""
+        file_kind = meta.get("doc_kind") or ""
+        doctor_block = meta.get("doctor") or {}
+    else:
+        try:
+            payload = json.loads(request.body.decode("utf-8"))
+        except Exception:
+            return HttpResponseBadRequest("invalid json")
+        meta = payload.get("meta") or {}
+        analysis = payload.get("analysis") or {}
+        final_text = payload.get("final_text") or ""
+        final_summary = payload.get("final_summary") or ""
+        file_mime = payload.get("file_mime") or ""
+        file_kind = payload.get("file_kind") or ""
+        doctor_block = payload.get("doctor") or {}
+        file_b64 = payload.get("file_b64") or ""
+        file_name = payload.get("file_name") or "document.bin"
+        if file_b64:
+            from django.core.files.base import ContentFile
+            try:
+                data = base64.b64decode(file_b64.split(",")[-1].encode("utf-8"))
+                file_obj = ContentFile(data, name=file_name)
+            except Exception:
+                file_obj = None
+
     category_id = meta.get("category_id")
     specialty_id = meta.get("specialty_id")
     doc_type_id = meta.get("doc_type_id")
     if not (category_id and specialty_id and doc_type_id):
         return HttpResponseBadRequest("missing taxonomy")
-    existing_event = None
-    if event_id:
-        try:
-            existing_event = MedicalEvent.objects.get(pk=event_id, owner=request.user)
-        except MedicalEvent.DoesNotExist:
-            existing_event = None
+
+    event_id = meta.get("event_id")
+    existing_event = MedicalEvent.objects.filter(pk=event_id, owner=request.user).first() if event_id else None
     category = get_object_or_404(MedicalCategory, pk=category_id)
     specialty = get_object_or_404(MedicalSpecialty, pk=specialty_id)
     doc_type = get_object_or_404(DocumentType, pk=doc_type_id)
-    file_obj = request.FILES.get("file")
-    file_mime = payload.get("file_mime") or ""
-    file_kind = payload.get("file_kind") or ""
-    doctor_block = payload.get("doctor") or {}
+
     if svc and hasattr(svc, "confirm_and_save"):
         try:
             result = svc.confirm_and_save(
@@ -211,9 +257,10 @@ def upload_confirm(request):
                 doctor=doctor_block or None,
             )
             if isinstance(result, dict):
-                return JsonResponse(result)
+                return JsonResponse({"ok": True, **result})
         except Exception:
             return HttpResponseBadRequest("confirm_error")
+
     if not existing_event:
         existing_event = MedicalEvent.objects.create(
             patient=request.user.patient_profile,

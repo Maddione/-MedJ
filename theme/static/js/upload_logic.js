@@ -59,8 +59,12 @@ async function suggestIfReady() {
     return;
   }
   try {
-    const u = `${API.suggest}?category_id=${encodeURIComponent(p.category)}&specialty_id=${encodeURIComponent(p.specialty)}&doc_type_id=${encodeURIComponent(p.docType)}`;
-    const res = await fetch(u, { credentials: "same-origin" });
+    const res = await fetch(API.suggest, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": getCSRF() },
+      credentials: "same-origin",
+      body: JSON.stringify({ category_id: p.category, specialty_id: p.specialty, doc_type_id: p.docType })
+    });
     if (!res.ok) throw new Error("suggest_failed");
     const data = await res.json();
     const items = data.events || [];
@@ -70,7 +74,9 @@ async function suggestIfReady() {
       if (wrap) show(wrap);
       return;
     }
-    const opts = ['<option value="">—</option>'].concat(items.map(x => `<option value="${x.id}">${x.event_date}</option>`));
+    const opts = ['<option value="">—</option>'].concat(
+      items.map(x => `<option value="${x.id}">#${x.id}${x.event_date ? " · "+x.event_date : ""}</option>`)
+    );
     seth(select, opts.join(""));
     if (wrap) show(wrap);
   } catch(e) {
@@ -146,7 +152,11 @@ async function doctorSuggest(q) {
     if (!res.ok) throw new Error("bad");
     const data = await res.json();
     const items = data.results || [];
-    const opts = ['<option value="">—</option>'].concat(items.map(x => `<option value="${x.name}">${x.name}${x.specialty_name ? " · "+x.specialty_name : ""}</option>`));
+    const opts = ['<option value="">—</option>'].concat(items.map(x => {
+      const name = x.full_name || x.name || "";
+      const sid = (x.id != null ? String(x.id) : "");
+      return `<option value="${name}" data-id="${sid}">${name}</option>`;
+    }));
     seth(sel, opts.join(""));
   } catch(e) {
     seth(sel, '<option value="">—</option>');
@@ -246,8 +256,10 @@ function collectDoctorBlock() {
   const nameInp = inp && inp.value ? inp.value.trim() : "";
   const name = nameSel || nameInp;
   const specialty_id = spc && spc.value ? spc.value : "";
+  const practitioner_id = sel && sel.selectedOptions && sel.selectedOptions[0] ? (sel.selectedOptions[0].getAttribute("data-id") || "") : "";
   if (!use && !name) return null;
-  return { full_name: name || "", specialty_id: specialty_id || "" };
+  if (practitioner_id) return { practitioner_id: parseInt(practitioner_id, 10), role: "author", is_primary: true };
+  return { full_name: name || "", specialty_id: specialty_id || "", role: "author", is_primary: true };
 }
 
 async function doConfirm() {
@@ -292,7 +304,7 @@ async function doConfirm() {
       body: JSON.stringify(payload)
     });
     if (!res.ok) throw new Error("confirm_failed");
-    const data = await res.json();
+    await res.json();
     window.location.href = "/upload/history/";
   } catch(e) {
   } finally {

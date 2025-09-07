@@ -13,7 +13,6 @@ from django.views.decorators.http import require_POST, require_GET
 from django.conf import settings
 from django.urls import reverse
 import logging
-
 from records.models import Document, MedicalEvent, ShareLink
 
 try:
@@ -143,8 +142,12 @@ def _set_password_ok(sl, request):
 
 def _labs_for_event(ev):
     try:
-        qs = ev.lab_measurements.select_related("indicator").order_by("measured_at", "id")
-        return list(qs)
+        qs = getattr(ev, "lab_measurements", None)
+        if qs is None:
+            qs = getattr(ev, "labtests", None)
+        if qs is None:
+            return []
+        return list(qs.select_related("indicator").order_by("measured_at", "id"))
     except Exception:
         return []
 
@@ -163,11 +166,11 @@ def share_public(request, token):
     if request.method == "POST":
         pw = request.POST.get("password") or ""
         if not sl.password_hash:
-            return redirect(reverse("share_public", kwargs={"token": token}))
+            return redirect(reverse("medj:share_public", kwargs={"token": token}))
         if check_password(pw, sl.password_hash):
             _set_password_ok(sl, request)
             log.info("share_access user=anon token=%s ok=1", token)
-            return redirect(reverse("share_public", kwargs={"token": token}))
+            return redirect(reverse("medj:share_public", kwargs={"token": token}))
         else:
             log.info("share_access user=anon token=%s ok=0", token)
             return _render_public(request, sl, need_password=True, wrong_password=True)
@@ -211,7 +214,7 @@ def share_revoke(request, token):
 def share_qr_png(request, token):
     if qrcode is None:
         raise Http404()
-    sl = get_object_or_404(ShareLink, token=token)
+    get_object_or_404(ShareLink, token=token)
     url = _abs_url(request, f"s/{token}/")
     img = qrcode.make(url)
     buf = io.BytesIO()

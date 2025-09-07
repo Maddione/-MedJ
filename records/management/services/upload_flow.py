@@ -1,268 +1,135 @@
 import os
 import io
-import json
-from datetime import datetime, date, time as dtime
-from decimal import Decimal, InvalidOperation
+import re
+from datetime import datetime, date, time
+from decimal import Decimal
 
 from django.db import transaction
 from django.utils.timezone import now, make_aware, get_current_timezone
-from django.utils.dateparse import parse_datetime, parse_date
 
-from django.contrib.auth import get_user_model
+try:
+    import requests
+except Exception:
+    requests = None
+
+try:
+    from google.cloud import vision
+except Exception:
+    vision = None
 
 from records.models import (
+    PatientProfile,
     MedicalEvent,
     MedicalCategory,
     MedicalSpecialty,
     DocumentType,
     Document,
+    Tag,
+    EventTag,
+    DocumentTag,
+    TagKind,
+    LabIndicator,
+    LabTestMeasurement,
+    Practitioner, DocumentPractitioner,
 )
-
-try:
-    from records.models import Tag
-except Exception:
-    Tag = None
-
-try:
-    from records.models import LabIndicator, LabTestMeasurement
-except Exception:
-    LabIndicator = None
-    LabTestMeasurement = None
-
-try:
-    from records.models import Doctor
-except Exception:
-    Doctor = None
-
-try:
-    from google.cloud import vision as gvision
-except Exception:
-    gvision = None
-
-import requests
-
-try:
-    from records.services.llm import anonymizer as anonymizer_mod
-except Exception:
-    anonymizer_mod = None
-
-try:
-    from records.services.llm import gpt_client as gpt_client_mod
-except Exception:
-    gpt_client_mod = None
-
-
-def _env(name, default=None):
-    return os.environ.get(name, default)
-
-
-def _to_iso_date(val):
-    if not val:
-        return None
-    if isinstance(val, (datetime, date)):
-        if isinstance(val, datetime):
-            return val.date()
-        return val
-    d = parse_date(str(val))
-    return d
-
-
-def _to_aware_dt(val, fallback_day=None):
-    tz = get_current_timezone()
-    if isinstance(val, datetime):
-        return val if val.tzinfo else make_aware(val, timezone=tz)
-    if isinstance(val, date):
-        dt = datetime.combine(val, dtime(12, 0, 0))
-        return make_aware(dt, timezone=tz)
-    if isinstance(val, str):
-        dt = parse_datetime(val)
-        if dt:
-            return dt if dt.tzinfo else make_aware(dt, timezone=tz)
-        d = parse_date(val)
-        if d:
-            dt = datetime.combine(d, dtime(12, 0, 0))
-            return make_aware(dt, timezone=tz)
-    if fallback_day:
-        dt = datetime.combine(fallback_day, dtime(12, 0, 0))
-        return make_aware(dt, timezone=tz)
-    return make_aware(datetime.utcnow(), timezone=tz)
-
-
-def _to_float(val):
-    try:
-        return float(Decimal(str(val)))
-    except (InvalidOperation, ValueError, TypeError):
-        return None
-
-
-def _parse_ref_range(s):
-    if not s:
-        return None, None
-    s = str(s)
-    for sep in ["-", "–", "—", " to ", ":", "/"]:
-        if sep in s:
-            parts = [p.strip() for p in s.split(sep)]
-            if len(parts) >= 2:
-                return _to_float(parts[0]), _to_float(parts[1])
-    return None, None
-
-
-def _ddmmyyyy(d):
-    if not d:
-        return ""
-    if isinstance(d, str):
-        d = _to_iso_date(d)
-    try:
-        return d.strftime("%d-%m-%Y")
-    except Exception:
-        return ""
 
 
 def vision_ocr_first_fallback_flask(file_obj):
+    content = file_obj.read() if hasattr(file_obj, "read") else bytes(file_obj or b"")
+    source = "vision"
     text = ""
-    source = "flask"
-    if gvision is not None:
+    if vision is not None:
         try:
-            client = gvision.ImageAnnotatorClient()
-            data = file_obj.read()
-            file_obj.seek(0)
-            image = gvision.Image(content=data)
+            client = vision.ImageAnnotatorClient()
+            image = vision.Image(content=content)
             resp = client.document_text_detection(image=image)
-            txt = getattr(resp.full_text_annotation, "text", "") or ""
-            if txt:
-                return txt, "vision"
+            if getattr(resp, "full_text_annotation", None):
+                text = resp.full_text_annotation.text or ""
         except Exception:
-            pass
-    url = _env("OCR_SERVICE_URL") or _env("OCR_API_URL")
-    if url:
-        try:
-            file_obj.seek(0)
-            files = {"file": (getattr(file_obj, "name", "upload.bin"), file_obj.read())}
-            r = requests.post(url.rstrip("/") + "/ocr", files=files, timeout=60)
-            j = r.json() if r.ok else {}
-            text = j.get("ocr_text") or ""
-            source = j.get("source") or "flask"
-        except Exception:
-            text, source = "", "flask"
-    return text, source
+            text = ""
+    if not text:
+        source = "flask"
+        url = os.getenv("OCR_SERVICE_URL", "").strip() or os.getenv("OCR_API_URL", "").strip()
+        if url and requests is not None:
+            try:
+                u = url.rstrip("/") + "/ocr" if not url.rstrip("/").endswith("/ocr") else url
+                files = {"file": ("upload.bin", io.BytesIO(content), "application/octet-stream")}
+                r = requests.post(u, files=files, timeout=30)
+                if r.ok:
+                    try:
+                        j = r.json()
+                        text = j.get("ocr_text") or j.get("text") or ""
+                    except Exception:
+                        text = r.text or ""
+            except Exception:
+                text = ""
+    return text or "", source
 
 
-def events_suggest(user, category_id, specialty_id, doc_type_id):
-    if not (category_id and specialty_id and doc_type_id):
-        return []
-    qs = (
-        MedicalEvent.objects.filter(
-            owner=user,
-            category_id=category_id,
-            specialty_id=specialty_id,
-            doc_type_id=doc_type_id,
-        )
-        .order_by("-event_date")[:20]
-        .only("id", "event_date", "summary")
-    )
-    return [{"id": e.id, "event_date": _ddmmyyyy(e.event_date), "summary": e.summary or ""} for e in qs]
-
-
-def anonymize_and_analyze(text, specialty_id=None, user=None):
-    src = text or ""
-    anon = src
-    if anonymizer_mod and hasattr(anonymizer_mod, "anonymize"):
-        try:
-            anon = anonymizer_mod.anonymize(src) or src
-        except Exception:
-            anon = src
-    out = None
-    if gpt_client_mod and hasattr(gpt_client_mod, "analyze"):
-        try:
-            out = gpt_client_mod.analyze(anon, specialty_id=specialty_id, user=user)
-        except Exception:
-            out = None
-    if isinstance(out, dict) and "summary" in out and "data" in out:
-        return out
-    s = " ".join(src.strip().splitlines())[:400]
-    data = {
-        "summary": s,
-        "event_date": now().date().strftime("%Y-%m-%d"),
-        "detected_specialty": "",
-        "suggested_tags": [],
-        "blood_test_results": [],
-        "diagnosis": "",
-        "treatment_plan": "",
-        "doctors": [],
-        "date_created": None,
-    }
-    return {"summary": s, "data": data}
-
-
-def _ensure_permanent_tags(document, creation_date=None):
-    if not Tag:
-        return
-    perm = []
+def _parse_float(x):
+    if x is None:
+        return None
+    s = str(x).strip().replace(",", ".")
     try:
-        if document.doc_kind:
-            t, _ = Tag.objects.get_or_create(slug=f"document_kind:{document.doc_kind}")
-            perm.append(t)
-        if document.specialty_id:
-            t, _ = Tag.objects.get_or_create(slug=f"specialty:{document.specialty_id}")
-            perm.append(t)
-        if document.category_id:
-            t, _ = Tag.objects.get_or_create(slug=f"category:{document.category_id}")
-            perm.append(t)
-        if document.doc_type_id:
-            t, _ = Tag.objects.get_or_create(slug=f"doc_type:{document.doc_type_id}")
-            perm.append(t)
-        if creation_date:
-            t, _ = Tag.objects.get_or_create(slug=f"date:{_ddmmyyyy(creation_date)}")
-            perm.append(t)
-        if perm:
-            document.tags.add(*perm)
+        return float(s)
+    except Exception:
+        try:
+            return float(Decimal(re.sub(r"[^\d\.\-]", "", s)))
+        except Exception:
+            return None
+
+
+def _dt_from_date(dt_date: date):
+    if not dt_date:
+        return now()
+    dtt = datetime.combine(dt_date, time(12, 0, 0))
+    try:
+        return make_aware(dtt, get_current_timezone())
+    except Exception:
+        return dtt
+
+
+def _norm_name(s):
+    return re.sub(r"\s+", " ", str(s or "")).strip()
+
+
+def _ensure_tag(slug, name):
+    try:
+        tag = Tag.objects.get(slug=slug)
+        return tag
+    except Tag.DoesNotExist:
+        try:
+            tag = Tag.objects.create(slug=slug, kind=TagKind.SYSTEM, is_active=True)
+            try:
+                tag.set_current_language("bg")
+                if not getattr(tag, "name", None):
+                    tag.name = name or slug
+                tag.save()
+            except Exception:
+                pass
+            return tag
+        except Exception:
+            return None
+
+
+def _attach_doc_tag(doc, tag, permanent=False):
+    if not tag:
+        return
+    try:
+        DocumentTag.objects.get_or_create(
+            document=doc,
+            tag=tag,
+            defaults={"is_inherited": False, "is_permanent": bool(permanent)},
+        )
     except Exception:
         pass
 
 
-def _upsert_doctor(doctor_block):
-    if not Doctor or not doctor_block:
-        return None
-    full = (doctor_block.get("full_name") or "").strip()
-    if not full:
-        return None
-    spec = (doctor_block.get("specialty") or "").strip()
-    try:
-        obj, _ = Doctor.objects.get_or_create(full_name=full, defaults={"specialty_text": spec})
-        if spec and not obj.specialty_text:
-            obj.specialty_text = spec
-            obj.save(update_fields=["specialty_text"])
-        return obj
-    except Exception:
-        return None
-
-
-def _lab_indicator_by_name(name, unit=None, ref_range=None):
-    if not LabIndicator or not name:
-        return None
-    try:
-        obj, _ = LabIndicator.objects.get_or_create(name=name.strip())
-        if unit and not getattr(obj, "unit", None):
-            obj.unit = unit
-        if ref_range:
-            lo, hi = _parse_ref_range(ref_range)
-            if lo is not None:
-                obj.reference_low = lo
-            if hi is not None:
-                obj.reference_high = hi
-        obj.save()
-        return obj
-    except Exception:
-        return None
-
-
-def _create_lab_measurement(event, ind, value, measured_at):
-    if not LabTestMeasurement or not event or not ind:
+def _attach_event_tag(ev, tag):
+    if not tag:
         return
-    v = _to_float(value)
-    ts = _to_aware_dt(measured_at, fallback_day=event.event_date or now().date())
     try:
-        LabTestMeasurement.objects.create(medical_event=event, indicator=ind, value=v, measured_at=ts)
+        EventTag.objects.get_or_create(event=ev, tag=tag)
     except Exception:
         pass
 
@@ -273,93 +140,175 @@ def confirm_and_save(
     category,
     specialty,
     doc_type,
-    existing_event=None,
-    file=None,
-    file_mime="",
-    file_kind="",
-    final_text="",
-    final_summary="",
-    analysis=None,
+    existing_event,
+    file,
+    file_mime,
+    file_kind,
+    final_text,
+    final_summary,
+    analysis,
     doctor=None,
 ):
+    patient = getattr(user, "patient_profile", None)
     ev = existing_event
-    if not ev:
-        try:
-            patient = getattr(user, "patient_profile", None)
-        except Exception:
-            patient = None
+    if ev is None:
         ev = MedicalEvent.objects.create(
             patient=patient,
             owner=user,
-            category=category,
-            specialty=specialty,
-            doc_type=doc_type,
+            category=category if isinstance(category, MedicalCategory) else None,
+            specialty=specialty if isinstance(specialty, MedicalSpecialty) else None,
+            doc_type=doc_type if isinstance(doc_type, DocumentType) else None,
             event_date=now().date(),
-            summary=(final_summary or "")[:255],
+            summary=None,
         )
-    doc = Document(
+    doc = Document.objects.create(
         owner=user,
         medical_event=ev,
-        category=category,
-        specialty=specialty,
-        doc_type=doc_type,
-        original_ocr_text=final_text or "",
-        summary=(final_summary or "")[:255],
+        specialty=specialty if isinstance(specialty, MedicalSpecialty) else None,
+        category=category if isinstance(category, MedicalCategory) else None,
+        doc_type=doc_type if isinstance(doc_type, DocumentType) else None,
+        file=file,
         file_mime=file_mime or "",
-        doc_kind=(file_kind or "other"),
+        file_size=getattr(file, "size", None) if file is not None else None,
+        doc_kind=(str(file_kind).lower() if file_kind else "other"),
+        original_ocr_text=final_text or "",
+        summary=final_summary or "",
     )
-    if file:
-        doc.file = file
-        try:
-            doc.file_size = getattr(file, "size", 0)
-        except Exception:
-            pass
-    doc.save()
-
-    creation_date = None
-    if isinstance(analysis, dict):
-        data = analysis.get("data") if isinstance(analysis.get("data"), dict) else analysis
-        if data:
-            cd = data.get("date_created")
-            creation_date = _to_iso_date(cd) or None
-    _ensure_permanent_tags(doc, creation_date=creation_date)
-
-    editable_tags = []
-    try:
-        if isinstance(analysis, dict):
-            data = analysis.get("data") if isinstance(analysis.get("data"), dict) else analysis
-            for t in (data.get("suggested_tags") or []):
-                if Tag and isinstance(t, str) and t.strip():
-                    tag, _ = Tag.objects.get_or_create(slug=t.strip())
-                    editable_tags.append(tag)
-        if editable_tags:
-            doc.tags.add(*editable_tags)
-    except Exception:
-        pass
-
-    if doctor:
-        d = _upsert_doctor(doctor)
-        if d and hasattr(doc, "doctors"):
+    data = analysis.get("data") if isinstance(analysis, dict) else {}
+    dc = data.get("date_created") if isinstance(data, dict) else None
+    if dc:
+        for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%d.%m.%Y"):
             try:
-                doc.doctors.add(d)
+                doc.date_created = datetime.strptime(str(dc), fmt).date()
+                break
+            except Exception:
+                continue
+        if not doc.date_created:
+            try:
+                doc.date_created = datetime.fromisoformat(str(dc)).date()
             except Exception:
                 pass
-
-    if isinstance(analysis, dict):
-        data = analysis.get("data") if isinstance(analysis.get("data"), dict) else analysis
-        labs = data.get("blood_test_results") or []
-        if isinstance(labs, list):
-            for r in labs:
+        if doc.date_created:
+            try:
+                doc.save(update_fields=["date_created"])
+            except Exception:
+                pass
+    permanent = []
+    if category:
+        permanent.append((f"category:{category.slug}", "category"))
+    if specialty:
+        permanent.append((f"specialty:{specialty.slug}", "specialty"))
+    if doc_type:
+        permanent.append((f"doc_type:{doc_type.slug}", "doc_type"))
+    if doc.doc_kind:
+        permanent.append((f"doc_kind:{doc.doc_kind}", "doc_kind"))
+    if doc.date_created:
+        permanent.append((f"date:{doc.date_created.strftime('%d-%m-%Y')}", doc.date_created.strftime("%d-%m-%Y")))
+    for slug, label in permanent:
+        t = _ensure_tag(slug, label)
+        _attach_doc_tag(doc, t, True)
+        _attach_event_tag(ev, t)
+    editable_names = []
+    if isinstance(data, dict):
+        for s in data.get("suggested_tags") or []:
+            val = str(s).strip()
+            if val:
+                editable_names.append(val)
+    for tag_name in editable_names:
+        slug = "user:" + re.sub(r"[^a-z0-9\-]+", "-", tag_name.lower())
+        t = _ensure_tag(slug, tag_name)
+        _attach_doc_tag(doc, t, False)
+        _attach_event_tag(ev, t)
+    labs = (data.get("blood_test_results") or []) if isinstance(data, dict) else []
+    for r in labs:
+        try:
+            name = (r.get("indicator_name") or "").strip()
+            if not name:
+                continue
+            val = _parse_float(r.get("value"))
+            if val is None:
+                continue
+            unit = (r.get("unit") or "").strip()
+            ref = r.get("reference_range") or ""
+            when = r.get("measured_at") or data.get("event_date")
+            if when:
                 try:
-                    name = (r.get("indicator_name") or "").strip()
-                    value = r.get("value")
-                    unit = r.get("unit")
-                    ref = r.get("reference_range")
-                    ts = r.get("measured_at") or ev.event_date
-                    ind = _lab_indicator_by_name(name, unit=unit, ref_range=ref)
-                    if ind:
-                        _create_lab_measurement(ev, ind, value, ts)
+                    dt = datetime.fromisoformat(str(when))
+                    try:
+                        when_dt = make_aware(dt, get_current_timezone())
+                    except Exception:
+                        when_dt = dt
                 except Exception:
-                    continue
-
-    return {"ok": True, "event_id": ev.id, "document_id": doc.id}
+                    when_dt = _dt_from_date(ev.event_date)
+            else:
+                when_dt = _dt_from_date(ev.event_date)
+            slug = re.sub(r"[^a-z0-9\-]+", "-", name.lower())
+            ind, _ = LabIndicator.objects.get_or_create(slug=slug, defaults={"unit": unit or None})
+            if ref and (ind.reference_low is None or ind.reference_high is None):
+                try:
+                    parts = str(ref).replace(",", ".").split("-")
+                    lo = float(parts[0].strip()) if len(parts) == 2 else None
+                    hi = float(parts[1].strip()) if len(parts) == 2 else None
+                except Exception:
+                    lo, hi = None, None
+                changed = False
+                if lo is not None and ind.reference_low is None:
+                    ind.reference_low = lo; changed = True
+                if hi is not None and ind.reference_high is None:
+                    ind.reference_high = hi; changed = True
+                if changed:
+                    ind.save(update_fields=["reference_low", "reference_high"])
+            LabTestMeasurement.objects.create(
+                medical_event=ev,
+                indicator=ind,
+                value=val,
+                measured_at=when_dt,
+            )
+        except Exception:
+            continue
+    doc_block = doctor or {}
+    pid = doc_block.get("practitioner_id")
+    name_in = _norm_name(doc_block.get("full_name") or "")
+    sel_specialty_id = doc_block.get("specialty_id")
+    role_in = (doc_block.get("role") or "author").strip().lower()
+    is_primary_in = bool(doc_block.get("is_primary", True))
+    practitioner = None
+    if pid:
+        practitioner = Practitioner.objects.filter(id=pid, owner=user).first()
+        if practitioner and not name_in:
+            name_in = practitioner.full_name
+        if practitioner and not sel_specialty_id:
+            sel_specialty_id = practitioner.specialty_id
+    elif name_in:
+        try:
+            qs = Practitioner.objects.filter(owner=user, full_name__iexact=name_in)
+            if sel_specialty_id:
+                qs = qs.filter(specialty_id=sel_specialty_id)
+            practitioner = qs.first()
+            if practitioner is None:
+                practitioner = Practitioner.objects.create(
+                    owner=user, full_name=name_in, specialty_id=sel_specialty_id or None, is_active=True
+                )
+        except Exception:
+            practitioner = None
+    if practitioner:
+        try:
+            DocumentPractitioner.objects.get_or_create(
+                document=doc, practitioner=practitioner, role=role_in, defaults={"is_primary": is_primary_in}
+            )
+        except Exception:
+            pass
+        t = _ensure_tag("doctor:" + re.sub(r"[^a-z0-9\-]+", "-", (practitioner.full_name or name_in).lower()), practitioner.full_name or name_in)
+        _attach_doc_tag(doc, t, False)
+        _attach_event_tag(ev, t)
+        spec_for_tag = sel_specialty_id or practitioner.specialty_id
+        if spec_for_tag:
+            try:
+                sp = MedicalSpecialty.objects.get(id=spec_for_tag)
+                sp_name = getattr(sp, "safe_translation_getter", lambda *a, **k: None)("name", any_language=True) or getattr(sp, "name", "") or ""
+                t2 = _ensure_tag(f"doctor_specialty:{spec_for_tag}", sp_name or f"doctor_specialty:{spec_for_tag}")
+                _attach_doc_tag(doc, t2, False)
+                _attach_event_tag(ev, t2)
+            except MedicalSpecialty.DoesNotExist:
+                pass
+    return {"event_id": ev.id, "document_id": doc.id}

@@ -4,7 +4,7 @@ from .models import (
     Tag, MedicalEvent, EventTag, Document, DocumentTag,
     Diagnosis, NarrativeNote, Medication,
     LabIndicator, LabIndicatorAlias, LabTestMeasurement,
-    ShareLink, OcrLog
+    ShareLink, OcrLog, Practitioner, DocumentPractitioner
 )
 
 @admin.register(PatientProfile)
@@ -14,28 +14,31 @@ class PatientProfileAdmin(admin.ModelAdmin):
 
 @admin.register(MedicalCategory)
 class MedicalCategoryAdmin(admin.ModelAdmin):
-    list_display = ("id",)
+    list_display = ("slug", "is_active", "order")
+    list_filter = ("is_active",)
     search_fields = ("translations__name",)
 
 @admin.register(MedicalSpecialty)
 class MedicalSpecialtyAdmin(admin.ModelAdmin):
-    list_display = ("id",)
+    list_display = ("slug", "is_active", "order")
+    list_filter = ("is_active",)
     search_fields = ("translations__name",)
 
 @admin.register(DocumentType)
 class DocumentTypeAdmin(admin.ModelAdmin):
-    list_display = ("id",)
+    list_display = ("slug", "is_active", "order")
+    list_filter = ("is_active",)
     search_fields = ("translations__name",)
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
     list_display = ("slug", "kind", "is_active")
     list_filter = ("kind", "is_active")
-    search_fields = ("translations__name", "slug")
+    search_fields = ("slug", "translations__name")
 
 @admin.register(MedicalEvent)
 class MedicalEventAdmin(admin.ModelAdmin):
-    list_display = ("id", "patient", "owner", "specialty", "category", "doc_type", "event_date")
+    list_display = ("id", "patient", "owner", "specialty", "category", "doc_type", "event_date", "created_at")
     list_filter = ("specialty", "category", "doc_type", "event_date")
     search_fields = ("patient__user__username",)
 
@@ -57,7 +60,8 @@ class DocumentTagAdmin(admin.ModelAdmin):
 
 @admin.register(Diagnosis)
 class DiagnosisAdmin(admin.ModelAdmin):
-    list_display = ("medical_event", "code")
+    list_display = ("medical_event", "code", "description")
+    search_fields = ("code", "description")
 
 @admin.register(NarrativeNote)
 class NarrativeNoteAdmin(admin.ModelAdmin):
@@ -65,13 +69,13 @@ class NarrativeNoteAdmin(admin.ModelAdmin):
 
 @admin.register(Medication)
 class MedicationAdmin(admin.ModelAdmin):
-    list_display = ("medical_event", "name")
+    list_display = ("medical_event", "name", "dose", "frequency")
 
 @admin.register(LabIndicator)
 class LabIndicatorAdmin(admin.ModelAdmin):
     list_display = ("slug", "unit", "reference_low", "reference_high", "is_active")
-    search_fields = ("translations__name", "slug")
     list_filter = ("is_active",)
+    search_fields = ("slug", "translations__name")
 
 @admin.register(LabIndicatorAlias)
 class LabIndicatorAliasAdmin(admin.ModelAdmin):
@@ -92,3 +96,15 @@ class ShareLinkAdmin(admin.ModelAdmin):
 class OcrLogAdmin(admin.ModelAdmin):
     list_display = ("user", "document", "source", "duration_ms", "created_at")
     list_filter = ("source", "created_at")
+
+@admin.register(Practitioner)
+class PractitionerAdmin(admin.ModelAdmin):
+    list_display = ("full_name", "specialty", "owner", "is_active", "created_at")
+    list_filter = ("is_active", "specialty")
+    search_fields = ("full_name", "owner__username")
+
+@admin.register(DocumentPractitioner)
+class DocumentPractitionerAdmin(admin.ModelAdmin):
+    list_display = ("document", "practitioner", "role", "is_primary")
+    list_filter = ("role", "is_primary")
+    search_fields = ("document__id", "practitioner__full_name")

@@ -8,11 +8,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c486bb59-c79b-4440-8fcc-e0c5e6eda3dc" name="Changes" comment="perfect, DO NOT TOUCH AGAIN">
-      <change afterPath="$PROJECT_DIR$/records/views/doctors_api.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/admin.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/management/services/upload_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/management/services/upload_flow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/subpages/share_public.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/subpages/share_public.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/views/api_upload.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/api_upload.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/doctors_views.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/doctors_views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/views/exports.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/exports.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/share_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/share_api.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/theme/static/js/upload_logic.js" beforeDir="false" afterPath="$PROJECT_DIR$/theme/static/js/upload_logic.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,7 +60,7 @@
     <setting file="file://$PROJECT_DIR$/medj/settings/base.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/medj/settings/dev.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/ocrapi/requirements-ocr.txt" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/records/admin.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/records/admin.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/apps.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/auth_backends.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/constants.py" root0="SKIP_INSPECTION" />
@@ -101,6 +107,7 @@
     <setting file="file://$PROJECT_DIR$/requirements.txt" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/theme/static/js/filters.js" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/theme/static/js/share_logic.js" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/theme/static/js/upload_logic.js" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/theme/static_src/styles.css" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="ProblemsViewState">
@@ -423,7 +430,15 @@
       <option name="project" value="LOCAL" />
       <updated>1757203537475</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="perfect, DO NOT TOUCH AGAIN">
+      <option name="closed" value="true" />
+      <created>1757207061764</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1757207061764</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
