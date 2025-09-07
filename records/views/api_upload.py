@@ -5,7 +5,7 @@ import time
 import requests
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 from django.contrib.auth.decorators import login_required
 from django.utils.dateparse import parse_date
 from django.utils.timezone import now
@@ -23,8 +23,10 @@ try:
 except Exception:
     svc = None
 
+
 def _env(name, default=None):
     return os.environ.get(name, default)
+
 
 def _ddmmyyyy(d):
     if not d:
@@ -36,6 +38,7 @@ def _ddmmyyyy(d):
         return d.strftime("%d-%m-%Y")
     except Exception:
         return ""
+
 
 def _ocr_with_vision(fileobj):
     if gvision is None:
@@ -53,6 +56,7 @@ def _ocr_with_vision(fileobj):
     except Exception:
         return None
 
+
 def _ocr_with_flask(fileobj, filename):
     url = _env("OCR_SERVICE_URL") or _env("OCR_API_URL")
     if not url:
@@ -65,6 +69,7 @@ def _ocr_with_flask(fileobj, filename):
         return j.get("ocr_text") or j.get("text") or ""
     except Exception:
         return ""
+
 
 @csrf_exempt
 @require_POST
@@ -94,17 +99,23 @@ def upload_ocr(request):
         pass
     return JsonResponse({"ocr_text": text or "", "source": source})
 
+
 @csrf_exempt
-@require_POST
+@require_http_methods(["GET", "POST"])
 @login_required
 def events_suggest(request):
-    try:
-        payload = json.loads(request.body.decode("utf-8"))
-    except Exception:
-        payload = request.POST
-    category_id = payload.get("category_id")
-    specialty_id = payload.get("specialty_id")
-    doc_type_id = payload.get("doc_type_id")
+    if request.method == "GET":
+        category_id = request.GET.get("category_id")
+        specialty_id = request.GET.get("specialty_id")
+        doc_type_id = request.GET.get("doc_type_id")
+    else:
+        try:
+            payload = json.loads(request.body.decode("utf-8"))
+        except Exception:
+            payload = request.POST
+        category_id = payload.get("category_id")
+        specialty_id = payload.get("specialty_id")
+        doc_type_id = payload.get("doc_type_id")
     if not (category_id and specialty_id and doc_type_id):
         return JsonResponse({"events": []})
     qs = MedicalEvent.objects.filter(
@@ -115,6 +126,7 @@ def events_suggest(request):
     ).order_by("-event_date")[:20]
     data = [{"id": e.id, "event_date": _ddmmyyyy(e.event_date), "summary": e.summary or ""} for e in qs]
     return JsonResponse({"events": data})
+
 
 @csrf_exempt
 @require_POST
@@ -177,6 +189,7 @@ def upload_analyze(request):
     }
     return JsonResponse({"summary": summary, "data": data})
 
+
 @csrf_exempt
 @require_POST
 @login_required
@@ -191,7 +204,6 @@ def upload_confirm(request):
     file_mime = ""
     file_kind = ""
     doctor_block = {}
-
     if "multipart/form-data" in content_type:
         meta_raw = request.POST.get("meta")
         analysis_raw = request.POST.get("analysis")
@@ -227,19 +239,16 @@ def upload_confirm(request):
                 file_obj = ContentFile(data, name=file_name)
             except Exception:
                 file_obj = None
-
     category_id = meta.get("category_id")
     specialty_id = meta.get("specialty_id")
     doc_type_id = meta.get("doc_type_id")
     if not (category_id and specialty_id and doc_type_id):
         return HttpResponseBadRequest("missing taxonomy")
-
     event_id = meta.get("event_id")
     existing_event = MedicalEvent.objects.filter(pk=event_id, owner=request.user).first() if event_id else None
     category = get_object_or_404(MedicalCategory, pk=category_id)
     specialty = get_object_or_404(MedicalSpecialty, pk=specialty_id)
     doc_type = get_object_or_404(DocumentType, pk=doc_type_id)
-
     if svc and hasattr(svc, "confirm_and_save"):
         try:
             result = svc.confirm_and_save(
@@ -260,10 +269,9 @@ def upload_confirm(request):
                 return JsonResponse({"ok": True, **result})
         except Exception:
             return HttpResponseBadRequest("confirm_error")
-
     if not existing_event:
         existing_event = MedicalEvent.objects.create(
-            patient=request.user.patient_profile,
+            patient=getattr(request.user, "patient_profile", None),
             owner=request.user,
             category=category,
             specialty=specialty,
