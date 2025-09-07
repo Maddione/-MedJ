@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 from django.utils import timezone
-from .models import Event, Document, Tag, DocumentTag, Practitioner, DocumentPractitioner, LabIndicator, LabTestMeasurement, ShareLink
+from records.models import MedicalEvent, Document, Tag, DocumentTag, Practitioner, DocumentPractitioner, LabIndicator, LabTestMeasurement, ShareLink, EventTag
 
 def _fmt_ddmmyyyy(d):
     return d.strftime("%d-%m-%Y")
@@ -70,19 +70,20 @@ def api_upload_confirm(request):
     doc_type = body.get("doc_type")
     doc_kind = body.get("doc_kind")
     if event_id:
-        event = get_object_or_404(Event, id=event_id, owner=user)
+        event = get_object_or_404(MedicalEvent, id=event_id, owner=user)
     else:
-        event = Event.objects.create(owner=user, event_date=timezone.now().date())
-    document = Document.objects.create(owner=user, event=event, ocr_text=ocr_text, summary_text=summary_text)
+        event = MedicalEvent.objects.create(owner=user, patient=user.patient_profile, specialty_id=specialty, category_id=category, doc_type_id=doc_type, event_date=timezone.now().date())
+    document = Document.objects.create(
+        owner=user,
+        medical_event=event,
+        original_ocr_text=ocr_text,
+        summary=summary_text,
+        doc_kind=doc_kind,
+        specialty_id=specialty,
+        category_id=category,
+        doc_type_id=doc_type
+    )
     perms = []
-    if category:
-        perms.append(("category", category))
-    if specialty:
-        perms.append(("specialty", specialty))
-    if doc_type:
-        perms.append(("doc_type", doc_type))
-    if doc_kind:
-        perms.append(("doc_kind", doc_kind))
     if date_created:
         try:
             dc = _parse_ddmmyyyy(date_created)
@@ -93,30 +94,20 @@ def api_upload_confirm(request):
             document.save(update_fields=["date_created"])
             perms.append(("date", _fmt_ddmmyyyy(dc)))
     for cat, name in perms:
-        tag, _ = Tag.objects.get_or_create(owner=user, category=cat, name=name, defaults={"is_permanent": True})
+        tag, _ = Tag.objects.get_or_create(slug=name, kind=cat, defaults={"is_active": True})
         DocumentTag.objects.get_or_create(document=document, tag=tag, defaults={"is_permanent": True})
-    for dt in DocumentTag.objects.filter(document=document, is_permanent=True):
-        EventTag.objects.get_or_create(event=event, tag=dt.tag)
+        EventTag.objects.get_or_create(event=event, tag=tag)
     labs = body.get("blood_test_results") or []
     for item in labs:
         indicator_name = item.get("indicator_name") or ""
         val = item.get("value")
         unit = item.get("unit") or ""
-        ref = item.get("reference_range") or ""
-        measured_at = item.get("measured_at") or ""
         try:
             value = float(val)
         except Exception:
             continue
-        ind, _ = LabIndicator.objects.get_or_create(owner=user, name=indicator_name, defaults={"unit": unit})
-        if measured_at:
-            try:
-                dtm = datetime.fromisoformat(measured_at)
-            except Exception:
-                dtm = timezone.now()
-        else:
-            dtm = timezone.now()
-        LabTestMeasurement.objects.create(event=event, indicator=ind, value=value, measured_at=dtm)
+        ind, _ = LabIndicator.objects.get_or_create(slug=indicator_name.lower().strip().replace(" ", "_"), defaults={"unit": unit})
+        LabTestMeasurement.objects.create(medical_event=event, indicator=ind, value=value, measured_at=timezone.now())
     return JsonResponse({"ok": True, "event_id": event.id, "document_id": document.id})
 
 @require_GET
@@ -126,10 +117,10 @@ def api_events_suggest(request):
     category = request.GET.get("category_id")
     specialty = request.GET.get("specialty_id")
     doc_type = request.GET.get("doc_type_id")
-    qs = Event.objects.filter(owner=user).order_by("-event_date")
+    qs = MedicalEvent.objects.filter(owner=user).order_by("-event_date")
     results = []
     for e in qs[:50]:
-        results.append({"id": e.id, "event_date": _fmt_ddmmyyyy(e.event_date), "title": e.title or f"Event {e.id}"})
+        results.append({"id": e.id, "event_date": _fmt_ddmmyyyy(e.event_date), "title": str(e)})
     return JsonResponse({"results": results})
 
 @require_GET
@@ -169,7 +160,7 @@ def public_share_view(request, token):
     if sl.expires_at and sl.expires_at < timezone.now():
         raise Http404
     if sl.object_type == "event":
-        obj = get_object_or_404(Event, id=sl.object_id)
+        obj = get_object_or_404(MedicalEvent, id=sl.object_id)
         return render(request, "main/share_event.html", {"event": obj, "share": sl})
     obj = get_object_or_404(Document, id=sl.object_id)
     return render(request, "main/share_document.html", {"document": obj, "share": sl})
@@ -181,13 +172,13 @@ def api_export_csv(request):
     event_id = request.GET.get("event_id")
     if not event_id:
         return JsonResponse({"error": "event_id required"}, status=400)
-    event = get_object_or_404(Event, id=event_id, owner=user)
+    event = get_object_or_404(MedicalEvent, id=event_id, owner=user)
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["event_id","event_date","indicator_name","value","unit","reference_low","reference_high","measured_at","tags"])
-    tags = [f"{t.category}:{t.name}" for t in event.tags.all()]
-    for m in event.lab_measurements.select_related("indicator"):
-        writer.writerow([event.id, _fmt_ddmmyyyy(event.event_date), m.indicator.name, m.value, m.indicator.unit or "", m.indicator.reference_low or "", m.indicator.reference_high or "", _fmt_ddmmyyyy(m.measured_at.date()), ";".join(tags)])
+    writer.writerow(["event_id", "event_date", "indicator_name", "value", "unit", "reference_low", "reference_high", "measured_at", "tags"])
+    tags = [f"{t.kind}:{t.slug}" for t in event.tags.all()]
+    for m in event.labtests.select_related("indicator"):
+        writer.writerow([event.id, _fmt_ddmmyyyy(event.event_date), m.indicator.slug, m.value, m.indicator.unit or "", m.indicator.reference_low or "", m.indicator.reference_high or "", _fmt_ddmmyyyy(m.measured_at.date()), ";".join(tags)])
     resp = HttpResponse(output.getvalue(), content_type="text/csv")
     resp["Content-Disposition"] = f'attachment; filename="event_{event.id}.csv"'
     return resp

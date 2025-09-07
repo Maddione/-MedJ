@@ -99,10 +99,12 @@ PARLER_LANGUAGES = {
 }
 
 STATIC_URL = "/static/"
+STATICFILES_DIRS = [BASE_DIR / "theme" / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = [
-    BASE_DIR / "theme" / "static",
-]
+
+TEMPLATES[0]["APP_DIRS"] = True
+TEMPLATES[0]["DIRS"] = [BASE_DIR / "records" / "templates"]
+
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"

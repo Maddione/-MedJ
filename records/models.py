@@ -263,7 +263,7 @@ class Practitioner(models.Model):
     specialty = models.ForeignKey("records.MedicalSpecialty", on_delete=models.SET_NULL, related_name="practitioners", blank=True, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
+    updated_at = models.DateTimeField(auto_now=True)
     class Meta:
         indexes = [
             models.Index(fields=["owner", "full_name"]),

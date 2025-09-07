@@ -1,16 +1,17 @@
 ﻿from .base import *
-
 DEBUG = True
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
-
-INTERNAL_IPS = ["127.0.0.1"]
-
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-DEFAULT_FROM_EMAIL = "no-reply@medj.local"
-
+INSTALLED_APPS = list(INSTALLED_APPS) + ["django_browser_reload"]
+MIDDLEWARE = list(MIDDLEWARE) + ["django_browser_reload.middleware.BrowserReloadMiddleware"]
+ALLOWED_HOSTS = ["*", "localhost", "127.0.0.1"]
 CSRF_TRUSTED_ORIGINS = ["http://localhost:8000", "http://127.0.0.1:8000"]
 
-STATIC_URL = "/static/"
-MEDIA_URL = "/media/"
+DATABASES["default"]["HOST"] = os.environ.get("POSTGRES_HOST", "db")
+DATABASES["default"]["PORT"] = os.environ.get("POSTGRES_PORT", "5432")
+DATABASES["default"]["NAME"] = os.environ.get("POSTGRES_DB", "medj")
+DATABASES["default"]["USER"] = os.environ.get("POSTGRES_USER", "medj")
+DATABASES["default"]["PASSWORD"] = os.environ.get("POSTGRES_PASSWORD", "medj")
 
-OCR_API_URL = os.environ.get("OCR_API_URL", "http://ocrapi:5000/ocr")
+DATABASES["backup"] = {
+    "ENGINE": "django.db.backends.sqlite3",
+    "NAME": BASE_DIR / "backup.sqlite3",
+}

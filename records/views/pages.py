@@ -1,14 +1,14 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
-@login_required
-def upload_page(request):
-    return render(request, "main/upload.html")
+from ..models import Document
+
 
 @login_required
-def upload_history(request):
-    return render(request, "main/upload_history.html")
-
-@login_required
-def casefiles_page(request):
-    return render(request, "main/casefiles.html")
+def history_view(request):
+    documents = (
+        Document.objects.filter(owner=request.user)
+        .select_related("medical_event")
+        .order_by("-uploaded_at")
+    )
+    return render(request, "main/history.html", {"documents": documents})

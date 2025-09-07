@@ -9,18 +9,22 @@
   <component name="ChangeListManager">
     <list default="true" id="c486bb59-c79b-4440-8fcc-e0c5e6eda3dc" name="Changes" comment="perfect, DO NOT TOUCH AGAIN">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/auth/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/auth/login.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/auth/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/auth/register.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base_app.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_app.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base_auth.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_auth.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base_public.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_public.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/landingpage.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/landingpage.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/main/personalcard.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/personalcard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker/compose/docker-compose.dev.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker/compose/docker-compose.dev.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker/ocrapi/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/docker/ocrapi/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker/web/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/docker/web/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker/web/entrypoint.dev.sh" beforeDir="false" afterPath="$PROJECT_DIR$/docker/web/entrypoint.dev.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/medj/settings/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/settings/base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/medj/settings/dev.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/settings/dev.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/medj/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/views/api_upload.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/api_upload.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/views/doctors_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/doctors_api.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/theme/static/js/upload_logic.js" beforeDir="false" afterPath="$PROJECT_DIR$/theme/static/js/upload_logic.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/api.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/api.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/dashboard.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/dashboard.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/doctors_views.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/doctors_views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/pages.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/pages.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/theme/static_src/tailwind.config.js" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,7 +63,7 @@
 }</component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/medj/settings/base.py" root0="SKIP_INSPECTION" />
-    <setting file="file://$PROJECT_DIR$/medj/settings/dev.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/medj/settings/dev.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/medj/urls.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/ocrapi/requirements-ocr.txt" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/admin.py" root0="FORCE_HIGHLIGHTING" />
@@ -283,7 +287,8 @@
       <workItem from="1757042418741" duration="10747000" />
       <workItem from="1757054661041" duration="13232000" />
       <workItem from="1757070390912" duration="19022000" />
-      <workItem from="1757237262118" duration="6678000" />
+      <workItem from="1757237262118" duration="8732000" />
+      <workItem from="1757246470246" duration="17004000" />
     </task>
     <task id="LOCAL-00001" summary="2.1">
       <option name="closed" value="true" />
@@ -501,7 +506,15 @@
       <option name="project" value="LOCAL" />
       <updated>1757238728885</updated>
     </task>
-    <option name="localTasksCounter" value="28" />
+    <task id="LOCAL-00028" summary="perfect, DO NOT TOUCH AGAIN">
+      <option name="closed" value="true" />
+      <created>1757244139268</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1757244139268</updated>
+    </task>
+    <option name="localTasksCounter" value="29" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

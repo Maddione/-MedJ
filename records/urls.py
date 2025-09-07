@@ -13,15 +13,21 @@ from django.views.generic import TemplateView
 
 from .views.auth import RememberLoginView, RegisterView
 from .views.dashboard import dashboard
-from .views.casefiles import casefiles_view
-from .views.documents import history_view, document_detail
+from .views.casefiles import casefiles
+from .views.documents import document_detail
 from .views.events import event_detail
 from .views.doctors_views import doctors_list
-from .views.labs import labtests_list
+from .views.labs import labtests
 from .views.share import share_document_page
-from .views.personalcard import PersonalCardView, public_personalcard, personalcard_share_enable_api, personalcard_qr
+from .views.personalcard import (
+    PersonalCardView,
+    public_personalcard,
+    personalcard_share_enable_api,
+    personalcard_qr,
+)
 from .views.profile import SettingsView
-from .views.upload import upload_page
+from .views.upload import upload
+from .views.pages import history_view
 from .views.api_upload import (
     upload_ocr as api_upload_ocr,
     upload_analyze as api_upload_analyze,
@@ -72,18 +78,18 @@ urlpatterns = [
     ), name="password_reset_complete"),
 
     path("dashboard/", login_required(dashboard), name="dashboard"),
-    path("upload/", login_required(upload_page), name="upload"),
+    path("upload/", login_required(upload), name="upload"),
     path("history/", login_required(history_view), name="history"),
-    path("casefiles/", login_required(casefiles_view), name="casefiles"),
+    path("casefiles/", login_required(casefiles), name="casefiles"),
     path("personalcard/", login_required(PersonalCardView.as_view()), name="personalcard"),
     path("profile/", login_required(SettingsView.as_view()), name="profile"),
     path("doctors/", login_required(doctors_list), name="doctors"),
-    path("labtests/", login_required(labtests_list), name="labtests"),
+    path("labtests/", login_required(labtests), name="labtests"),
     path("share/", login_required(share_document_page), name="share"),
     path("share/history/", login_required(TemplateView.as_view(template_name="subpages/share_history.html")), name="share_history_page"),
 
-    path("documents/<int:doc_id>/", login_required(document_detail), name="document_detail"),
-    path("events/<int:event_id>/", login_required(event_detail), name="event_detail"),
+    path("documents/<int:pk>/", login_required(document_detail), name="document_detail"),
+    path("events/<int:pk>/", login_required(event_detail), name="event_detail"),
 
     path("s/<str:token>/", share_public, name="share_public"),
     path("personalcard/public/<str:token>/", public_personalcard, name="public_personalcard"),
@@ -102,4 +108,3 @@ urlpatterns = [
     path("api/personalcard/share/enable/", login_required(personalcard_share_enable_api), name="personalcard_share_enable_api"),
     path("api/personalcard/qr/<str:token>/", login_required(personalcard_qr), name="personalcard_qr"),
 ]
-
