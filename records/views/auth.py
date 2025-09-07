@@ -7,6 +7,7 @@ from django.utils.translation import gettext as _
 from ..forms import RegisterForm
 
 class RememberLoginView(LoginView):
+    template_name = "auth/login.html"
     redirect_authenticated_user = True
     def form_valid(self, form):
         response = super().form_valid(form)

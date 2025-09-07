@@ -25,7 +25,7 @@ from .views.personalcard import (
     personalcard_share_enable_api,
     personalcard_qr,
 )
-from .views.profile import SettingsView
+from .views.settings import SettingsView
 from .views.upload import upload
 from .views.pages import history_view
 from .views.api_upload import (
