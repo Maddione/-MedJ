@@ -9,7 +9,7 @@ from .models import (
     PatientProfile,
     MedicalEvent,
     Tag,
-    DocumentShare,
+    ShareLink,
 )
 
 User = get_user_model()
@@ -17,17 +17,10 @@ User = get_user_model()
 
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(label=_("Имейл"))
-    phone = forms.CharField(label=_("Телефон"), required=False)
 
     class Meta:
         model = User
-        fields = ["username", "email", "phone", "password1", "password2"]
-
-    def clean_email(self):
-        email = self.cleaned_data.get("email")
-        if email and User.objects.filter(email__iexact=email).exists():
-            raise forms.ValidationError(_("Email вече съществува."))
-        return email
+        fields = ["username", "email"]
 
 
 class LoginForm(AuthenticationForm):
@@ -46,10 +39,8 @@ class PatientProfileForm(forms.ModelForm):
             "middle_name_en",
             "last_name_en",
             "date_of_birth",
-            "gender",
             "phone_number",
             "address",
-            "blood_type",
         ]
         widgets = {
             "date_of_birth": forms.DateInput(attrs={"type": "date"}),
@@ -62,10 +53,8 @@ class PatientProfileForm(forms.ModelForm):
             "middle_name_en": _("Middle name (EN)"),
             "last_name_en": _("Last name (EN)"),
             "date_of_birth": _("Дата на раждане"),
-            "gender": _("Пол"),
             "phone_number": _("Телефон"),
             "address": _("Адрес"),
-            "blood_type": _("Кръвна група"),
         }
 
 
@@ -239,17 +228,21 @@ class LabTestMeasurementForm(forms.ModelForm):
         return v or timezone.now()
 
 
-class DocumentShareForm(forms.ModelForm):
+class ShareLinkCreateForm(forms.ModelForm):
+    password = forms.CharField(required=False, widget=forms.PasswordInput)
+
     class Meta:
-        model = DocumentShare
-        fields = ["expires_at", "is_active"]
-        widgets = {
-            "expires_at": forms.DateTimeInput(attrs={"type": "datetime-local"}),
-        }
-        labels = {
-            "expires_at": _("Валиден до"),
-            "is_active": _("Активен"),
-        }
+        model = ShareLink
+        fields = ("object_type", "object_id", "scope", "format", "expires_at")
+
+    def clean_object_id(self):
+        v = self.cleaned_data.get("object_id")
+        if not isinstance(v, int):
+            try:
+                v = int(v)
+            except Exception:
+                raise forms.ValidationError(_("Невалиден идентификатор"))
+        return v
 
 
 class SearchFilterForm(forms.Form):

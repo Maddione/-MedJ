@@ -5,7 +5,6 @@ from datetime import datetime, date, time
 from decimal import Decimal
 from django.db import transaction
 from django.utils.timezone import now, make_aware, get_current_timezone
-from django.core.files.base import ContentFile
 
 try:
     import requests
@@ -31,7 +30,6 @@ from records.models import (
     LabTestMeasurement,
 )
 
-
 def vision_ocr_first_fallback_flask(file_obj):
     content = file_obj.read() if hasattr(file_obj, "read") else bytes(file_obj or b"")
     source = "vision"
@@ -47,10 +45,10 @@ def vision_ocr_first_fallback_flask(file_obj):
             text = ""
     if not text:
         source = "flask"
-        url = os.getenv("OCR_SERVICE_URL", "").strip()
+        url = os.getenv("OCR_SERVICE_URL", "").strip() or os.getenv("OCR_API_URL", "").strip()
         if url and requests is not None:
             try:
-                u = url.rstrip("/") + "/ocr"
+                u = url.rstrip("/") + "/ocr" if not url.rstrip("/").endswith("/ocr") else url
                 files = {"file": ("upload.bin", io.BytesIO(content), "application/octet-stream")}
                 r = requests.post(u, files=files, timeout=30)
                 if r.ok:
@@ -63,7 +61,6 @@ def vision_ocr_first_fallback_flask(file_obj):
                 text = ""
     return text or "", source
 
-
 def _parse_float(x):
     if x is None:
         return None
@@ -75,7 +72,6 @@ def _parse_float(x):
             return float(Decimal(re.sub(r"[^\d\.\-]", "", s)))
         except Exception:
             return None
-
 
 def _parse_ref_range(s):
     if not s:
@@ -94,7 +90,6 @@ def _parse_ref_range(s):
         return vals[0], None
     return None, None
 
-
 def _iso_date(s):
     if not s:
         return None
@@ -107,7 +102,6 @@ def _iso_date(s):
         return datetime.fromisoformat(str(s)).date()
     except Exception:
         return None
-
 
 def _iso_dt(s):
     if not s:
@@ -124,7 +118,6 @@ def _iso_dt(s):
         except Exception:
             continue
     return None
-
 
 def _ensure_tag(slug, name):
     try:
@@ -147,7 +140,6 @@ def _ensure_tag(slug, name):
             except Exception:
                 return None
 
-
 def _attach_doc_tag(doc, tag, permanent=True):
     if not tag:
         return
@@ -155,7 +147,6 @@ def _attach_doc_tag(doc, tag, permanent=True):
         DocumentTag.objects.get_or_create(document=doc, tag=tag, defaults={"is_inherited": False, "is_permanent": bool(permanent)})
     except Exception:
         pass
-
 
 def _attach_event_tag(ev, tag):
     if not tag:
@@ -165,15 +156,15 @@ def _attach_event_tag(ev, tag):
     except Exception:
         pass
 
-
 def _ensure_indicator(name, unit, ref_range):
     if not name:
         return None
     nm = (name or "").strip()
     un = (unit or "").strip()
     low, high = _parse_ref_range(ref_range)
+    slug = re.sub(r"[^a-z0-9\-]+", "-", nm.lower())
     try:
-        ind = LabIndicator.objects.get(slug__iexact=re.sub(r"[^a-z0-9\-]+", "-", nm.lower()))
+        ind = LabIndicator.objects.get(slug__iexact=slug)
         updates = []
         if un and getattr(ind, "unit", "") != un:
             ind.unit = un
@@ -200,19 +191,24 @@ def _ensure_indicator(name, unit, ref_range):
         except Exception:
             return None
 
-
 def _noon(dt_date):
     if not isinstance(dt_date, date):
-        return make_aware(datetime.now(), get_current_timezone())
+        return now()
     dtt = datetime.combine(dt_date, time(12, 0, 0))
     try:
         return make_aware(dtt, get_current_timezone())
     except Exception:
         return dtt
 
+def _norm_name(s):
+    x = re.sub(r"\s+", " ", str(s or "")).strip()
+    return x
+
+def _slugify_name(s):
+    return "doctor:" + re.sub(r"[^a-z0-9\-]+", "-", _norm_name(s).lower())
 
 @transaction.atomic
-def confirm_and_save(user, category, specialty, doc_type, existing_event, file, file_mime, file_kind, final_text, final_summary, analysis):
+def confirm_and_save(user, category, specialty, doc_type, existing_event, file, file_mime, file_kind, final_text, final_summary, analysis, doctor=None):
     patient, _ = PatientProfile.objects.get_or_create(user=user)
     ev = existing_event
     if ev is None:
@@ -241,7 +237,19 @@ def confirm_and_save(user, category, specialty, doc_type, existing_event, file, 
     )
     data = analysis.get("data") if isinstance(analysis, dict) else {}
     dc = data.get("date_created") if isinstance(data, dict) else None
-    dc_iso = _iso_date(dc) or None
+    dc_iso = None
+    if dc:
+        for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%d.%m.%Y"):
+            try:
+                dc_iso = datetime.strptime(str(dc), fmt).date()
+                break
+            except Exception:
+                continue
+        if not dc_iso:
+            try:
+                dc_iso = datetime.fromisoformat(str(dc)).date()
+            except Exception:
+                dc_iso = None
     if dc_iso:
         doc.date_created = dc_iso
         try:
@@ -294,7 +302,29 @@ def confirm_and_save(user, category, specialty, doc_type, existing_event, file, 
             val = _parse_float(r.get("value"))
             unit = (r.get("unit") or "").strip()
             ref = r.get("reference_range") or ""
-            when = _iso_dt(r.get("measured_at")) or _noon(getattr(ev, "event_date", None))
+            when = None
+            if r.get("measured_at"):
+                t = str(r.get("measured_at")).replace("Z", "").strip()
+                fmts = ["%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S", "%d-%m-%Y %H:%M:%S", "%Y-%m-%d"]
+                for f in fmts:
+                    try:
+                        dt = datetime.strptime(t, f)
+                        try:
+                            when = make_aware(dt, get_current_timezone())
+                        except Exception:
+                            when = dt
+                        break
+                    except Exception:
+                        continue
+            if when is None:
+                if getattr(ev, "event_date", None):
+                    dtt = datetime.combine(ev.event_date, time(12, 0, 0))
+                    try:
+                        when = make_aware(dtt, get_current_timezone())
+                    except Exception:
+                        when = dtt
+                else:
+                    when = now()
             ind = _ensure_indicator(name, unit, ref)
             if ind is None or val is None:
                 continue
@@ -307,4 +337,22 @@ def confirm_and_save(user, category, specialty, doc_type, existing_event, file, 
                 )
             except Exception:
                 pass
+    doc_block = doctor or {}
+    name_in = re.sub(r"\s+", " ", str(doc_block.get("full_name") or "")).strip()
+    sel_specialty_id = doc_block.get("specialty_id")
+    if name_in:
+        slug = "doctor:" + re.sub(r"[^a-z0-9\-]+", "-", name_in.lower())
+        tag = _ensure_tag(slug, name_in)
+        _attach_doc_tag(doc, tag, False)
+        _attach_event_tag(ev, tag)
+    if sel_specialty_id:
+        try:
+            sp = MedicalSpecialty.objects.get(id=sel_specialty_id)
+            sp_name = getattr(sp, "safe_translation_getter", lambda *a, **k: None)("name", any_language=True) or getattr(sp, "name", "") or ""
+            tslug = "doctor_specialty:" + str(sel_specialty_id)
+            t = _ensure_tag(tslug, sp_name or tslug)
+            _attach_doc_tag(doc, t, False)
+            _attach_event_tag(ev, t)
+        except MedicalSpecialty.DoesNotExist:
+            pass
     return {"event_id": ev.id, "document_id": doc.id}

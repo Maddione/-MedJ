@@ -252,3 +252,30 @@ class OcrLog(models.Model):
     source = models.CharField(max_length=16, choices=SOURCE_CHOICES)
     duration_ms = models.PositiveIntegerField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+def get_indicator_canonical_tag(indicator):
+    from django.utils.text import slugify
+    if indicator is None:
+        return None
+    try:
+        name = getattr(indicator, "safe_translation_getter", lambda *a, **k: None)("name", any_language=True) or getattr(indicator, "name", "") or ""
+    except Exception:
+        name = getattr(indicator, "name", "") or ""
+    base = slugify(name) or f"indicator-{getattr(indicator, 'id', '') or 'x'}"
+    slug = f"indicator:{base}"
+    try:
+        return Tag.objects.get(slug=slug)
+    except Tag.DoesNotExist:
+        t = Tag.objects.create(slug=slug, kind=TagKind.SYSTEM, is_active=True)
+        try:
+            t.set_current_language("bg")
+        except Exception:
+            pass
+        if name:
+            try:
+                t.name = name
+                t.save(update_fields=["name"])
+            except Exception:
+                pass
+        return t

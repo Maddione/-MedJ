@@ -2,7 +2,8 @@ const API = {
   ocr: "/api/upload/ocr/",
   analyze: "/api/upload/analyze/",
   confirm: "/api/upload/confirm/",
-  suggest: "/api/events/suggest/"
+  suggest: "/api/events/suggest/",
+  doctorSuggest: "/api/doctors/suggest/"
 };
 
 function el() {
@@ -78,6 +79,80 @@ async function suggestIfReady() {
   }
 }
 
+function injectDoctorSection() {
+  if (el("doctorSection")) return;
+  const anchor = el("summaryText","summary_text") || el("analysisMeta") || el("ocrText","ocr_text") || document.body;
+  const cont = document.createElement("div");
+  cont.id = "doctorSection";
+  cont.className = "mt-6 bg-blockbg rounded-2xl p-4 shadow-sm";
+  cont.innerHTML = `
+    <label class="flex items-center gap-3 text-primaryDark">
+      <input id="addDoctorToggle" type="checkbox" class="h-5 w-5 rounded border-gray-300">
+      <span>Искам да добавя лекар</span>
+    </label>
+    <div id="doctorFields" class="mt-4 hidden">
+      <div class="grid md:grid-cols-3 gap-3">
+        <div class="md:col-span-1">
+          <div class="text-primaryDark mb-1">Изберете от записани</div>
+          <select id="doctorSelect" class="w-full h-11 rounded-xl px-3 border border-gray-300">
+            <option value="">—</option>
+          </select>
+        </div>
+        <div class="md:col-span-1">
+          <div class="text-primaryDark mb-1">Внимателно въведете Име и Фамилия</div>
+          <input id="doctorInput" type="text" class="w-full h-11 rounded-xl px-3 border border-gray-300" placeholder="Име Фамилия">
+        </div>
+        <div class="md:col-span-1">
+          <div class="text-primaryDark mb-1">Специалност</div>
+          <select id="doctorSpecialtySelect" class="w-full h-11 rounded-xl px-3 border border-gray-300"></select>
+        </div>
+      </div>
+      <div id="doctorAiBadge" class="mt-2 hidden text-sm" style="color:#0A4E75">Открито от AI</div>
+    </div>
+  `;
+  anchor.parentNode.insertBefore(cont, anchor.nextSibling);
+  const spcSrc = el("specialtySelect","sel_specialty");
+  const spcDst = el("doctorSpecialtySelect");
+  if (spcSrc && spcDst) {
+    seth(spcDst, spcSrc.innerHTML);
+    spcDst.value = spcSrc.value || "";
+  }
+  const tgl = el("addDoctorToggle");
+  const fields = el("doctorFields");
+  if (tgl && fields) {
+    tgl.addEventListener("change", () => {
+      if (tgl.checked) show(fields); else hide(fields);
+    });
+  }
+  const inp = el("doctorInput");
+  if (inp) {
+    let lastQ = "";
+    inp.addEventListener("input", () => {
+      const q = inp.value.trim();
+      if (q === lastQ) return;
+      lastQ = q;
+      doctorSuggest(q);
+    });
+  }
+}
+
+async function doctorSuggest(q) {
+  const spc = (el("doctorSpecialtySelect")||{}).value || (el("specialtySelect","sel_specialty")||{}).value || "";
+  const sel = el("doctorSelect");
+  if (!sel) return;
+  try {
+    const url = `${API.doctorSuggest}?q=${encodeURIComponent(q||"")}&specialty_id=${encodeURIComponent(spc||"")}`;
+    const res = await fetch(url, { credentials: "same-origin" });
+    if (!res.ok) throw new Error("bad");
+    const data = await res.json();
+    const items = data.results || [];
+    const opts = ['<option value="">—</option>'].concat(items.map(x => `<option value="${x.name}">${x.name}${x.specialty_name ? " · "+x.specialty_name : ""}</option>`));
+    seth(sel, opts.join(""));
+  } catch(e) {
+    seth(sel, '<option value="">—</option>');
+  }
+}
+
 async function doOCR() {
   const p = picks();
   const ocrBtn = el("btnOCR");
@@ -133,6 +208,23 @@ async function doAnalyze() {
     }
     const payload = el("analysisPayload");
     if (payload) payload.setAttribute("data-json", JSON.stringify(data));
+    injectDoctorSection();
+    const found = (data && data.data && data.data.doctors) || [];
+    if (found && found.length) {
+      const tgl = el("addDoctorToggle");
+      const fields = el("doctorFields");
+      if (tgl && fields) {
+        tgl.checked = true;
+        show(fields);
+      }
+      const inp = el("doctorInput");
+      if (inp) inp.value = String(found[0] || "");
+      const badge = el("doctorAiBadge");
+      if (badge) show(badge);
+      doctorSuggest(found[0] || "");
+    } else {
+      doctorSuggest("");
+    }
     return data;
   } catch(e) {
     if (summaryOut) setv(summaryOut, "");
@@ -142,6 +234,20 @@ async function doAnalyze() {
   } finally {
     if (analyzeBtn) dis(analyzeBtn, false);
   }
+}
+
+function collectDoctorBlock() {
+  const tgl = el("addDoctorToggle");
+  const use = tgl ? tgl.checked : false;
+  const sel = el("doctorSelect");
+  const inp = el("doctorInput");
+  const spc = el("doctorSpecialtySelect");
+  const nameSel = sel && sel.value ? sel.value.trim() : "";
+  const nameInp = inp && inp.value ? inp.value.trim() : "";
+  const name = nameSel || nameInp;
+  const specialty_id = spc && spc.value ? spc.value : "";
+  if (!use && !name) return null;
+  return { full_name: name || "", specialty_id: specialty_id || "" };
 }
 
 async function doConfirm() {
@@ -162,6 +268,7 @@ async function doConfirm() {
   if (analysisPayloadEl) {
     try { analysis = JSON.parse(analysisPayloadEl.getAttribute("data-json") || "{}"); } catch(_){}
   }
+  const doctor = collectDoctorBlock();
   const payload = {
     category_id: p.category,
     specialty_id: p.specialty,
@@ -173,7 +280,8 @@ async function doConfirm() {
     file_b64: fileB64,
     file_name: p.file.name || "document.bin",
     file_mime: p.file.type || "application/octet-stream",
-    file_kind: p.fileKind || "other"
+    file_kind: p.fileKind || "other",
+    doctor: doctor
   };
   if (btn) dis(btn, true);
   try {
@@ -197,7 +305,14 @@ function bindUI() {
   const spc = el("specialtySelect","sel_specialty");
   const doc = el("docTypeSelect","sel_doc_type");
   if (cat) cat.addEventListener("change", suggestIfReady);
-  if (spc) spc.addEventListener("change", suggestIfReady);
+  if (spc) {
+    spc.addEventListener("change", () => {
+      suggestIfReady();
+      const dst = el("doctorSpecialtySelect");
+      if (dst) dst.value = spc.value || "";
+      doctorSuggest((el("doctorInput")||{}).value || "");
+    });
+  }
   if (doc) doc.addEventListener("change", suggestIfReady);
 
   const bOCR = el("btnOCR");
@@ -206,6 +321,8 @@ function bindUI() {
   if (bOCR) bOCR.addEventListener("click", e => { e.preventDefault(); doOCR(); });
   if (bAna) bAna.addEventListener("click", e => { e.preventDefault(); doAnalyze(); });
   if (bCfm) bCfm.addEventListener("click", e => { e.preventDefault(); doConfirm(); });
+
+  injectDoctorSection();
 }
 
 document.addEventListener("DOMContentLoaded", bindUI);

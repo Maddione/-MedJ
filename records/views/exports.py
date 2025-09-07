@@ -4,27 +4,28 @@ from pathlib import Path
 from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
+from django.http import HttpResponse, FileResponse, HttpResponseForbidden, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.utils.translation import get_language
 from django.core import signing
+from django.template.loader import render_to_string
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from ..models import Document, MedicalEvent
-from records.services.print_utils import render_template_to_pdf, pdf_response
-from records.services.csv_to_pdf import events_csv_to_pdf, labs_csv_to_pdf
 
 _SIGNER_SALT = "medj.share"
 
 def _templates_dir() -> Path:
     return Path(settings.BASE_DIR) / "records" / "pdf_templates"
 
-def _template_pdf_path(request: HttpRequest) -> str:
+def _template_pdf_path(request):
     lang = (getattr(request, "LANGUAGE_CODE", None) or get_language() or "bg").lower().split("-")[0]
     suffix = "eng" if lang == "en" else "bg"
     two = _templates_dir() / f"pdf-template-twopage-{suffix}.pdf"
     one = _templates_dir() / f"pdf-template-{suffix}.pdf"
-    if two.exists():
-        return str(two)
-    return str(one)
+    return str(two if two.exists() else one)
 
 def _overlay_bytes_with_template(pdf_bytes: bytes, template_path: str) -> bytes:
     try:
@@ -56,30 +57,6 @@ def _overlay_bytes_with_template(pdf_bytes: bytes, template_path: str) -> bytes:
     writer.write(buf)
     return buf.getvalue()
 
-def _token_ok(request: HttpRequest, kind: str) -> bool:
-    t = request.GET.get("t")
-    if not t:
-        return False
-    try:
-        s = signing.Signer(salt=_SIGNER_SALT)
-        raw = s.unsign(t)
-        payload = json.loads(raw)
-    except Exception:
-        return False
-    if payload.get("k") != kind:
-        return False
-    try:
-        exp = int(payload.get("exp", 0))
-    except Exception:
-        return False
-    if exp < int(time.time()):
-        return False
-    if kind == "print_pdf":
-        labs_flag = 1 if request.GET.get("labs") else 0
-        if int(payload.get("labs", 0)) != labs_flag:
-            return False
-    return True
-
 def _ddmmyyyy(d):
     if not d:
         return ""
@@ -107,8 +84,120 @@ def _event_tags_text(ev):
                 names.append(nm)
     return ", ".join(names)
 
+def _font_name():
+    try:
+        pdfmetrics.registerFont(TTFont("DejaVuSans", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"))
+        return "DejaVuSans"
+    except Exception:
+        return "Helvetica"
+
+def render_template_to_pdf(request, template_name, context):
+    try:
+        from weasyprint import HTML
+        html = render_to_string(template_name, context=context, request=request)
+        return HTML(string=html, base_url=request.build_absolute_uri("/")).write_pdf()
+    except Exception:
+        buf = io.BytesIO()
+        c = canvas.Canvas(buf, pagesize=A4)
+        c.setFont(_font_name(), 14)
+        c.drawString(40, 800, "Export")
+        c.setFont(_font_name(), 10)
+        y = 780
+        for k, v in (context or {}).items():
+            s = f"{k}: {v}"
+            c.drawString(40, y, s[:110])
+            y -= 14
+            if y < 60:
+                c.showPage()
+                c.setFont(_font_name(), 10)
+                y = 800
+        c.showPage()
+        c.save()
+        buf.seek(0)
+        return buf.getvalue()
+
+def pdf_response(filename: str, pdf_bytes: bytes, inline: bool = True) -> HttpResponse:
+    resp = HttpResponse(pdf_bytes, content_type="application/pdf")
+    disp = "inline" if inline else "attachment"
+    resp["Content-Disposition"] = f'{disp}; filename="{filename}"'
+    return resp
+
+def events_csv_to_pdf(csv_bytes_io: io.BytesIO) -> bytes:
+    csv_bytes_io.seek(0)
+    try:
+        rows = list(csv.reader(io.StringIO(csv_bytes_io.read().decode("utf-8"))))
+    except Exception:
+        rows = []
+    buf = io.BytesIO()
+    c = canvas.Canvas(buf, pagesize=A4)
+    c.setFont(_font_name(), 12)
+    c.drawString(40, 800, "Events")
+    c.setFont(_font_name(), 10)
+    y = 780
+    for r in rows:
+        line = " | ".join(str(x) for x in r)
+        c.drawString(40, y, line[:110])
+        y -= 14
+        if y < 60:
+            c.showPage()
+            c.setFont(_font_name(), 10)
+            y = 800
+    c.showPage()
+    c.save()
+    buf.seek(0)
+    return buf.getvalue()
+
+def labs_csv_to_pdf(csv_bytes_io: io.BytesIO) -> bytes:
+    csv_bytes_io.seek(0)
+    try:
+        rows = list(csv.reader(io.StringIO(csv_bytes_io.read().decode("utf-8"))))
+    except Exception:
+        rows = []
+    buf = io.BytesIO()
+    c = canvas.Canvas(buf, pagesize=A4)
+    c.setFont(_font_name(), 12)
+    c.drawString(40, 800, "Labs")
+    c.setFont(_font_name(), 10)
+    y = 780
+    for r in rows:
+        line = " | ".join(str(x) for x in r)
+        c.drawString(40, y, line[:110])
+        y -= 14
+        if y < 60:
+            c.showPage()
+            c.setFont(_font_name(), 10)
+            y = 800
+    c.showPage()
+    c.save()
+    buf.seek(0)
+    return buf.getvalue()
+
+def _token_ok(request, kind: str) -> bool:
+    t = request.GET.get("t")
+    if not t:
+        return False
+    try:
+        s = signing.Signer(salt=_SIGNER_SALT)
+        raw = s.unsign(t)
+        payload = json.loads(raw)
+    except Exception:
+        return False
+    if payload.get("k") != kind:
+        return False
+    try:
+        exp = int(payload.get("exp", 0))
+    except Exception:
+        return False
+    if exp < int(time.time()):
+        return False
+    if kind == "print_pdf":
+        labs_flag = 1 if request.GET.get("labs") else 0
+        if int(payload.get("labs", 0)) != labs_flag:
+            return False
+    return True
+
 @login_required
-def document_export_pdf(request: HttpRequest, pk: int) -> HttpResponse:
+def document_export_pdf(request, pk: int):
     doc = get_object_or_404(Document, pk=pk, owner=request.user)
     context = {"document": doc, "user": request.user}
     pdf_bytes = render_template_to_pdf(request, "subpages/document_export_pdf.html", context)
@@ -116,7 +205,7 @@ def document_export_pdf(request: HttpRequest, pk: int) -> HttpResponse:
     return pdf_response(f"document_{pk}.pdf", pdf_bytes, inline=True)
 
 @login_required
-def event_export_pdf(request: HttpRequest, pk: int) -> HttpResponse:
+def event_export_pdf(request, pk: int):
     event = get_object_or_404(
         MedicalEvent.objects.select_related("patient__user", "specialty").prefetch_related("documents", "tags"),
         pk=pk, patient__user=request.user
@@ -138,7 +227,7 @@ def event_export_pdf(request: HttpRequest, pk: int) -> HttpResponse:
     return pdf_response(f"event_{pk}.pdf", pdf_bytes, inline=True)
 
 @login_required
-def export_csv(request: HttpRequest) -> HttpResponse:
+def export_csv(request):
     event_id = request.GET.get("event_id")
     if not event_id:
         return HttpResponseBadRequest("missing_event_id")
@@ -169,7 +258,7 @@ def export_csv(request: HttpRequest) -> HttpResponse:
     resp["Content-Disposition"] = f'attachment; filename="event_{ev.id}_labs.csv"'
     return resp
 
-def print_csv(request: HttpRequest) -> HttpResponse:
+def print_csv(request):
     if not request.user.is_authenticated and not _token_ok(request, "print_csv"):
         return HttpResponseForbidden()
     labs = request.GET.get("labs")
@@ -183,7 +272,7 @@ def print_csv(request: HttpRequest) -> HttpResponse:
     resp["Content-Disposition"] = 'attachment; filename="export.csv"'
     return resp
 
-def print_pdf(request: HttpRequest) -> HttpResponse:
+def print_pdf(request):
     if not request.user.is_authenticated and not _token_ok(request, "print_pdf"):
         return HttpResponseForbidden()
     labs = request.GET.get("labs")

@@ -57,7 +57,7 @@ TEMPLATES = [
     },
 ]
 
-AUTH_USER_MODEL = "records.User"
+AUTH_USER_MODEL = "auth.User"
 AUTHENTICATION_BACKENDS = [
     "records.auth_backends.EmailOrUsernameBackend",
     "django.contrib.auth.backends.ModelBackend",
@@ -73,7 +73,7 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = "bg"
 LANGUAGES = [
     ("bg", _("Български")),
-    ("en", ("English (US")),
+    ("en", _("English (US)")),
 ]
 USE_I18N = True
 LOCALE_PATHS = [BASE_DIR / "locale"]
