@@ -148,11 +148,11 @@ def upload_analyze(request):
                 specialty_name = ""
     result = None
     try:
-        from records.services.llm import anonymizer as anonymizer_mod
+        from records.management.services.llm import anonymizer as anonymizer_mod
     except Exception:
         anonymizer_mod = None
     try:
-        from records.services.llm import gpt_client as gpt_client_mod
+        from records.management.services.llm import gpt_client as gpt_client_mod
     except Exception:
         gpt_client_mod = None
     anon = text

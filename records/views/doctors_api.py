@@ -1,25 +1,50 @@
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q, Count
-from ..models import Tag, DocumentTag, Document
+from django.db.models import Case, When, Value, IntegerField
+from ..models import Practitioner
+
 
 @require_GET
 @login_required
 def doctors_suggest(request):
-    q = (request.GET.get("q") or "").strip().lower()
+    query = (request.GET.get("q") or "").strip()
     specialty_id = request.GET.get("specialty_id")
-    qs = Tag.objects.filter(
-        documenttag__document__owner=request.user,
-        slug__startswith="doctor:"
-    ).distinct()
-    if q:
-        qs = qs.filter(
-            Q(translations__name__icontains=q) | Q(slug__icontains=q)
-        )
-    qs = qs.annotate(usage_count=Count("documenttag__id")).order_by("-usage_count", "translations__name")[:20]
+
+    qs = Practitioner.objects.filter(
+        owner=request.user,
+        is_active=True
+    )
+
+    if query:
+        qs = qs.filter(full_name__icontains=query)
+
+    if specialty_id and specialty_id.isdigit():
+        specialty_id_int = int(specialty_id)
+        qs = qs.annotate(
+            is_match=Case(
+                When(specialty_id=specialty_id_int, then=Value(1)),
+                default=Value(0),
+                output_field=IntegerField(),
+            )
+        ).order_by("-is_match", "full_name")
+    else:
+        qs = qs.order_by("full_name")
+
+    results = qs[:20]
+
     data = []
-    for t in qs:
-        name = getattr(t, "safe_translation_getter", lambda *a, **k: None)("name", any_language=True) or t.slug.replace("doctor:", "").replace("-", " ").title()
-        data.append({"id": t.id, "full_name": name})
+    for p in results:
+        name = p.full_name
+        if p.specialty:
+
+            specialty_name = getattr(p.specialty, "name", "")
+            name = f"{p.full_name} ({specialty_name})"
+
+        data.append({
+            "id": p.id,
+            "full_name": p.full_name,
+            "display_name": name,
+        })
+
     return JsonResponse({"results": data})

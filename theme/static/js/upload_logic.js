@@ -153,9 +153,10 @@ async function doctorSuggest(q) {
     const data = await res.json();
     const items = data.results || [];
     const opts = ['<option value="">—</option>'].concat(items.map(x => {
-      const name = x.full_name || x.name || "";
+      const value = x.full_name || "";
+      const text = x.display_name || x.full_name || "";
       const sid = (x.id != null ? String(x.id) : "");
-      return `<option value="${name}" data-id="${sid}">${name}</option>`;
+      return `<option value="${value}" data-id="${sid}">${text}</option>`;
     }));
     seth(sel, opts.join(""));
   } catch(e) {
@@ -257,7 +258,7 @@ function collectDoctorBlock() {
   const name = nameSel || nameInp;
   const specialty_id = spc && spc.value ? spc.value : "";
   const practitioner_id = sel && sel.selectedOptions && sel.selectedOptions[0] ? (sel.selectedOptions[0].getAttribute("data-id") || "") : "";
-  if (!use && !name) return null;
+  if (!use || !name) return null;
   if (practitioner_id) return { practitioner_id: parseInt(practitioner_id, 10), role: "author", is_primary: true };
   return { full_name: name || "", specialty_id: specialty_id || "", role: "author", is_primary: true };
 }

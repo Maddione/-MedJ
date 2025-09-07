@@ -1,20 +1,21 @@
 {% extends 'basetemplates/base_public.html' %}
-{% load static i18n widget_tweaks %}
+{% load static i18n %}
 
-{% block title %}{% trans "Начало" %} - MedJ{% endblock %}
+{% block title %}{% trans "Начало" %}{% endblock %}
 
 {% block public_content %}
-<div class="text-center">
-    <div class="flex flex-col items-center justify-center mb-6">
-        <img src="{% static 'images/logo.svg' %}" alt="MedJ Logo" class="w-64 md:w-80 lg:w-96 h-auto mx-auto">
-    </div>
+<div class="text-center py-12">
+    <img src="{% static 'images/logo.svg' %}" alt="MedJ Logo" class="w-48 md:w-64 h-auto mx-auto mb-6">
 
-    <h1 class="text-4xl font-bold text-primaryDark mb-4">{% trans "Добре дошли в MedJ" %}</h1>
-    <p class="text-lg text-primaryDark/80">{% trans "Вашето дигитално здравно досие. Сигурно, достъпно и лесно за управление." %}</p>
+    <h1 class="text-3xl md:text-4xl font-bold text-primaryDark mb-4">{% trans "Добре дошли в MedJ" %}</h1>
+    <p class="text-md md:text-lg text-primaryDark/80 max-w-2xl mx-auto">{% trans "Вашето дигитално здравно досие. Сигурно, достъпно и лесно за управление." %}</p>
 
-    <div class="mt-8">
-        <a href="{% url 'medj:register' %}" class="inline-block bg-primaryDark text-blockbg font-semibold py-3 px-8 rounded-lg shadow-lg hover:opacity-90 transition-transform transform hover:scale-105 duration-300">
-            {% trans "Създай своето досие сега" %}
+    <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="{% url 'medj:register' %}" class="w-full sm:w-auto bg-primaryDark text-blockbg font-semibold py-3 px-8 rounded-full shadow-lg hover:bg-primaryDark/90 transition-transform transform hover:scale-105 duration-300">
+            {% trans "Създай своето досие" %}
+        </a>
+        <a href="{% url 'medj:login' %}" class="w-full sm:w-auto bg-gray-200 text-primaryDark font-semibold py-3 px-8 rounded-full hover:bg-gray-300 transition-colors duration-300">
+            {% trans "Вход в профил" %}
         </a>
     </div>
 </div>
