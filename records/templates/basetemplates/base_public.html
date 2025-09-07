@@ -1,6 +1,5 @@
 {% extends 'basetemplates/base.html' %}
-{% load i18n %}
-
+{% load i18n static %}
 {% block nav_buttons %}
 {% if not request.resolver_match.url_name == 'landingpage' %}
 <nav class="flex items-center gap-3">

@@ -1,68 +1,79 @@
-{% load static i18n widget_tweaks %}
+{% load static i18n %}
 {% get_current_language as CURRENT_LANG %}
 <!DOCTYPE html>
-<html lang="{{ CURRENT_LANG|default:'bg' }}" class="h-full bg-sitebg">
+<html lang="{{ CURRENT_LANG|default:'bg' }}">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}MedJ{% endblock %}</title>
   <link rel="stylesheet" href="{% static 'css/dist/output.css' %}">
   <link href="{% static 'fontawesome/css/all.min.css' %}" rel="stylesheet">
   <link rel="icon" href="{% static 'images/logo.svg' %}">
-  {% block extra_head %}{% endblock %}
 </head>
-<body class="min-h-screen flex flex-col">
-  <header class="bg-primary w-[98%] mx-auto rounded-b-3xl shadow-lg">
-    <div class="h-[7.6vh] mx-auto px-4 flex items-center justify-between">
-      <div class="flex items-center gap-3 h-full shrink-0">
+<body class="min-h-screen bg-sitebg flex flex-col">
+  <header>
+    <div class="bg-primary h-[7.6vh] w-[98%] mx-auto px-6 flex items-center justify-between rounded-b-3xl">
+      <!-- Ляв блок: език + MedJ -->
+      <div class="flex items-center gap-3 h-full">
         <div class="relative flex items-center h-full">
-          <button type="button" id="langBtn" class="flex items-center justify-center p-2">
-            <img id="langIcon" src="{% static 'images/languageicon.png' %}" alt="language" class="h-7 w-7">
+          <button type="button" id="langBtn" class="flex items-center justify-center">
+            <img id="langIcon" src="{% static 'images/languageicon.png' %}" alt="language">
           </button>
-          <div id="langMenu" class="hidden absolute top-full mt-2 w-48 z-50 rounded-lg shadow-md bg-white py-1">
-            <form method="post" action="{% url 'set_language' %}" class="p-1">
+          <div id="langMenu" class="hidden absolute top-full mt-2 w-56 z-50 rounded-lg shadow-md bg-blockbg py-1">
+            <form method="post" action="{% url 'set_language' %}" class="p-2">
               {% csrf_token %}
               <input type="hidden" name="next" value="{{ request.get_full_path }}">
               <button type="submit" name="language" value="bg" class="block w-full text-left px-4 py-2 rounded text-primaryDark hover:bg-sitebg">{% trans "Български" %}</button>
-              <button type="submit" name="language" value="en" class="block w-full text-left px-4 py-2 rounded text-primaryDark hover:bg-sitebg">{% trans "English (US)" %}</button>
+              <button type="submit" name="language" value="en-us" class="block w-full text-left px-4 py-2 rounded text-primaryDark hover:bg-sitebg">{% trans "English (US)" %}</button>
             </form>
           </div>
         </div>
-        <a href="{% if user.is_authenticated %}{% url 'medj:dashboard' %}{% else %}{% url 'medj:landingpage' %}{% endif %}" class="text-blockbg text-2xl font-bold flex items-center">
+        <a href="{% if user.is_authenticated %}{% url 'medj:dashboard' %}{% else %}{% url 'medj:landingpage' %}{% endif %}" id="medjText" class="text-blockbg text-xl font-bold flex items-center">
           MedJ
         </a>
       </div>
 
-      <nav class="flex-1 flex items-center justify-center px-4">
-        {% block nav_buttons %}{% endblock %}
-      </nav>
-
-      <div class="shrink-0 flex items-center gap-2">
+      <!-- Десен блок: навигационни бутони + потребителски дропдаун -->
+      <div class="flex items-center gap-2">
+        <nav class="flex items-center gap-2">
+          {% block nav_buttons %}{% endblock %}
+        </nav>
         {% block nav_user %}{% endblock %}
       </div>
     </div>
   </header>
 
-  <main class="w-full flex-grow flex flex-col py-6">
+  <main class="w-full flex-grow flex flex-col pb-6">
     {% block body_content %}{% endblock %}
   </main>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const langBtn = document.getElementById('langBtn');
-      const langMenu = document.getElementById('langMenu');
-      if (langBtn && langMenu) {
-        langBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          langMenu.classList.toggle('hidden');
-        });
-        document.addEventListener('click', (e) => {
-          if (!langMenu.contains(e.target) && !langBtn.contains(e.target)) {
+    const langBtn = document.getElementById('langBtn');
+    const langMenu = document.getElementById('langMenu');
+    if (langBtn && langMenu) {
+      langBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        langMenu.classList.toggle('hidden');
+      });
+      document.addEventListener('click', () => {
+        if (!langMenu.classList.contains('hidden')) {
             langMenu.classList.add('hidden');
-          }
-        });
+        }
+      });
+    }
+
+    function resizeLangIcon() {
+      const medj = document.getElementById("medjText");
+      const icon = document.getElementById("langIcon");
+      if (medj && icon) {
+        const targetWidth = medj.offsetWidth * 0.8;
+        const targetHeight = targetWidth * 0.79;
+        icon.style.width = targetWidth + "px";
+        icon.style.height = targetHeight + "px";
       }
-    });
+    }
+    window.addEventListener("load", resizeLangIcon);
+    window.addEventListener("resize", resizeLangIcon);
   </script>
   {% block scripts_extra %}{% endblock %}
 </body>

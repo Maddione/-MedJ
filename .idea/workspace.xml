@@ -9,8 +9,15 @@
   <component name="ChangeListManager">
     <list default="true" id="c486bb59-c79b-4440-8fcc-e0c5e6eda3dc" name="Changes" comment="perfect, DO NOT TOUCH AGAIN">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/views/auth.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/auth.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/medj/settings/dev.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/settings/dev.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/medj/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/management/middleware/onboarding.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/management/middleware/onboarding.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/auth/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/auth/login.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/auth/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/auth/register.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base_app.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_app.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base_public.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_public.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -274,7 +281,7 @@
       <workItem from="1757054661041" duration="13232000" />
       <workItem from="1757070390912" duration="19022000" />
       <workItem from="1757237262118" duration="8732000" />
-      <workItem from="1757246470246" duration="18913000" />
+      <workItem from="1757246470246" duration="25289000" />
     </task>
     <task id="LOCAL-00001" summary="2.1">
       <option name="closed" value="true" />
@@ -508,7 +515,15 @@
       <option name="project" value="LOCAL" />
       <updated>1757265515935</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="perfect, DO NOT TOUCH AGAIN">
+      <option name="closed" value="true" />
+      <created>1757271759405</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1757271759405</updated>
+    </task>
+    <option name="localTasksCounter" value="31" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

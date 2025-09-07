@@ -6,7 +6,6 @@ ALLOWED_PREFIXES = (
     "/static/",
     "/favicon.ico/",
     "/robots.txt",
-    "/__reload__",
 )
 
 class OnboardingMiddleware(MiddlewareMixin):
