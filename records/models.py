@@ -198,12 +198,18 @@ class LabIndicator(TranslatableModel):
 
 
 class LabIndicatorAlias(models.Model):
-    indicator = models.ForeignKey("records.LabIndicator", on_delete=models.CASCADE, related_name="aliases")
-    alias = models.CharField(max_length=255)
-    alias_norm = models.CharField(max_length=255, db_index=True)
+    indicator = models.ForeignKey("LabIndicator", on_delete=models.CASCADE, related_name="aliases")
+    alias_raw = models.CharField(max_length=255)
+    normalized = models.CharField(max_length=255, blank=True)
+
+    def alias(self):
+        return self.alias_raw
+
+    def alias_norm(self):
+        return self.normalized
 
     class Meta:
-        unique_together = ("indicator", "alias_norm")
+        unique_together = [("indicator", "alias_raw")]
 
 
 class LabTestMeasurement(models.Model):
@@ -291,11 +297,15 @@ def normalize_alias(s):
 
 
 def get_or_create_indicator_alias(indicator, alias):
-    alias_norm = normalize_alias(alias)
-    obj, _ = LabIndicatorAlias.objects.get_or_create(indicator=indicator, alias_norm=alias_norm, defaults={"alias": alias})
-    if obj.alias != alias:
-        obj.alias = alias
-        obj.save(update_fields=["alias"])
+    norm = normalize_alias(alias)
+    obj, _ = LabIndicatorAlias.objects.get_or_create(
+        indicator=indicator,
+        normalized=norm,
+        defaults={"alias_raw": alias},
+    )
+    if obj.alias_raw != alias:
+        obj.alias_raw = alias
+        obj.save(update_fields=["alias_raw"])
     return obj
 
 
@@ -315,3 +325,13 @@ def get_or_create_system_tag_by_slug(slug, name=None):
             except Exception:
                 pass
         return t
+
+
+def get_indicator_canonical_tag(indicator):
+    if not indicator:
+        return None
+    slug = f"indicator:{indicator.slug}"
+    tag, _ = Tag.objects.get_or_create(
+        slug=slug, defaults={"kind": TagKind.INDICATOR, "is_active": True}
+    )
+    return tag

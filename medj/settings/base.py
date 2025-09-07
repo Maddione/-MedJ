@@ -1,12 +1,11 @@
 from pathlib import Path
 import os
-from django.utils.translation import gettext_lazy as _
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-insecure-secret-key")
-DEBUG = False
-ALLOWED_HOSTS = []
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-secret-key")
+DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "*").split(",")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -16,12 +15,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "parler",
-    "theme",
-    "records.apps.RecordsConfig",
-    "django_browser_reload",
-    "widget_tweaks",
+    "records",
 ]
-MEDJ_TAG_SYNC_ENABLED = True
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -32,8 +27,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "django_browser_reload.middleware.BrowserReloadMiddleware",
-    "records.middleware.onboarding.OnboardingMiddleware",
+    "records.management.middleware.onboarding.OnboardingMiddleware",
 ]
 
 ROOT_URLCONF = "medj.urls"
@@ -41,27 +35,44 @@ ROOT_URLCONF = "medj.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "records" / "templates"],
+        "DIRS": [
+            BASE_DIR / "theme" / "templates",
+            BASE_DIR / "records" / "templates",
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
+                "django.template.context_processors.i18n",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "django.template.context_processors.i18n",
-                "django.template.context_processors.static",
-                "django.template.context_processors.tz",
             ],
         },
     },
 ]
 
-AUTH_USER_MODEL = "auth.User"
-AUTHENTICATION_BACKENDS = [
-    "records.auth_backends.EmailOrUsernameBackend",
-    "django.contrib.auth.backends.ModelBackend",
-]
+WSGI_APPLICATION = "medj.wsgi.application"
+ASGI_APPLICATION = "medj.asgi.application"
+
+DATABASES = {
+    "default": {
+        "ENGINE": os.environ.get("DB_ENGINE", "django.db.backends.postgresql"),
+        "NAME": os.environ.get("DB_NAME", "medj"),
+        "USER": os.environ.get("DB_USER", "medj"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", "medj"),
+        "HOST": os.environ.get("DB_HOST", "db"),
+        "PORT": os.environ.get("DB_PORT", "5432"),
+    },
+    "backup": {
+        "ENGINE": os.environ.get("DB_ENGINE", "django.db.backends.postgresql"),
+        "NAME": os.environ.get("DB_BACKUP_NAME", "medj_backup"),
+        "USER": os.environ.get("DB_BACKUP_USER", "medj"),
+        "PASSWORD": os.environ.get("DB_BACKUP_PASSWORD", "medj"),
+        "HOST": os.environ.get("DB_BACKUP_HOST", "db"),
+        "PORT": os.environ.get("DB_BACKUP_PORT", "5432"),
+    },
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -70,63 +81,29 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-LANGUAGE_CODE = "bg"
-LANGUAGES = [
-    ("bg", _("Български")),
-    ("en", _("English (US)")),
-]
+LANGUAGE_CODE = "en-us"
+TIME_ZONE = "UTC"
 USE_I18N = True
-LOCALE_PATHS = [BASE_DIR / "locale"]
-
-TIME_ZONE = "Europe/Sofia"
 USE_TZ = True
+
+PARLER_LANGUAGES = {
+    1: (
+        {"code": "en-us"},
+        {"code": "bg"},
+    ),
+    "default": {
+        "fallbacks": ["en-us"],
+        "hide_untranslated": False,
+    },
+}
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [
     BASE_DIR / "theme" / "static",
-    BASE_DIR / "records" / "static",
 ]
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-TAILWIND_APP_NAME = "theme"
-
-LOGIN_URL = "/login/"
-LOGIN_REDIRECT_URL = "/dashboard/"
-LOGOUT_REDIRECT_URL = "/login/"
-
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-SESSION_COOKIE_AGE = 7200
-SESSION_SAVE_EVERY_REQUEST = True
-
-PARLER_LANGUAGES = {
-    None: (
-        {"code": "bg"},
-        {"code": "en"},
-    ),
-    "default": {
-        "fallbacks": ["bg"],
-        "hide_untranslated": False,
-        "default": True,
-    },
-}
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("POSTGRES_DB", "medj"),
-        "USER": os.environ.get("POSTGRES_USER", "medj"),
-        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "medj"),
-        "HOST": os.environ.get("POSTGRES_HOST", "db"),
-        "PORT": int(os.environ.get("POSTGRES_PORT", "5432")),
-    },
-    "backup": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "backup.sqlite3",
-    },
-}
-BACKUP_DB_ALIAS = "backup"
-
-WSGI_APPLICATION = "medj.wsgi.application"

@@ -80,7 +80,7 @@ class LabIndicatorAdmin(admin.ModelAdmin):
 @admin.register(LabIndicatorAlias)
 class LabIndicatorAliasAdmin(admin.ModelAdmin):
     list_display = ("indicator", "alias", "alias_norm")
-    search_fields = ("alias", "alias_norm")
+    search_fields = ("alias_raw", "normalized", "indicator__translations__name", "indicator__slug")
 
 @admin.register(LabTestMeasurement)
 class LabTestMeasurementAdmin(admin.ModelAdmin):

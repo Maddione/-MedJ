@@ -39,7 +39,7 @@ class PatientProfileForm(forms.ModelForm):
             "middle_name_en",
             "last_name_en",
             "date_of_birth",
-            "phone_number",
+            "phone",
             "address",
         ]
         widgets = {
@@ -53,7 +53,7 @@ class PatientProfileForm(forms.ModelForm):
             "middle_name_en": _("Middle name (EN)"),
             "last_name_en": _("Last name (EN)"),
             "date_of_birth": _("Дата на раждане"),
-            "phone_number": _("Телефон"),
+            "phone": _("Телефон"),
             "address": _("Адрес"),
         }
 

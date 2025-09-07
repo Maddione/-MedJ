@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from records.models import MedicalCategory, MedicalSpecialty, DocumentType
-from records.signals import ensure_tag, TagKind
+from records.templatetags.tags import ensure_tag, TagKind
 
 def best_name(obj, lang_code: str) -> str:
     try:

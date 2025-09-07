@@ -46,24 +46,18 @@ def _float_or_none(x):
 
 
 def _unique_slug_for_indicator(base_text: str | None) -> str:
-
     from uuid import uuid4
-
     base = (base_text or "").strip()
     s = slugify(base)[:255] if base else ""
     if not s:
-
         s = f"indicator-{uuid4().hex[:12]}"
-
     candidate = s
     idx = 1
     while LabIndicator.objects.filter(slug=candidate).exists():
-
         suffix = f"-{idx}"
         candidate = f"{s[: max(0, 255 - len(suffix))]}{suffix}"
         idx += 1
         if idx > 9999:
-
             candidate = f"{s[:242]}-{uuid4().hex[:12]}"
             break
     return candidate
@@ -152,15 +146,12 @@ class Command(BaseCommand):
         alias_conflict = 0
 
         for row in reader:
-
             name_bg = (row.get(name_bg_col) or "").strip() if name_bg_col else ""
             name_en = (row.get(name_en_col) or "").strip() if name_en_col else ""
-
             if not name_en and std_name_full:
                 name_en = (row.get(std_name_full) or "").strip()
             if not name_en and std_name_abbrev:
                 name_en = (row.get(std_name_abbrev) or "").strip()
-
             if not (name_bg or name_en):
                 continue
 
@@ -169,7 +160,6 @@ class Command(BaseCommand):
                 v = (row.get(c) or "").strip()
                 if v:
                     alias_values.append(v)
-
             aliases_col = col_first(["aliases", "alias", "aka"])
             if aliases_col:
                 alias_values += _split_aliases(row.get(aliases_col) or "")
@@ -207,14 +197,12 @@ class Command(BaseCommand):
             if not ind:
                 base_for_slug = name_en or name_bg
                 slug_val = _unique_slug_for_indicator(base_for_slug)
-
                 ind = LabIndicator.objects.create(unit=unit or "", slug=slug_val)
                 if low_f is not None:
                     ind.reference_low = low_f
                 if high_f is not None:
                     ind.reference_high = high_f
                 ind.save()
-
                 if name_bg:
                     with switch_language(ind, "bg"):
                         ind.name = name_bg
@@ -223,7 +211,6 @@ class Command(BaseCommand):
                     with switch_language(ind, "en-us"):
                         ind.name = name_en
                         ind.save()
-
                 created += 1
             else:
                 if opts["update"]:
@@ -239,7 +226,6 @@ class Command(BaseCommand):
                         changed = True
                     if changed:
                         ind.save()
-
                     if name_bg:
                         with switch_language(ind, "bg"):
                             if ind.name != name_bg:
@@ -257,15 +243,12 @@ class Command(BaseCommand):
                 if not key:
                     continue
                 norm = slugify(key)[:255]
-
-                existing = LabIndicatorAlias.objects.filter(alias_norm=norm).first()
+                existing = LabIndicatorAlias.objects.filter(normalized=norm).first()
                 if existing:
                     if existing.indicator_id != ind.id:
                         alias_conflict += 1
-
                     continue
-
-                LabIndicatorAlias.objects.create(indicator=ind, alias_raw=key)
+                LabIndicatorAlias.objects.create(indicator=ind, alias_raw=key, normalized=norm)
                 alias_new += 1
 
             get_indicator_canonical_tag(ind)

@@ -1,5 +1,13 @@
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.views import LogoutView, PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView, PasswordChangeView, PasswordChangeDoneView
+from django.contrib.auth.views import (
+    LogoutView,
+    PasswordResetView,
+    PasswordResetDoneView,
+    PasswordResetConfirmView,
+    PasswordResetCompleteView,
+    PasswordChangeView,
+    PasswordChangeDoneView,
+)
 from django.urls import path, reverse_lazy
 from django.views.generic import TemplateView
 
@@ -7,31 +15,60 @@ from .views.auth import RememberLoginView, RegisterView
 from .views.events import events_by_specialty, tags_autocomplete
 from .views.exports import document_export_pdf, event_export_pdf, print_csv, print_pdf, export_csv
 from .views.labs import labtests, labtests_view, labtest_edit, export_lab_csv
-from .views.personalcard import PersonalCardView, enable_share, personalcard_qr, public_personalcard, personalcard_share_enable_api
+from .views.personalcard import (
+    PersonalCardView,
+    enable_share,
+    personalcard_qr,
+    public_personalcard,
+    personalcard_share_enable_api,
+)
 from .views.settings import SettingsView
 from .views.upload import upload, upload_preview, upload_confirm, upload_history
 
-from .views.api_upload import upload_ocr as api_upload_ocr, upload_analyze as api_upload_analyze, upload_confirm as api_upload_confirm, events_suggest
-from .views.share_api import share_create, share_history as share_history_api, share_revoke, share_qr_png, share_public, share_history_page
+from .views.api_upload import (
+    upload_ocr as api_upload_ocr,
+    upload_analyze as api_upload_analyze,
+    upload_confirm as api_upload_confirm,
+    events_suggest,
+)
+from .views.share_api import (
+    share_create,
+    share_history as share_history_api,
+    share_revoke,
+    share_qr_png,
+    share_public,
+    share_history_page,
+)
 from .views.doctors_views import doctors_suggest
 
 app_name = "medj"
 
 urlpatterns = [
-    path("", TemplateView.as_view(template_name="basetemplates/landingpage.html"), name="landingpage"),
-    path("login/", RememberLoginView.as_view(template_name="auth/login.html"), name="login"),
-    path("logout/", LogoutView.as_view(next_page="/login/"), name="logout"),
+    path("", TemplateView.as_view(template_name="main/index.html"), name="landingpage"),
+    path("login/", RememberLoginView.as_view(template_name="registration/login.html"), name="login"),
+    path("logout/", LogoutView.as_view(next_page=reverse_lazy("medj:login")), name="logout"),
     path("register/", RegisterView.as_view(), name="register"),
-    path("password-reset/", PasswordResetView.as_view(template_name="password/password_reset_form.html", email_template_name="password/password_reset_email.txt", subject_template_name="password/password_reset_subject.txt", success_url=reverse_lazy("medj:password_reset_done")), name="password_reset"),
+    path(
+        "password-reset/",
+        PasswordResetView.as_view(
+            template_name="password/password_reset_form.html",
+            email_template_name="password/password_reset_email.txt",
+            subject_template_name="password/password_reset_subject.txt",
+            success_url=reverse_lazy("medj:password_reset_done"),
+        ),
+        name="password_reset",
+    ),
     path("password-reset/done/", PasswordResetDoneView.as_view(template_name="password/password_reset_done.html"), name="password_reset_done"),
     path("reset/<uidb64>/<token>/", PasswordResetConfirmView.as_view(template_name="password/password_reset_confirm.html", success_url=reverse_lazy("medj:password_reset_complete")), name="password_reset_confirm"),
     path("reset/done/", PasswordResetCompleteView.as_view(template_name="password/password_reset_complete.html")),
     path("password-change/", login_required(PasswordChangeView.as_view(template_name="password/change_form.html", success_url=reverse_lazy("medj:password_change_done"))), name="password_change"),
     path("password-change/done/", login_required(PasswordChangeDoneView.as_view(template_name="password/change_done.html")), name="password_change_done"),
 
-    path("dashboard/", login_required(TemplateView.as_view(template_name="main/dashboard.html")), name="dashboard"),
+    path("dashboard/", login_required(TemplateView.as_view(template_name="main/index.html")), name="dashboard"),
     path("casefiles/", login_required(TemplateView.as_view(template_name="main/casefiles.html")), name="casefiles"),
-    path("profile/", login_required(SettingsView.as_view(template_name="main/personalcard.html")), name="profile"),
+    path("profile/", login_required(TemplateView.as_view(template_name="main/profile.html")), name="profile"),
+    path("settings/", login_required(SettingsView.as_view(template_name="main/settings.html")), name="settings"),
+
     path("personalcard/", login_required(PersonalCardView.as_view()), name="personalcard"),
     path("personalcard/share/enable/", enable_share, name="personalcard_share_enable"),
     path("personalcard/qr/<str:token>.png", personalcard_qr, name="personalcard_qr"),
@@ -39,16 +76,17 @@ urlpatterns = [
     path("personalcard/share/enable-api/", login_required(personalcard_share_enable_api), name="personalcard_share_enable_api"),
 
     path("history/", login_required(TemplateView.as_view(template_name="main/history.html")), name="history"),
+
     path("upload/", login_required(upload), name="upload"),
     path("upload/preview/", login_required(upload_preview), name="upload_preview"),
     path("upload/confirm/", login_required(upload_confirm), name="upload_confirm"),
     path("upload/history/", login_required(upload_history), name="upload_history"),
 
-    path("documents/", login_required(TemplateView.as_view(template_name="subpages/upload_history.html")), name="documents"),
-    path("documents/<int:pk>/", login_required(TemplateView.as_view(template_name="subpages/documentsubpages/document_detail.html")), name="document_detail"),
-    path("documents/<int:pk>/edit/", login_required(TemplateView.as_view(template_name="subpages/documentsubpages/document_edit.html")), name="document_edit"),
-    path("documents/<int:pk>/edit-tags/", login_required(TemplateView.as_view(template_name="subpages/documentsubpages/document_edit_tags.html")), name="document_edit_tags"),
-    path("documents/<int:pk>/move/", login_required(TemplateView.as_view(template_name="subpages/documentsubpages/document_move.html")), name="document_move"),
+    path("documents/", login_required(TemplateView.as_view(template_name="documents/list.html")), name="documents"),
+    path("documents/<int:pk>/", login_required(TemplateView.as_view(template_name="documents/detail.html")), name="document_detail"),
+    path("documents/<int:pk>/edit/", login_required(TemplateView.as_view(template_name="documents/edit.html")), name="document_edit"),
+    path("documents/<int:pk>/edit-tags/", login_required(TemplateView.as_view(template_name="documents/edit_tags.html")), name="document_edit_tags"),
+    path("documents/<int:pk>/move/", login_required(TemplateView.as_view(template_name="documents/move.html")), name="document_move"),
     path("documents/<int:pk>/export/pdf/", login_required(document_export_pdf), name="document_export_pdf"),
 
     path("events/history/", login_required(TemplateView.as_view(template_name="subpages/eventsubpages/event_history.html")), name="event_history"),
