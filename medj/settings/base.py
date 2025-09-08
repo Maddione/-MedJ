@@ -37,7 +37,6 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
-            BASE_DIR / "theme" / "templates",
             BASE_DIR / "records" / "templates",
         ],
         "APP_DIRS": True,
@@ -102,10 +101,6 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "theme" / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-TEMPLATES[0]["APP_DIRS"] = True
-TEMPLATES[0]["DIRS"] = [BASE_DIR / "records" / "templates"]
-
-
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
@@ -114,5 +109,3 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = '/auth/login/'
-
-

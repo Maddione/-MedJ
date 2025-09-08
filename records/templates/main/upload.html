@@ -1,10 +1,9 @@
 {% extends "basetemplates/base_app.html" %}
 {% load i18n static %}
-
 {% block title %}{% trans "Качи документ" %}{% endblock %}
 
 {% block app_content %}
-<form id="uploadForm" class="w-full max-w-[1600px] mx-auto" enctype="multipart/form-data">
+<form id="uploadForm" class="w-full max-w-[1600px] mx-auto" enctype="multipart/form-data" aria-busy="false">
   {% csrf_token %}
 
   <div class="w-full rounded-2xl p-5 mb-6" style="background:#43B8CF;box-shadow:0 10px 14px rgba(10,30,74,.10),inset 0 0 0 1px rgba(10,30,74,.08)">
@@ -50,11 +49,14 @@
   </div>
 
   <div class="rounded-2xl p-6" style="background:#FFFFF5;box-shadow:0 10px 14px rgba(10,30,74,.10),inset 0 0 0 1px rgba(10,30,74,.08)">
+    <div id="errorBox" class="hidden mb-4 rounded-2xl p-4" style="background:#FFE8E7;border:1px solid #FFB7B3;color:#C0392B"></div>
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div>
-        <div class="mb-3">
-          <input id="file_input" type="file" class="w-full h-11 rounded-xl px-3 border border-gray-300 bg-white" disabled>
-          <div id="fileNameBadge" class="mt-2 inline-block px-4 h-9 rounded-full bg-[#E6F0F4] text-[#0A1E4A] font-semibold hidden"></div>
+        <div class="mb-3 flex items-center gap-3">
+          <input id="file_input" type="file" class="sr-only">
+          <button id="chooseFileBtn" type="button" class="px-5 h-12 rounded-xl text-white" style="background:#0A4E75">{% trans "Избери файл за качване" %}</button>
+          <div id="fileNameBadge" class="px-4 h-11 rounded-full bg-[#E6F0F4] text-[#0A1E4A] font-semibold hidden flex items-center"></div>
         </div>
         <div id="previewBlock" class="rounded-xl overflow-hidden border border-gray-200 hidden">
           <img id="previewImg" class="w-full block" alt="">
@@ -74,59 +76,19 @@
 
         <div id="analysisPayload" data-json="{}" class="hidden"></div>
 
-        <div id="doctorSection" class="mt-6 rounded-2xl p-4" style="background:#F2F7F9;box-shadow:0 6px 14px rgba(10,30,74,.08)">
-          <label class="flex items-center gap-3 text-[#0A1E4A] font-semibold">
-            <input id="addDoctorToggle" type="checkbox" class="h-5 w-5">
-            {% trans "Назначено от лекар" %}
-          </label>
-          <div id="doctorFields" class="mt-4 hidden">
-            <div class="grid md:grid-cols-3 gap-3">
-              <div class="md:col-span-1">
-                <div class="text-[#0A1E4A] mb-1">{% trans "Изберете от записани" %}</div>
-                <select id="doctorSelect" class="w-full h-11 rounded-xl px-3 border border-gray-300">
-                  <option value="">—</option>
-                </select>
-              </div>
-              <div class="md:col-span-1">
-                <div class="text-[#0A1E4A] mb-1">{% trans "Внимателно въведете Име и Фамилия" %}</div>
-                <input id="doctorInput" type="text" class="w-full h-11 rounded-xl px-3 border border-gray-300" placeholder="{% trans 'Име Фамилия' %}">
-              </div>
-              <div class="md:col-span-1">
-                <div class="text-[#0A1E4A] mb-1">{% trans "Специалност" %}</div>
-                <select id="doctorSpecialtySelect" class="w-full h-11 rounded-xl px-3 border border-gray-300">
-                  {% for o in specialties %}
-                    <option value="{{ o.id }}">{{ o.name }}</option>
-                  {% endfor %}
-                </select>
-              </div>
-            </div>
-            <div id="doctorAiBadge" class="mt-2 hidden text-sm" style="color:#0A4E75">Открито от AI</div>
-          </div>
-        </div>
-
-        <div class="mt-5 flex gap-3">
-          <button id="btnOCR" class="px-4 h-11 rounded-xl text-white disabled:opacity-50" style="background:#0A4E75" disabled>{% trans "OCR" %}</button>
-          <button id="btnAnalyze" class="px-4 h-11 rounded-xl text-white disabled:opacity-50" style="background:#43B8CF" disabled>{% trans "Анализ" %}</button>
-          <button id="btnConfirm" class="px-4 h-11 rounded-xl text-white disabled:opacity-50" style="background:#15BC11" disabled>{% trans "Запази" %}</button>
-        </div>
-<div class="mt-5 rounded-2xl p-4 flex items-center gap-3" style="background:#FFE8E7;border:1px solid #FFB7B3">
-          <div class="h-8 w-8 rounded-full flex items-center justify-center text-white font-bold" style="background:#FF5A52">!</div>
-          <div class="text-lg font-semibold text-[#C0392B]">
-            {% trans "Моля внимателно проверявайте текста преди одобрение" %}
-          </div>
+        <div class="mt-5 flex gap-3 items-center">
+          <button id="btnOCR" class="px-6 h-12 rounded-xl text-white disabled:opacity-50 hidden" style="background:#0A4E75">{% trans "Изпрати за OCR" %}</button>
+          <button id="btnAnalyze" class="px-6 h-12 rounded-xl text-white disabled:opacity-50 hidden" style="background:#43B8CF">{% trans "Анализ" %}</button>
+          <button id="btnConfirm" class="px-6 h-12 rounded-xl text-white disabled:opacity-50 hidden" style="background:#15BC11">{% trans "Запази" %}</button>
         </div>
       </div>
     </div>
   </div>
 </form>
 
-<div id="ob_upload" class="hidden fixed inset-0 z-50 bg-black/50 p-4">
-  <div class="bg-white/90 rounded-2xl w-full max-w-xl mx-auto p-6" style="border:4px solid #0A4E75">
-    <h3 class="text-lg font-semibold text-[#0A1E4A] mb-2">{% trans "Стъпка 2: Качи документ" %}</h3>
-    <p class="text-sm mb-4">{% trans "Изберете вид документ, специалност и категория, после качете файла. Прегледайте и одобрете OCR текста, анализирайте и запазете." %}</p>
-    <div class="flex justify-end gap-3">
-      <button id="ob2_ok" class="px-4 py-2 rounded-xl text-white" style="background:#0A4E75">{% trans "Разбрах" %}</button>
-    </div>
+<div id="loadingOverlay" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.45)">
+  <div class="rounded-2xl px-6 py-5 text-white text-lg font-semibold" style="background:#0A4E75;box-shadow:0 10px 14px rgba(10,30,74,.25)">
+    {% trans "Работи се... Моля изчакайте" %}
   </div>
 </div>
 {% endblock %}
@@ -136,14 +98,18 @@
 <script src="{% static 'js/upload_logic.js' %}?v={% now "U" %}"></script>
 <script>
 (function(){
-  const d=document;
-  function $(id){return d.getElementById(id);}
-  function t(){
-    const on=$('addDoctorToggle')&&$('addDoctorToggle').checked;
-    const b=$('doctorFields');
-    if(b)b.classList.toggle('hidden',!on);
+  const $=id=>document.getElementById(id);
+  const finput=$('file_input'); const choose=$('chooseFileBtn'); const badge=$('fileNameBadge');
+  function wireChoose(){
+    if(choose&&finput){ choose.addEventListener('click',()=>finput.click()); }
+    if(finput&&badge){
+      finput.addEventListener('change',()=>{
+        const n=(finput.files&&finput.files[0])?finput.files[0].name:'';
+        if(n){ badge.textContent=n; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
+      });
+    }
   }
-  t();
+  document.addEventListener('DOMContentLoaded',wireChoose);
 })();
 </script>
 {% endblock %}
