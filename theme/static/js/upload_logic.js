@@ -51,23 +51,22 @@ async function toB64(f) {
 
 function picks() {
   return {
-    category: (el("categorySelect","sel_category")||{}).value || "",
-    specialty: (el("specialtySelect","sel_specialty")||{}).value || "",
-    docType: (el("docTypeSelect","sel_doc_type")||{}).value || "",
-    file: (el("fileInput","file_input")||{}).files ? el("fileInput","file_input").files[0] : null,
-    fileKind: (el("fileKindSelect","file_kind")||{}).value || "",
-    eventId: (el("existingEventSelect")||{}).value || ""
+    category: (el("categorySelect", "sel_category") || {}).value || "",
+    specialty: (el("specialtySelect", "sel_specialty") || {}).value || "",
+    docType: (el("docTypeSelect", "sel_doc_type") || {}).value || "",
+    file: (el("fileInput", "file_input") || {}).files ? el("fileInput", "file_input").files[0] : null,
+    fileKind: (el("fileKindSelect", "file_kind") || {}).value || "",
+    eventId: (el("existingEventSelect") || {}).value || ""
   };
 }
 
 function updateUI() {
   const p = picks();
-  const spc = el("specialtySelect","sel_specialty");
-  const doc = el("docTypeSelect","sel_doc_type");
-  const fileBtn = el("file_btn");
-  const fileInput = el("fileInput","file_input");
-  const fileKind = el("fileKindSelect","file_kind");
-  const uploadBtn = el("btn_upload","btnConfirm");
+  const spc = el("specialtySelect", "sel_specialty");
+  const doc = el("docTypeSelect", "sel_doc_type");
+  const fileInput = el("fileInput", "file_input");
+  const fileKind = el("fileKindSelect", "file_kind");
+  const uploadBtn = el("btn_upload", "btnConfirm");
 
   disUI(spc, !p.category);
   if (!p.category) setv(spc, "");
@@ -77,7 +76,6 @@ function updateUI() {
 
   const fileReady = p.category && p.specialty && p.docType;
   disUI(fileInput, !fileReady);
-  toggleUI(fileBtn, fileReady);
   if (!fileReady) { setv(fileInput, ""); disUI(fileKind, true); }
 
   const hasFile = fileReady && p.file;
@@ -97,8 +95,8 @@ function requireSteps(stage) {
   if (!p.specialty) missing.push("Специалност");
   if (!p.docType) missing.push("Вид документ");
   if (stage !== "category" && !p.file) missing.push("Документ");
-  if ((stage === "analyze" || stage === "confirm") && !((el("ocrText","ocr_text")||{}).value || "").trim()) missing.push("OCR текст");
-  if (stage === "confirm" && !((el("summaryText","summary_text")||{}).value || "").trim()) missing.push("Резюме");
+  if ((stage === "analyze" || stage === "confirm") && !((el("ocrText", "ocr_text") || {}).value || "").trim()) missing.push("OCR текст");
+  if (stage === "confirm" && !((el("summaryText", "summary_text") || {}).value || "").trim()) missing.push("Резюме");
 
   const warn = el("req_warn");
   const list = el("req_list");
@@ -145,7 +143,7 @@ async function suggestIfReady() {
     }));
     seth(select, opts.join(""));
     if (wrap) show(wrap);
-  } catch(e) {
+  } catch (e) {
     if (select) seth(select, '<option value="">—</option>');
     if (wrap) show(wrap);
   }
@@ -163,10 +161,10 @@ function injectDoctorSection() {
     tgl.addEventListener("change", update);
   }
   update();
-}
+  }
 
 async function doctorSuggest(q) {
-  const spc = (el("doctorSpecialtySelect")||{}).value || (el("specialtySelect","sel_specialty")||{}).value || "";
+  const spc = (el("doctorSpecialtySelect") || {}).value || (el("specialtySelect", "sel_specialty") || {}).value || "";
   const sel = el("doctorSelect");
   if (!sel) return;
   try {
@@ -182,7 +180,7 @@ async function doctorSuggest(q) {
       return `<option value="${value}" data-id="${sid}">${text}</option>`;
     }));
     seth(sel, opts.join(""));
-  } catch(e) {
+  } catch (e) {
     seth(sel, '<option value="">—</option>');
   }
 }
@@ -191,13 +189,13 @@ async function doOCR() {
   if (!requireSteps("ocr")) return;
   const p = picks();
   const ocrBtn = el("btnOCR");
-  const ocrOut = el("ocrText","ocr_text");
+  const ocrOut = el("ocrText", "ocr_text");
   const fd = new FormData();
   fd.append("file", p.file);
   fd.append("file_kind", p.fileKind);
-  fd.append("category_id", p.category);
-  fd.append("specialty_id", p.specialty);
-  fd.append("doc_type_id", p.docType);
+  fd.append("med_category", p.category);
+  fd.append("specialty", p.specialty);
+  fd.append("doc_type", p.docType);
   if (ocrBtn) dis(ocrBtn, true);
   try {
     const res = await fetch(API.ocr, { method: "POST", credentials: "same-origin", body: fd });
@@ -207,11 +205,12 @@ async function doOCR() {
     const info = el("ocrSourceInfo");
     if (info) info.textContent = data.source ? `OCR: ${data.source}` : "";
     return data.ocr_text || "";
-  } catch(e) {
+  } catch (e) {
     if (ocrOut) setv(ocrOut, "");
     return "";
   } finally {
     if (ocrBtn) dis(ocrBtn, false);
+    updateUI();
   }
 }
 
@@ -219,8 +218,8 @@ async function doAnalyze() {
   if (!requireSteps("analyze")) return;
   const p = picks();
   const analyzeBtn = el("btnAnalyze");
-  const ocrOut = el("ocrText","ocr_text");
-  const summaryOut = el("summaryText","summary_text");
+  const ocrOut = el("ocrText", "ocr_text");
+  const summaryOut = el("summaryText", "summary_text");
   const txt = ocrOut ? (ocrOut.value || "") : "";
   if (analyzeBtn) dis(analyzeBtn, true);
   try {
@@ -252,15 +251,20 @@ async function doAnalyze() {
       const first = found[0] || {};
       const inp = el("doctorInput");
       if (inp) inp.value = first.full_name || first.name || "";
+      const badge = el("doctorAiBadge");
+      if (badge) show(badge);
       await doctorSuggest(inp ? inp.value : "");
+    } else {
+      doctorSuggest("");
     }
     return data;
-  } catch(e) {
+  } catch (e) {
     const payload = el("analysisPayload");
     if (payload) payload.setAttribute("data-json", "{}");
     return null;
   } finally {
     if (analyzeBtn) dis(analyzeBtn, false);
+    updateUI();
   }
 }
 
@@ -283,9 +287,9 @@ function collectDoctorBlock() {
 async function doConfirm() {
   if (!requireSteps("confirm")) return;
   const p = picks();
-  const btn = el("btnConfirm","btn_upload");
-  const ocrOut = el("ocrText","ocr_text");
-  const summaryOut = el("summaryText","summary_text");
+  const btn = el("btnConfirm", "btn_upload");
+  const ocrOut = el("ocrText", "ocr_text");
+  const summaryOut = el("summaryText", "summary_text");
   let finalText = ocrOut ? (ocrOut.value || "") : "";
   if (!finalText) {
     const t = await doOCR();
@@ -324,17 +328,17 @@ async function doConfirm() {
     if (!res.ok) throw new Error("confirm_failed");
     await res.json();
     window.location.href = "/documents/";
-  } catch(e) {
+  } catch (e) {
   } finally {
     if (btn) dis(btn, false);
   }
 }
 
 function bindUI() {
-  const cat = el("categorySelect","sel_category");
-  const spc = el("specialtySelect","sel_specialty");
-  const doc = el("docTypeSelect","sel_doc_type");
-  const file = el("fileInput","file_input");
+  const cat = el("categorySelect", "sel_category");
+  const spc = el("specialtySelect", "sel_specialty");
+  const doc = el("docTypeSelect", "sel_doc_type");
+  const file = el("fileInput", "file_input");
   if (cat) cat.addEventListener("change", () => { updateUI(); suggestIfReady(); });
   if (spc) {
     spc.addEventListener("change", () => {
@@ -342,7 +346,7 @@ function bindUI() {
       suggestIfReady();
       const dst = el("doctorSpecialtySelect");
       if (dst) dst.value = spc.value || "";
-      doctorSuggest((el("doctorInput")||{}).value || "");
+      doctorSuggest((el("doctorInput") || {}).value || "");
     });
   }
   if (doc) doc.addEventListener("change", () => { updateUI(); suggestIfReady(); });
@@ -350,13 +354,14 @@ function bindUI() {
 
   const bOCR = el("btnOCR");
   const bAna = el("btnAnalyze");
-  const bCfm = el("btnConfirm","btn_upload");
+  const bCfm = el("btnConfirm", "btn_upload");
   if (bOCR) bOCR.addEventListener("click", e => { e.preventDefault(); doOCR(); });
   if (bAna) bAna.addEventListener("click", e => { e.preventDefault(); doAnalyze(); });
   if (bCfm) bCfm.addEventListener("click", e => { e.preventDefault(); doConfirm(); });
 
   injectDoctorSection();
   updateUI();
+  suggestIfReady();
 }
 
 document.addEventListener("DOMContentLoaded", bindUI);

@@ -109,8 +109,7 @@
           <button id="btnAnalyze" class="px-4 h-11 rounded-xl text-white disabled:opacity-50" style="background:#43B8CF" disabled>{% trans "Анализ" %}</button>
           <button id="btnConfirm" class="px-4 h-11 rounded-xl text-white disabled:opacity-50" style="background:#15BC11" disabled>{% trans "Запази" %}</button>
         </div>
-
-        <div class="mt-5 rounded-2xl p-4 flex items-center gap-3" style="background:#FFE8E7;border:1px solid #FFB7B3">
+<div class="mt-5 rounded-2xl p-4 flex items-center gap-3" style="background:#FFE8E7;border:1px solid #FFB7B3">
           <div class="h-8 w-8 rounded-full flex items-center justify-center text-white font-bold" style="background:#FF5A52">!</div>
           <div class="text-lg font-semibold text-[#C0392B]">
             {% trans "Моля внимателно проверявайте текста преди одобрение" %}
@@ -135,17 +134,16 @@
 {% block scripts_extra %}
 {{ block.super }}
 <script src="{% static 'js/upload_logic.js' %}?v={% now "U" %}"></script>
-{% endblock %}
-
-{% block scripts_extra %}
-{{ block.super }}
-<script src="{% static 'js/upload_logic.js' %}?v={% now "U" %}"></script>
 <script>
 (function(){
   const d=document;
-  function $(id){return d.getElementById(id)}
-  function t(){const on=$('doctorEnable')&&$('doctorEnable').checked;const b=$('doctorBlock');if(b)b.classList.toggle('hidden',!on)}
-  $('doctorEnable')&&$('doctorEnable').addEventListener('change',t);t()
+  function $(id){return d.getElementById(id);}
+  function t(){
+    const on=$('addDoctorToggle')&&$('addDoctorToggle').checked;
+    const b=$('doctorFields');
+    if(b)b.classList.toggle('hidden',!on);
+  }
+  t();
 })();
 </script>
 {% endblock %}
