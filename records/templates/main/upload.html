@@ -4,50 +4,59 @@
 {% block title %}{% trans "Качи документ" %}{% endblock %}
 
 {% block app_content %}
-<form id="uploadForm" class="max-w-5xl mx-auto" enctype="multipart/form-data">
+<form id="uploadForm" class="w-full max-w-[1600px] mx-auto" enctype="multipart/form-data">
   {% csrf_token %}
 
-  <div class="rounded-2xl p-5 mb-6 flex items-center gap-6"
-       style="background:#EBF4F7;box-shadow:0 10px 14px rgba(10,30,74,.10),inset 0 0 0 1px rgba(10,30,74,.08)">
-    <div class="text-2xl font-bold text-[var(--color-primaryDark)] whitespace-nowrap">{% trans "През" %}</div>
+  <div class="w-full rounded-2xl p-5 mb-6" style="background:#43B8CF;box-shadow:0 10px 14px rgba(10,30,74,.10),inset 0 0 0 1px rgba(10,30,74,.08)">
+    <div class="flex flex-nowrap items-center gap-4 justify-start">
+      <div class="text-2xl font-bold text-white">{% trans "По време на..." %}</div>
 
-    <select id="sel_category" class="w-72 h-11 rounded-xl px-3 border border-gray-300 bg-white">
-      <option value="">{% trans "Изберете категория" %}</option>
-      {% for o in categories %}
-        <option value="{{ o.id }}">{{ o.name }}</option>
-      {% endfor %}
-    </select>
+      <select id="sel_category" class="h-11 rounded-xl px-3 border border-gray-300 bg-white min-w-[14rem]">
+        <option value="">{% trans "Изберете категория" %}</option>
+        {% for o in categories %}
+          <option value="{{ o.id }}">{{ o.name }}</option>
+        {% endfor %}
+      </select>
 
-    <select id="sel_specialty" class="w-72 h-11 rounded-xl px-3 border border-gray-300 bg-white">
-      <option value="">{% trans "Изберете специалност" %}</option>
-      {% for o in specialties %}
-        <option value="{{ o.id }}">{{ o.name }}</option>
-      {% endfor %}
-    </select>
+      <div class="text-2xl font-bold text-white">{% trans "при" %}</div>
 
-    <div class="ml-auto text-2xl font-bold text-[var(--color-primaryDark)]">{% trans "назначено от" %}</div>
+      <select id="sel_specialty" class="h-11 rounded-xl px-3 border border-gray-300 bg-white min-w-[14rem]" disabled>
+        <option value="">{% trans "Изберете специалност" %}</option>
+        {% for o in specialties %}
+          <option value="{{ o.id }}">{{ o.name }}</option>
+        {% endfor %}
+      </select>
 
-    <select id="sel_doc_type" class="w-72 h-11 rounded-xl px-3 border border-gray-300 bg-white">
-      <option value="">{% trans "Изберете вид документ" %}</option>
-      {% for o in doc_types %}
-        <option value="{{ o.id }}">{{ o.name }}</option>
-      {% endfor %}
-    </select>
+      <div class="text-2xl font-bold text-white">{% trans "назначено от" %}</div>
+
+      <select id="sel_doc_type" class="h-11 rounded-xl px-3 border border-gray-300 bg-white min-w-[16rem]" disabled>
+        <option value="">{% trans "Изберете вид документ" %}</option>
+        {% for o in doc_types %}
+          <option value="{{ o.id }}">{{ o.name }}</option>
+        {% endfor %}
+      </select>
+
+      <select id="file_kind" class="shrink-0 h-11 rounded-xl px-3 border border-gray-300 bg-white min-w-[12rem]" disabled>
+        <option value="">{% trans "Тип файл" %}</option>
+        <option value="image">{% trans "Изображение" %}</option>
+        <option value="pdf">PDF</option>
+        <option value="other">{% trans "Друг" %}</option>
+      </select>
+
+      <div id="existingEventWrap" class="hidden">
+        <select id="existingEventSelect" class="h-11 rounded-xl px-3 border border-gray-300 bg-white min-w-[12rem]"></select>
+      </div>
+    </div>
   </div>
 
-  <div class="rounded-2xl p-6"
-       style="background:#FFFFF5;box-shadow:0 10px 14px rgba(10,30,74,.10),inset 0 0 0 1px rgba(10,30,74,.08)">
-
+  <div class="rounded-2xl p-6" style="background:#FFFFF5;box-shadow:0 10px 14px rgba(10,30,74,.10),inset 0 0 0 1px rgba(10,30,74,.08)">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div>
         <div class="mb-3">
-          <input id="file_input" type="file"
-                 class="w-full h-11 rounded-xl px-3 border border-gray-300 bg-white">
-          <div id="fileNameBadge"
-               class="mt-2 inline-block px-4 h-9 rounded-full bg-[#E6F0F4] text-[#0A1E4A] font-semibold hidden"></div>
+          <input id="file_input" type="file" class="w-full h-11 rounded-xl px-3 border border-gray-300 bg-white" disabled>
+          <div id="fileNameBadge" class="mt-2 inline-block px-4 h-9 rounded-full bg-[#E6F0F4] text-[#0A1E4A] font-semibold hidden"></div>
         </div>
-
-        <div id="previewBlock" class="rounded-xl overflow-hidden border border-gray-200">
+        <div id="previewBlock" class="rounded-xl overflow-hidden border border-gray-200 hidden">
           <img id="previewImg" class="w-full block" alt="">
         </div>
       </div>
@@ -55,66 +64,51 @@
       <div>
         <div class="mb-3">
           <div class="text-sm text-[#0A1E4A] font-semibold mb-2">{% trans "OCR Текст" %} <span id="ocrSourceInfo" class="text-xs opacity-60 ml-2"></span></div>
-          <textarea id="ocrText" class="w-full h-72 rounded-xl px-4 py-3 border border-gray-300"
-                    placeholder="{% trans 'Тук ще се появи OCR текстът. Може да редактирате.' %}"></textarea>
+          <textarea id="ocrText" class="w-full h-72 rounded-xl px-4 py-3 border border-gray-300" placeholder="{% trans 'Тук ще се появи OCR текстът. Може да редактирате.' %}" disabled></textarea>
         </div>
 
         <div class="mb-3">
           <div class="text-sm text-[#0A1E4A] font-semibold mb-2">{% trans "Резюме" %} <span id="analysisMeta" class="text-xs opacity-60 ml-2"></span></div>
-          <textarea id="summaryText" class="w-full h-56 rounded-xl px-4 py-3 border border-gray-300"
-                    placeholder="{% trans 'Тук ще се появи резюмето от анализа. Може да редактирате.' %}"></textarea>
+          <textarea id="summaryText" class="w-full h-56 rounded-xl px-4 py-3 border border-gray-300" placeholder="{% trans 'Тук ще се появи резюмето от анализа. Може да редактирате.' %}" disabled></textarea>
         </div>
 
         <div id="analysisPayload" data-json="{}" class="hidden"></div>
 
-        <!-- Назначено от лекар -->
-        <div class="mt-6 rounded-2xl p-4"
-             style="background:#F2F7F9;box-shadow:0 6px 14px rgba(10,30,74,.08)">
+        <div class="mt-6 rounded-2xl p-4" style="background:#F2F7F9;box-shadow:0 6px 14px rgba(10,30,74,.08)">
           <label class="inline-flex items-center gap-3 text-[#0A1E4A] font-semibold">
             <input id="doctorEnable" type="checkbox" class="h-5 w-5">
             {% trans "Назначено от лекар" %}
           </label>
-
           <div id="doctorBlock" class="mt-4 hidden">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div class="relative">
-                <input id="doctorInput" type="text"
-                       class="w-full h-11 rounded-xl px-3 border border-gray-300"
-                       placeholder="{% trans 'Име на лекар' %}">
+                <input id="doctorInput" type="text" class="w-full h-11 rounded-xl px-3 border border-gray-300" placeholder="{% trans 'Име на лекар' %}">
                 <input id="doctorId" type="hidden">
-                <ul id="doctorSuggestBox"
-                    class="hidden absolute z-10 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl max-h-56 overflow-auto"></ul>
+                <ul id="doctorSuggestBox" class="hidden absolute z-10 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl max-h-56 overflow-auto"></ul>
               </div>
-
               <div>
-                <select id="doctorSpecialtySelect"
-                        class="w-full h-11 rounded-xl px-3 border border-gray-300">
+                <select id="doctorSpecialtySelect" class="w-full h-11 rounded-xl px-3 border border-gray-300">
                   <option value="">{% trans "Специалност" %}</option>
                   {% for o in specialties %}
                     <option value="{{ o.id }}">{{ o.name }}</option>
                   {% endfor %}
                 </select>
               </div>
-
               <div>
-                <input id="doctorPhone" type="text"
-                       class="w-full h-11 rounded-xl px-3 border border-gray-300"
-                       placeholder="{% trans 'Телефон (по желание)' %}">
+                <input id="doctorPhone" type="text" class="w-full h-11 rounded-xl px-3 border border-gray-300" placeholder="{% trans 'Телефон (по желание)' %}">
               </div>
             </div>
           </div>
         </div>
 
         <div class="mt-5 flex gap-3">
-          <button id="btnOCR" class="px-4 h-11 rounded-xl text-white" style="background:#0A4E75">{% trans "OCR" %}</button>
-          <button id="btnAnalyze" class="px-4 h-11 rounded-xl text-white" style="background:#43B8CF">{% trans "Анализ" %}</button>
-          <button id="btnConfirm" class="px-4 h-11 rounded-xl text-white" style="background:#15BC11">{% trans "Запази" %}</button>
+          <button id="btnOCR" class="px-4 h-11 rounded-xl text-white disabled:opacity-50" style="background:#0A4E75" disabled>{% trans "OCR" %}</button>
+          <button id="btnAnalyze" class="px-4 h-11 rounded-xl text-white disabled:opacity-50" style="background:#43B8CF" disabled>{% trans "Анализ" %}</button>
+          <button id="btnConfirm" class="px-4 h-11 rounded-xl text-white disabled:opacity-50" style="background:#15BC11" disabled>{% trans "Запази" %}</button>
         </div>
 
-        <div class="mt-5 rounded-2xl p-4 flex items-center gap-3"
-             style="background:#FFE8E7;border:1px solid #FFB7B3">
-          <div class="h-8 w-8 rounded-full flex items-center justify-center text-white font-bold"
-               style="background:#FF5A52">!</div>
+        <div class="mt-5 rounded-2xl p-4 flex items-center gap-3" style="background:#FFE8E7;border:1px solid #FFB7B3">
+          <div class="h-8 w-8 rounded-full flex items-center justify-center text-white font-bold" style="background:#FF5A52">!</div>
           <div class="text-lg font-semibold text-[#C0392B]">
             {% trans "Моля внимателно проверявайте текста преди одобрение" %}
           </div>
@@ -127,9 +121,7 @@
 <div id="ob_upload" class="hidden fixed inset-0 z-50 bg-black/50 p-4">
   <div class="bg-white/90 rounded-2xl w-full max-w-xl mx-auto p-6" style="border:4px solid #0A4E75">
     <h3 class="text-lg font-semibold text-[#0A1E4A] mb-2">{% trans "Стъпка 2: Качи документ" %}</h3>
-    <p class="text-sm mb-4">
-      {% trans "Изберете вид документ, специалност и категория, после качете файла. Прегледайте и одобрете извлечения OCR текст, направете анализ и накрая натиснете \"Запази\". Ако напуснете страницата преди да запазите, няма да имате данни за разглеждане." %}
-    </p>
+    <p class="text-sm mb-4">{% trans "Изберете вид документ, специалност и категория, после качете файла. Прегледайте и одобрете OCR текста, анализирайте и запазете." %}</p>
     <div class="flex justify-end gap-3">
       <button id="ob2_ok" class="px-4 py-2 rounded-xl text-white" style="background:#0A4E75">{% trans "Разбрах" %}</button>
     </div>
@@ -142,14 +134,10 @@
 <script src="{% static 'js/upload_logic.js' %}?v={% now "U" %}"></script>
 <script>
 (function(){
-  const $ = id => document.getElementById(id);
-  function toggleDoctorBlock(){
-    const on = $('doctorEnable')?.checked;
-    const blk = $('doctorBlock');
-    if(blk) blk.classList.toggle('hidden', !on);
-  }
-  $('doctorEnable')?.addEventListener('change', toggleDoctorBlock);
-  toggleDoctorBlock();
+  const d=document;
+  function $(id){return d.getElementById(id)}
+  function t(){const on=$('doctorEnable')&&$('doctorEnable').checked;const b=$('doctorBlock');if(b)b.classList.toggle('hidden',!on)}
+  $('doctorEnable')&&$('doctorEnable').addEventListener('change',t);t()
 })();
 </script>
 {% endblock %}

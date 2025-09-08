@@ -9,27 +9,12 @@
   <component name="ChangeListManager">
     <list default="true" id="c486bb59-c79b-4440-8fcc-e0c5e6eda3dc" name="Changes" comment="perfect, DO NOT TOUCH AGAIN">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker/web/entrypoint.dev.sh" beforeDir="false" afterPath="$PROJECT_DIR$/docker/web/entrypoint.dev.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/medj/settings/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/settings/base.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/medj/settings/dev.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/settings/dev.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/forms.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/management/middleware/onboarding.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/management/middleware/onboarding.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base_app.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_app.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/basetemplates/base_public.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/basetemplates/base_public.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/main/casefiles.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/casefiles.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/main/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/dashboard.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/main/personalcard.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/personalcard.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/main/share.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/share.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/templates/main/history.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/history.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/records/templates/main/upload.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/upload.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/views/casefiles.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/casefiles.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/views/dashboard.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/dashboard.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/views/doctors_views.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/doctors_views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/views/pages.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/pages.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/views/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/views/share_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/share_api.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/theme/static_src/styles.css" beforeDir="false" afterPath="$PROJECT_DIR$/theme/static/css/styles.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/api_upload.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/api_upload.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/theme/static/js/upload_logic.js" beforeDir="false" afterPath="$PROJECT_DIR$/theme/static/js/upload_logic.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -295,7 +280,7 @@
       <workItem from="1757054661041" duration="13232000" />
       <workItem from="1757070390912" duration="19022000" />
       <workItem from="1757237262118" duration="8732000" />
-      <workItem from="1757246470246" duration="38389000" />
+      <workItem from="1757246470246" duration="45211000" />
     </task>
     <task id="LOCAL-00001" summary="2.1">
       <option name="closed" value="true" />
@@ -545,7 +530,15 @@
       <option name="project" value="LOCAL" />
       <updated>1757282588071</updated>
     </task>
-    <option name="localTasksCounter" value="32" />
+    <task id="LOCAL-00032" summary="perfect, DO NOT TOUCH AGAIN">
+      <option name="closed" value="true" />
+      <created>1757296037462</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1757296037462</updated>
+    </task>
+    <option name="localTasksCounter" value="33" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
