@@ -224,4 +224,4 @@ def share_qr_png(request, token):
 
 @login_required
 def share_history_page(request):
-    return render(request, "subpages/share_history.html", {})
+    return render(request, "subpages/share_history.html")

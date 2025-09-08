@@ -1,161 +1,144 @@
 {% extends "basetemplates/base_app.html" %}
 {% load i18n static %}
 
+{% block title %}{% trans "Досие" %}{% endblock %}
+
 {% block app_content %}
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<div class="grid grid-cols-12 gap-6">
 
-  <aside class="lg:col-span-3">
-    <form id="filtersForm" method="get" action="{% url 'medj:casefiles' %}" class="space-y-4">
+  <aside class="col-span-12 lg:col-span-3">
+    <form id="filtersForm" method="get" class="space-y-4">
 
-      <div class="bg-blockbg rounded-2xl p-4 shadow-sm">
-        <div class="text-primaryDark font-bold mb-3">{% trans "Категория" %}</div>
+      <div class="rounded-2xl p-3" style="background:#EBEDE0">
+        <div class="px-3 py-2 rounded-xl text-white font-bold mb-3" style="background:#0A4E75">
+          {% trans "Категория" %}
+        </div>
         <div class="space-y-2">
           {% for c in categories %}
-            {% if c.count %}
-            <label class="flex items-center gap-3 cursor-pointer">
-              <input type="checkbox" name="category" value="{{ c.id }}" class="hidden"
-                     {% if c.id|stringformat:'s' in selected.category %}checked{% endif %}>
-              <span class="w-4 h-4 rounded-full border-2 border-[#0A4E75] flex items-center justify-center">
-                {% if c.id|stringformat:'s' in selected.category %}
-                <span class="w-3 h-3 rounded-full" style="background:#15BC11"></span>
-                {% endif %}
-              </span>
-              <span class="px-3 py-1 rounded-lg text-white" style="background:#43B8CF">{{ c.name }}</span>
-              <span class="ml-auto text-xs rounded-md px-2 py-0.5" style="background:#0A4E75; color:#FDFEE9">{{ c.count }}</span>
-            </label>
-            {% endif %}
-          {% endfor %}
-        </div>
-
-      </div>
-
-      <div class="bg-blockbg rounded-2xl p-4 shadow-sm">
-        <div class="text-primaryDark font-bold mb-3">{% trans "Специалист" %}</div>
-        <div class="space-y-2">
-          {% for s in specialties %}
-            {% if s.count %}
-            <label class="flex items-center gap-3 cursor-pointer">
-              <input type="checkbox" name="specialty" value="{{ s.id }}" class="hidden"
-                     {% if s.id|stringformat:'s' in selected.specialty %}checked{% endif %}>
-              <span class="w-4 h-4 rounded-full border-2 border-[#0A4E75] flex items-center justify-center">
-                {% if s.id|stringformat:'s' in selected.specialty %}
-                <span class="w-3 h-3 rounded-full" style="background:#15BC11"></span>
-                {% endif %}
-              </span>
-              <span class="px-3 py-1 rounded-lg text-white" style="background:#43B8CF">{{ s.name }}</span>
-              <span class="ml-auto text-xs rounded-md px-2 py-0.5" style="background:#0A4E75; color:#FDFEE9">{{ s.count }}</span>
-            </label>
-            {% endif %}
-          {% endfor %}
-        </div>
-
-      </div>
-
-      <div class="bg-blockbg rounded-2xl p-4 shadow-sm">
-        <div class="text-primaryDark font-bold mb-3">{% trans "Тагове" %}</div>
-        <div class="flex flex-wrap gap-2">
-          {% for t in tags_all %}
-          <label class="inline-flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" name="tags" value="{{ t.id }}" class="hidden"
-                   {% if t.id|stringformat:'s' in selected.tags or t.name in selected.tags %}checked{% endif %}>
-            <span class="px-3 py-1 rounded-full text-xs text-white" style="background:#0A4E75">{{ t.name }}</span>
+          <label class="flex items-center justify-between gap-3 rounded-xl px-3 py-2 cursor-pointer"
+                 style="background:#CFE3EA;color:#0A1E4A">
+            <span class="font-semibold truncate">{{ c.name }}</span>
+            <input type="checkbox" name="category" value="{{ c.id }}"
+                   class="h-5 w-5 rounded"
+                   {% if c.id|stringformat:'s' in selected.category %}checked{% endif %}>
           </label>
           {% endfor %}
         </div>
       </div>
 
-      <div class="bg-blockbg rounded-2xl p-4 shadow-sm">
-        <div class="text-primaryDark font-bold mb-3">{% trans "Филтри" %}</div>
+      <div class="rounded-2xl p-3" style="background:#EBEDE0">
+        <div class="px-3 py-2 rounded-xl text-white font-bold mb-3" style="background:#0A4E75">
+          {% trans "Специалист" %}
+        </div>
         <div class="space-y-2">
-          <input type="date" name="date_from" value="{{ selected.date_from }}" class="w-full h-10 rounded-xl px-3 border border-gray-300">
-          <input type="date" name="date_to" value="{{ selected.date_to }}" class="w-full h-10 rounded-xl px-3 border border-gray-300">
-          <input type="text" name="q" value="{{ selected.q }}" placeholder="{% trans 'Търси' %}" class="w-full h-10 rounded-xl px-3 border border-gray-300">
-          <select name="sort" class="w-full h-10 rounded-xl px-3 border border-gray-300">
-            <option value="date_desc" {% if selected.sort == 'date_desc' %}selected{% endif %}>{% trans "По дата ↓" %}</option>
-            <option value="date_asc" {% if selected.sort == 'date_asc' %}selected{% endif %}>{% trans "По дата ↑" %}</option>
-            <option value="type_asc" {% if selected.sort == 'type_asc' %}selected{% endif %}>{% trans "По вид ↑" %}</option>
-            <option value="type_desc" {% if selected.sort == 'type_desc' %}selected{% endif %}>{% trans "По вид ↓" %}</option>
-            <option value="name_asc" {% if selected.sort == 'name_asc' %}selected{% endif %}>{% trans "По име ↑" %}</option>
-            <option value="name_desc" {% if selected.sort == 'name_desc' %}selected{% endif %}>{% trans "По име ↓" %}</option>
-            <option value="spec_asc" {% if selected.sort == 'spec_asc' %}selected{% endif %}>{% trans "По специалист ↑" %}</option>
-            <option value="spec_desc" {% if selected.sort == 'spec_desc' %}selected{% endif %}>{% trans "По специалист ↓" %}</option>
-          </select>
+          {% for s in specialties %}
+          <label class="flex items-center justify-between gap-3 rounded-xl px-3 py-2 cursor-pointer"
+                 style="background:#CFE3EA;color:#0A1E4A">
+            <span class="font-semibold truncate">{{ s.name }}</span>
+            <input type="checkbox" name="specialty" value="{{ s.id }}"
+                   class="h-5 w-5 rounded"
+                   {% if s.id|stringformat:'s' in selected.specialty %}checked{% endif %}>
+          </label>
+          {% endfor %}
         </div>
-
-        <div class="mt-3">
-          <button type="submit" class="w-full text-center rounded-lg text-sm px-5 py-2.5 text-white" style="background:#43B8CF">
-            {% trans "Филтрирай" %}
-          </button>
-          <a href="{% url 'medj:casefiles' %}" class="block text-center mt-2 rounded-lg text-sm px-5 py-2.5" style="color:#0A4E75">
-            {% trans "Изчисти" %}
-          </a>
-        </div>
-
       </div>
 
+      <input type="hidden" name="q" value="{{ selected.q }}">
+      <input type="hidden" name="sort" id="sortField" value="{{ selected.sort|default:'date_desc' }}">
+      {% for t in selected.tags %}<input type="hidden" name="tags" value="{{ t }}">{% endfor %}
+      {% if selected.date_from %}<input type="hidden" name="date_from" value="{{ selected.date_from }}">{% endif %}
+      {% if selected.date_to %}<input type="hidden" name="date_to" value="{{ selected.date_to }}">{% endif %}
     </form>
   </aside>
 
-  <section class="lg:col-span-9 space-y-4">
-    <form method="get" action="{% url 'medj:casefiles' %}" class="bg-blockbg rounded-2xl p-3 shadow-sm">
+  <section class="col-span-12 lg:col-span-9 space-y-4">
+
+    <form method="get" id="searchForm" class="flex items-center gap-3">
       {% for v in selected.category %}<input type="hidden" name="category" value="{{ v }}">{% endfor %}
       {% for v in selected.specialty %}<input type="hidden" name="specialty" value="{{ v }}">{% endfor %}
       {% for v in selected.tags %}<input type="hidden" name="tags" value="{{ v }}">{% endfor %}
       {% if selected.date_from %}<input type="hidden" name="date_from" value="{{ selected.date_from }}">{% endif %}
       {% if selected.date_to %}<input type="hidden" name="date_to" value="{{ selected.date_to }}">{% endif %}
-      {% if selected.q %}<input type="hidden" name="q" value="{{ selected.q }}">{% endif %}
-      {% if selected.sort %}<input type="hidden" name="sort" value="{{ selected.sort }}">{% endif %}
-
-      <div class="flex items-center justify-between">
-        <div class="text-primaryDark font-bold">{% trans "Резултати" %}</div>
-        <div class="text-sm text-primaryDark opacity-70">
-          {% if selected.date_from or selected.date_to %}
-            {% if selected.date_from and selected.date_to %}
-              {% trans "Период" %}: {{ selected.date_from }} – {{ selected.date_to }}
-            {% elif selected.date_from %}
-              {% trans "От" %}: {{ selected.date_from }}
-            {% else %}
-              {% trans "До" %}: {{ selected.date_to }}
-            {% endif %}
-          {% endif %}
-        </div>
+      <input type="hidden" name="sort" value="{{ selected.sort|default:'date_desc' }}">
+      <div class="relative flex-1">
+        <input type="text" name="q" value="{{ selected.q }}" placeholder="{% trans 'пр. Холестерол, Ендокринолог' %}"
+               class="w-full h-12 rounded-full pl-12 pr-4 border-0" style="background:#CFE3EA;color:#0A1E4A">
+        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#0A1E4A]">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </span>
       </div>
+      <button class="h-12 px-4 rounded-xl text-white font-semibold" style="background:#0A4E75">{% trans "Търси" %}</button>
     </form>
 
-    {% if grouped %}
-      {% for g in grouped %}
-      <div class="bg-blockbg rounded-2xl p-4 shadow-sm">
-        <div class="text-primaryDark font-bold mb-2">{{ g.label }}</div>
-        <div>
-          {% for d in g.items %}
-          <a href="{% url 'medj:event_detail' d.event_id %}" class="block py-4 hover:bg-white/50 rounded-xl">
-            <div class="grid grid-cols-12 items-start gap-2 text-primaryDark">
-              <div class="col-span-3">{{ d.date|date:"d-m-Y" }}</div>
-              <div class="col-span-2">{{ d.type_name }}</div>
-              <div class="col-span-5">{{ d.title }}</div>
-              <div class="col-span-2">{{ d.specialist }}</div>
-            </div>
-            <div class="mt-2 flex flex-wrap gap-2">
-              {% for t in d.tags %}
-              <span class="inline-flex items-center px-2 py-1 rounded-full text-xs text-white" style="background:#0A4E75">{{ t }}</span>
-              {% endfor %}
-            </div>
-          </a>
-          {% endfor %}
+    <div class="rounded-2xl p-3" style="background:#EBEDE0">
+      <div class="grid grid-cols-12 items-center gap-2 px-2 py-2 rounded-xl" style="background:#0A4E75;color:#fff">
+        <div class="col-span-3 flex items-center gap-2">
+          <span class="font-bold">{% trans "Дата" %}</span>
+          {% with s=selected.sort %}
+          <button data-sort-next="{% if s == 'date_desc' %}date_asc{% else %}date_desc{% endif %}"
+                  class="sortBtn text-white/90"><i class="fa-solid fa-arrow-up-arrow-down"></i></button>
+          {% endwith %}
+        </div>
+        <div class="col-span-2 flex items-center gap-2">
+          <span class="font-bold">{% trans "Вид" %}</span>
+          {% with s=selected.sort %}
+          <button data-sort-next="{% if s == 'type_desc' %}type_asc{% else %}type_desc{% endif %}"
+                  class="sortBtn text-white/90"><i class="fa-solid fa-arrow-up-arrow-down"></i></button>
+          {% endwith %}
+        </div>
+        <div class="col-span-5 font-bold">{% trans "Наименование" %}</div>
+        <div class="col-span-2 flex items-center gap-2">
+          <span class="font-bold">{% trans "Специалист" %}</span>
+          {% with s=selected.sort %}
+          <button data-sort-next="{% if s == 'spec_desc' %}spec_asc{% else %}spec_desc{% endif %}"
+                  class="sortBtn text-white/90"><i class="fa-solid fa-arrow-up-arrow-down"></i></button>
+          {% endwith %}
         </div>
       </div>
-      {% endfor %}
-    {% else %}
-    <div class="bg-blockbg rounded-2xl p-6 shadow-sm text-primaryDark">{% trans "Няма документи за показване." %}</div>
-    {% endif %}
+
+      {% if grouped %}
+        {% for g in grouped %}
+        <div class="mt-3 rounded-2xl p-4" style="background:#FFFFF5">
+          <div class="text-[var(--color-primaryDark)] font-bold mb-3">{{ g.label }}</div>
+          <div>
+            {% for d in g.items %}
+            <a href="{% url 'medj:medical_event_detail' d.event_id %}" class="block">
+              <div class="grid grid-cols-12 items-start gap-2 py-4 border-t first:border-t-0"
+                   style="border-color:rgba(10,30,74,.2);color:#0A1E4A">
+                <div class="col-span-3">{{ d.date|date:"d.m.Y" }}</div>
+                <div class="col-span-2">{{ d.type_name }}</div>
+                <div class="col-span-5 font-semibold">{{ d.title }}</div>
+                <div class="col-span-2">{{ d.specialist }}</div>
+              </div>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+      <div class="mt-3 rounded-2xl p-6 text-[var(--color-primaryDark)]" style="background:#FFFFF5">
+        {% trans "Няма документи за показване." %}
+      </div>
+      {% endif %}
+    </div>
+
   </section>
 </div>
+{% endblock %}
 
+{% block scripts_extra %}
+{{ block.super }}
 <script>
-  document.querySelectorAll('aside input[type="checkbox"]').forEach(ch => {
-    ch.addEventListener('change', () => {
-      document.getElementById('filtersForm').submit();
-    });
+document.querySelectorAll('#filtersForm input[type="checkbox"]').forEach(ch=>{
+  ch.addEventListener('change',()=>document.getElementById('filtersForm').submit());
+});
+document.querySelectorAll('.sortBtn').forEach(btn=>{
+  btn.addEventListener('click',e=>{
+    e.preventDefault();
+    const v = btn.getAttribute('data-sort-next');
+    const sf = document.getElementById('sortField');
+    if(sf){ sf.value = v; document.getElementById('filtersForm').submit(); }
   });
+});
 </script>
 {% endblock %}

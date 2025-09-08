@@ -13,8 +13,8 @@ python manage.py seed_initial_data || true
 python manage.py import_lab_indicators_csv /app/data/labtests-database.csv || true
 python manage.py compilemessages -l bg -l en || true
 mkdir -p /app/theme/static/css/dist
-tailwindcss -i /app/theme/static_src/styles.css -o /app/theme/static/css/dist/output.css
-tailwindcss -i /app/theme/static_src/styles.css -o /app/theme/static/css/dist/output.css --watch --poll="${TAILWIND_WATCH_POLL:-500}" &
+tailwindcss -i /app/theme/static/css/styles.css -o /app/theme/static/css/dist/output.css
+tailwindcss -i /app/theme/static/css/styles.css -o /app/theme/static/css/dist/output.css --watch --poll="${TAILWIND_WATCH_POLL:-500}" &
 python manage.py collectstatic --noinput || true
 python manage.py backfill_event_tags || true
 python manage.py optimize_indexes || true

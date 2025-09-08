@@ -4,130 +4,131 @@
 {% block title %}{% trans "Качи документ" %}{% endblock %}
 
 {% block app_content %}
-<style>
-.upload-page select.ui-select,
-.upload-page select.ui-select option { color:#0A1E4A !important; }
-.upload-page select.ui-select { background:#FFFFF5 !important; -webkit-text-fill-color:#0A1E4A !important; }
-.upload-page select.ui-select:disabled { color:rgba(10,30,74,.55) !important; -webkit-text-fill-color:rgba(10,30,74,.55) !important; }
-.upload-page select.ui-select option[disabled],
-.upload-page select.ui-select option[disabled][selected] { color:#7A7A7A !important; }
-.disabled-ui { opacity:.4 !important; pointer-events:none !important; }
-</style>
-
-<form id="upload-form" method="post" enctype="multipart/form-data"
-      class="upload-page max-w-8xl mx-auto space-y-8"
-      data-upload-ocr-url="{% url 'medj:upload_ocr' %}">
+<form id="uploadForm" class="max-w-5xl mx-auto" enctype="multipart/form-data">
   {% csrf_token %}
 
-  <div class="w-full max-w-8xl mx-auto rounded-2xl p-8 mt-16">
-    <div class="text-2xl font-bold text-[#0A1E4A] mb-1">{% trans "Качване на документ" %}</div>
+  <div class="rounded-2xl p-5 mb-6 flex items-center gap-6"
+       style="background:#EBF4F7;box-shadow:0 10px 14px rgba(10,30,74,.10),inset 0 0 0 1px rgba(10,30,74,.08)">
+    <div class="text-2xl font-bold text-[var(--color-primaryDark)] whitespace-nowrap">{% trans "През" %}</div>
 
-    <div class="rounded-2xl p-6 mb-3 flex flex-wrap items-center gap-4" style="background:#3EB2C1; box-shadow:0 6px 14px rgba(10,30,74,.10), inset 0 0 0 1px rgba(10,30,74,.08)">
-      <span class="text-2xl font-extrabold text-[#0A1E4A]">{% trans "Пo време на ..." %}</span>
+    <select id="sel_category" class="w-72 h-11 rounded-xl px-3 border border-gray-300 bg-white">
+      <option value="">{% trans "Изберете категория" %}</option>
+      {% for o in categories %}
+        <option value="{{ o.id }}">{{ o.name }}</option>
+      {% endfor %}
+    </select>
 
-      <select id="sel_category" name="category" class="ui-select h-12 min-w-[220px] rounded-xl px-4 border border-gray-300">
-        <option value="" selected disabled>{% trans "Категория" %}</option>
-        {% for o in categories %}
-          <option value="{{ o.id }}">{{ o.name }}</option>
-        {% endfor %}
-      </select>
+    <select id="sel_specialty" class="w-72 h-11 rounded-xl px-3 border border-gray-300 bg-white">
+      <option value="">{% trans "Изберете специалност" %}</option>
+      {% for o in specialties %}
+        <option value="{{ o.id }}">{{ o.name }}</option>
+      {% endfor %}
+    </select>
 
-      <span class="text-2xl font-extrabold text-[#0A1E4A]">{% trans ", по " %}</span>
+    <div class="ml-auto text-2xl font-bold text-[var(--color-primaryDark)]">{% trans "назначено от" %}</div>
 
-      <select id="sel_specialty" name="specialty" class="ui-select h-12 min-w-[220px] rounded-xl px-4 border border-gray-300 disabled-ui" disabled aria-disabled="true">
-        <option value="" selected disabled>{% trans "Специалност" %}</option>
-        {% for o in specialties %}
-          <option value="{{ o.id }}">{{ o.name }}</option>
-        {% endfor %}
-      </select>
-
-      <span class="text-2xl font-extrabold text-[#0A1E4A]">{% trans "беше назначено " %}</span>
-
-      <select id="sel_doc_type" name="doc_type" class="ui-select h-12 min-w-[220px] rounded-xl px-4 border border-gray-300 disabled-ui" disabled aria-disabled="true">
-        <option value="" selected disabled>{% trans "Вид документ" %}</option>
-        {% for o in doc_types %}
-          <option value="{{ o.id }}">{{ o.name }}</option>
-        {% endfor %}
-
-    <div id="existingEventWrap" class="hidden mb-4">
-      <label for="existingEventSelect" class="block text-sm font-semibold text-[#0A1E4A] mb-1">{% trans "Съществуващо събитие" %}</label>
-      <select id="existingEventSelect" class="ui-select h-11 rounded-xl px-4 border border-gray-300">
-        <option value="">{% trans "—" %}</option>
-      </select>
-    </div>
-</select>
-    </div>
-
-    <div id="req_warn" class="hidden rounded-2xl p-4 mb-6 text-white" style="background:#E64E3A">
-      <div class="font-semibold mb-2">{% trans "Моля, попълнете липсващите стъпки:" %}</div>
-      <ul id="req_list" class="list-disc pl-6 space-y-1"></ul>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <div class="rounded-2xl p-8 text-center" style="background:#FFFFF5; box-shadow:0 6px 14px rgba(10,30,74,.10), inset 0 0 0 1px rgba(10,30,74,.08)">
-        <div class="space-y-6">
-          <label id="file_btn" for="file_input" class="inline-block px-6 py-3 rounded-xl text-white text-lg font-semibold disabled-ui" style="background:#0A4E75">
-            {% trans "Изберете документ за качване" %}
-          </label>
-          <input id="file_input" name="file" type="file" class="hidden" disabled aria-disabled="true">
-
-          <label class="block">
-            <select id="file_kind" name="file_kind" class="ui-select w-full h-12 rounded-xl px-4 border border-gray-300 disabled-ui" disabled aria-disabled="true">
-              <option value="" selected disabled>{% trans "Изберете тип файл" %}</option>
-              <option value="pdf">PDF</option>
-              <option value="image">{% trans "Изображение" %}</option>
-              <option value="docx">DOCX</option>
-            </select>
-          </label>
-
-          <button id="btn_upload" type="submit" class="w-full h-12 rounded-xl text-white text-lg font-semibold disabled-ui" style="background:#43B8CF" disabled aria-disabled="true">
-            {% trans "Качи" %}
-          </button>
-        </div>
-      </div>
-
-      <div class="rounded-2xl p-8" style="background:#FFFFF5; box-shadow:0 6px 14px rgba(10,30,74,.10), inset 0 0 0 1px rgba(10,30,74,.08)">
-        <div class="rounded-xl p-3 border border-black/10" style="background:#FFFFF5">
-          <div class="text-left text-sm text-[#0A1E4A] font-semibold mb-2">{% trans "Визуализация" %}</div>
-          <div id="preview_box" class="w-full max-h-[28rem] overflow-auto rounded-lg border border-black/10 flex items-center justify-center">
-            <div id="preview_placeholder" class="text-[#0A1E4A] text-sm opacity-60 py-16 px-4">
-              {% trans "Все още няма избран файл. Моля, изпълнете стъпките отляво." %}
-            </div>
-            <img id="preview_img" class="hidden max-w-full h-auto" alt="preview">
-            <object id="preview_pdf" class="hidden w-full h-[28rem]" type="application/pdf" data=""></object>
-          </div>
-          <div id="preview_meta" class="mt-3 text-xs text-[#0A1E4A]"></div>
-        </div>
-      </div>
-    </div>
+    <select id="sel_doc_type" class="w-72 h-11 rounded-xl px-3 border border-gray-300 bg-white">
+      <option value="">{% trans "Изберете вид документ" %}</option>
+      {% for o in doc_types %}
+        <option value="{{ o.id }}">{{ o.name }}</option>
+      {% endfor %}
+    </select>
   </div>
 
-  <div class="mt-8 rounded-2xl p-6" style="background:#FFFFF5; box-shadow: 0 10px 14px rgba(10,30,74,.10), inset 0 0 0 1px rgba(10,30,74,.08)">
+  <div class="rounded-2xl p-6"
+       style="background:#FFFFF5;box-shadow:0 10px 14px rgba(10,30,74,.10),inset 0 0 0 1px rgba(10,30,74,.08)">
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div>
-        <div class="text-sm text-[#0A1E4A] font-semibold mb-2">{% trans "OCR Текст" %} <span id="ocrSourceInfo" class="text-xs opacity-60 ml-2"></span></div>
-        <textarea id="ocrText" class="w-full h-64 rounded-xl px-4 py-3 border border-gray-300" placeholder="{% trans 'Тук ще се появи OCR текстът. Може да редактирате.' %}"></textarea>
+        <div class="mb-3">
+          <input id="file_input" type="file"
+                 class="w-full h-11 rounded-xl px-3 border border-gray-300 bg-white">
+          <div id="fileNameBadge"
+               class="mt-2 inline-block px-4 h-9 rounded-full bg-[#E6F0F4] text-[#0A1E4A] font-semibold hidden"></div>
+        </div>
+
+        <div id="previewBlock" class="rounded-xl overflow-hidden border border-gray-200">
+          <img id="previewImg" class="w-full block" alt="">
+        </div>
       </div>
+
       <div>
-        <div class="text-sm text-[#0A1E4A] font-semibold mb-2">{% trans "Резюме" %} <span id="analysisMeta" class="text-xs opacity-60 ml-2"></span></div>
-        <textarea id="summaryText" class="w-full h-64 rounded-xl px-4 py-3 border border-gray-300" placeholder="{% trans 'Тук ще се появи резюмето от анализа. Може да редактирате.' %}"></textarea>
+        <div class="mb-3">
+          <div class="text-sm text-[#0A1E4A] font-semibold mb-2">{% trans "OCR Текст" %} <span id="ocrSourceInfo" class="text-xs opacity-60 ml-2"></span></div>
+          <textarea id="ocrText" class="w-full h-72 rounded-xl px-4 py-3 border border-gray-300"
+                    placeholder="{% trans 'Тук ще се появи OCR текстът. Може да редактирате.' %}"></textarea>
+        </div>
+
+        <div class="mb-3">
+          <div class="text-sm text-[#0A1E4A] font-semibold mb-2">{% trans "Резюме" %} <span id="analysisMeta" class="text-xs opacity-60 ml-2"></span></div>
+          <textarea id="summaryText" class="w-full h-56 rounded-xl px-4 py-3 border border-gray-300"
+                    placeholder="{% trans 'Тук ще се появи резюмето от анализа. Може да редактирате.' %}"></textarea>
+        </div>
+
+        <div id="analysisPayload" data-json="{}" class="hidden"></div>
+
+        <!-- Назначено от лекар -->
+        <div class="mt-6 rounded-2xl p-4"
+             style="background:#F2F7F9;box-shadow:0 6px 14px rgba(10,30,74,.08)">
+          <label class="inline-flex items-center gap-3 text-[#0A1E4A] font-semibold">
+            <input id="doctorEnable" type="checkbox" class="h-5 w-5">
+            {% trans "Назначено от лекар" %}
+          </label>
+
+          <div id="doctorBlock" class="mt-4 hidden">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div class="relative">
+                <input id="doctorInput" type="text"
+                       class="w-full h-11 rounded-xl px-3 border border-gray-300"
+                       placeholder="{% trans 'Име на лекар' %}">
+                <input id="doctorId" type="hidden">
+                <ul id="doctorSuggestBox"
+                    class="hidden absolute z-10 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl max-h-56 overflow-auto"></ul>
+              </div>
+
+              <div>
+                <select id="doctorSpecialtySelect"
+                        class="w-full h-11 rounded-xl px-3 border border-gray-300">
+                  <option value="">{% trans "Специалност" %}</option>
+                  {% for o in specialties %}
+                    <option value="{{ o.id }}">{{ o.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div>
+                <input id="doctorPhone" type="text"
+                       class="w-full h-11 rounded-xl px-3 border border-gray-300"
+                       placeholder="{% trans 'Телефон (по желание)' %}">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5 flex gap-3">
+          <button id="btnOCR" class="px-4 h-11 rounded-xl text-white" style="background:#0A4E75">{% trans "OCR" %}</button>
+          <button id="btnAnalyze" class="px-4 h-11 rounded-xl text-white" style="background:#43B8CF">{% trans "Анализ" %}</button>
+          <button id="btnConfirm" class="px-4 h-11 rounded-xl text-white" style="background:#15BC11">{% trans "Запази" %}</button>
+        </div>
+
+        <div class="mt-5 rounded-2xl p-4 flex items-center gap-3"
+             style="background:#FFE8E7;border:1px solid #FFB7B3">
+          <div class="h-8 w-8 rounded-full flex items-center justify-center text-white font-bold"
+               style="background:#FF5A52">!</div>
+          <div class="text-lg font-semibold text-[#C0392B]">
+            {% trans "Моля внимателно проверявайте текста преди одобрение" %}
+          </div>
+        </div>
       </div>
-    </div>
-    <div id="analysisPayload" data-json="{}" class="hidden"></div>
-    <div class="mt-4 flex gap-3">
-      <button id="btnOCR" class="px-4 h-11 rounded-xl text-white" style="background:#0A4E75">{% trans "OCR" %}</button>
-      <button id="btnAnalyze" class="px-4 h-11 rounded-xl text-white" style="background:#43B8CF">{% trans "Анализ" %}</button>
-      <button id="btnConfirm" class="px-4 h-11 rounded-xl text-white" style="background:#15BC11">{% trans "Запази" %}</button>
     </div>
   </div>
-
 </form>
 
 <div id="ob_upload" class="hidden fixed inset-0 z-50 bg-black/50 p-4">
   <div class="bg-white/90 rounded-2xl w-full max-w-xl mx-auto p-6" style="border:4px solid #0A4E75">
     <h3 class="text-lg font-semibold text-[#0A1E4A] mb-2">{% trans "Стъпка 2: Качи документ" %}</h3>
     <p class="text-sm mb-4">
-      {% trans "Изберете категория, медицинска специалност и вид документ. Качете файла. Ще извлечем текст с OCR, ще го прегледате и одобрите, след което ще получите анализ и резюме. Ако напуснете страницата преди да запазите, няма да има данни за гледане." %}
+      {% trans "Изберете вид документ, специалност и категория, после качете файла. Прегледайте и одобрете извлечения OCR текст, направете анализ и накрая натиснете \"Запази\". Ако напуснете страницата преди да запазите, няма да имате данни за разглеждане." %}
     </p>
     <div class="flex justify-end gap-3">
       <button id="ob2_ok" class="px-4 py-2 rounded-xl text-white" style="background:#0A4E75">{% trans "Разбрах" %}</button>
@@ -137,5 +138,18 @@
 {% endblock %}
 
 {% block scripts_extra %}
+{{ block.super }}
 <script src="{% static 'js/upload_logic.js' %}?v={% now "U" %}"></script>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  function toggleDoctorBlock(){
+    const on = $('doctorEnable')?.checked;
+    const blk = $('doctorBlock');
+    if(blk) blk.classList.toggle('hidden', !on);
+  }
+  $('doctorEnable')?.addEventListener('change', toggleDoctorBlock);
+  toggleDoctorBlock();
+})();
+</script>
 {% endblock %}

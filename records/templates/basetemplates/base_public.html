@@ -1,30 +1,15 @@
 {% extends 'basetemplates/base.html' %}
 {% load i18n static %}
-{% block nav_buttons %}
-{% if not request.resolver_match.url_name == 'landingpage' %}
-<nav class="flex items-center gap-3">
-  {% with request.resolver_match.url_name as url_name %}
-  <a href="{% url 'medj:login' %}" class="px-4 py-2 rounded-full font-semibold transition-colors {% if url_name == 'login' %}bg-primaryDark text-white{% else %}bg-blockbg text-primaryDark hover:bg-white{% endif %}">
-    {% trans "Вход" %}
-  </a>
-  <a href="{% url 'medj:register' %}" class="px-4 py-2 rounded-full font-semibold transition-colors {% if url_name == 'register' %}bg-primaryDark text-white{% else %}bg-blockbg text-primaryDark hover:bg-white{% endif %}">
-    {% trans "Регистрация" %}
-  </a>
-  {% endwith %}
-</nav>
-{% endif %}
+
+{% block nav_user %}
+<a href="{% url 'medj:login' %}" class="px-4 py-2 rounded-xl font-bold bg-primaryDark text-white">{% trans "Вход" %}</a>
+<a href="{% url 'medj:register' %}" class="px-4 py-2 rounded-xl font-bold bg-primaryDark text-white">{% trans "Регистрация" %}</a>
 {% endblock %}
 
 {% block body_content %}
 <div class="w-[98%] mx-auto bg-blockbg rounded-3xl shadow-md flex-grow flex items-center justify-center py-6 px-4">
-  <div class="w-full max-w-lg">
+  <div class="w-full max-w-5xl">
     {% block public_content %}{% endblock %}
   </div>
 </div>
-{% endblock %}
-
-{% block scripts_extra %}
-{% if 'login' in request.resolver_match.url_name or 'register' in request.resolver_match.url_name or 'password' in request.resolver_match.url_name %}
-<script src="{% static 'js/password_toggle.js' %}"></script>
-{% endif %}
 {% endblock %}

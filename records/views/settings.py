@@ -14,7 +14,7 @@ class AccountForm(forms.ModelForm):
         fields = ["email", "username"]
 
 class SettingsView(LoginRequiredMixin, View):
-    template_name = "main/profile_settings.html"
+    template_name = "subpages/profile_settings.html"
 
     def get(self, request):
         ctx = {"account_form": AccountForm(instance=request.user)}

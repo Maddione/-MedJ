@@ -57,6 +57,12 @@ class PatientProfileForm(forms.ModelForm):
             "address": _("Адрес"),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for fname in ["first_name_bg", "last_name_bg", "date_of_birth"]:
+            if fname in self.fields:
+                self.fields[fname].required = True
+
 
 class MedicalEventForm(forms.ModelForm):
     tags = forms.ModelMultipleChoiceField(

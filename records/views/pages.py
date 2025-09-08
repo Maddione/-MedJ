@@ -3,7 +3,6 @@ from django.shortcuts import render
 
 from ..models import Document
 
-
 @login_required
 def history_view(request):
     documents = (

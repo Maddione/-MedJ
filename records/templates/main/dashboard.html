@@ -1,75 +1,87 @@
 {% extends "basetemplates/base_app.html" %}
 {% load i18n static %}
 
+{% block title %}{% trans "Табло" %}{% endblock %}
+
 {% block app_content %}
 <div class="space-y-6">
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
       {% for c in charts_data %}
-      <div class="bg-blockbg rounded-2xl p-4 shadow-sm">
+      <div class="rounded-2xl p-4 shadow-sm" style="background:#EBEDE0">
         <div class="flex items-center justify-between mb-2">
-          <div class="text-sm text-primaryDark font-semibold">
+          <div class="text-sm font-semibold" style="color:#0A1E4A">
             {{ c.name }}{% if c.unit %}, {{ c.unit }}{% endif %}
           </div>
         </div>
-        <div class="h-40">
+        <div class="h-40 bg-white rounded-xl p-2">
           <svg class="w-full h-full" data-series='{{ c.series|safe }}' viewBox="0 0 400 160" preserveAspectRatio="none"></svg>
         </div>
       </div>
       {% empty %}
-      <div class="bg-blockbg rounded-2xl p-6 shadow-sm sm:col-span-2 text-primaryDark">{% trans "Няма достатъчно данни за кръвни показатели." %}</div>
+      <div class="rounded-2xl p-6 shadow-sm sm:col-span-2" style="background:#EBEDE0;color:#0A1E4A">{% trans "Няма достатъчно данни за кръвни показатели." %}</div>
       {% endfor %}
     </div>
 
     <div class="space-y-6">
-      <div class="bg-blockbg rounded-2xl p-4 shadow-sm">
-        <div class="inline-block px-3 py-1 rounded-lg bg-primaryDark text-white text-sm font-semibold mb-3">{% trans "Предстоящи прегледи" %}</div>
-        <ul class="space-y-3 text-primaryDark">
+      <div class="rounded-2xl p-4 shadow-sm" style="background:#EBEDE0">
+        <div class="inline-block px-4 py-2 rounded-lg text-white font-semibold mb-4" style="background:#0A4E75">{% trans "Предстоящи прегледи" %}</div>
+        <ul class="space-y-3" style="color:#0A1E4A">
           {% for ev in upcoming_events %}
           <li class="flex justify-between">
-            <span>{{ ev.event_date|date:"d.m.Y" }}</span>
+            <span>{{ ev.event_date }}</span>
             <span class="font-semibold">{{ ev.title }}</span>
           </li>
           {% empty %}
-          <li class="text-primaryDark/70">{% trans "Няма насрочени прегледи." %}</li>
+          <li class="opacity-70">{% trans "Няма насрочени прегледи." %}</li>
           {% endfor %}
         </ul>
       </div>
 
-      <div class="bg-blockbg rounded-2xl p-4 shadow-sm">
-        <div class="inline-block px-3 py-1 rounded-lg bg-primaryDark text-white text-sm font-semibold mb-3">{% trans "Рецепти за изпълнение" %}</div>
-        <div class="space-y-4 text-primaryDark">
+      <div class="rounded-2xl p-4 shadow-sm" style="background:#EBEDE0">
+        <div class="grid grid-cols-3 gap-4 mb-3">
+          <div>
+            <div class="inline-block px-4 py-2 rounded-lg text-white font-semibold" style="background:#0A4E75">{% trans "Срок" %}</div>
+          </div>
+          <div class="col-span-2">
+            <div class="inline-block px-4 py-2 rounded-lg text-white font-semibold" style="background:#0A4E75">{% trans "Рецепти за изпълнение" %}</div>
+          </div>
+        </div>
+        <div class="space-y-4" style="color:#0A1E4A">
           {% for r in prescriptions %}
-          <div class="grid grid-cols-2 gap-4">
-            <div>{{ r.created_at|date:"d.m.Y" }}</div>
-            <div>{{ r.title }}</div>
+          <div class="grid grid-cols-3 gap-4">
+            <div>{{ r.created_at }}</div>
+            <div class="col-span-2">{{ r.title }}</div>
           </div>
           {% empty %}
-          <div class="text-primaryDark/70">{% trans "Няма активни рецепти." %}</div>
+          <div class="opacity-70">{% trans "Няма активни рецепти." %}</div>
           {% endfor %}
         </div>
       </div>
     </div>
   </div>
 
-  <div class="bg-blockbg rounded-2xl p-5">
-    <div class="inline-block px-4 py-2 rounded-lg bg-primaryDark text-white font-semibold mb-4">{% trans "Приемани медикаменти" %}</div>
+  <div class="rounded-2xl p-5" style="background:#EBEDE0">
+    <div class="inline-block px-4 py-2 rounded-lg text-white font-semibold mb-4" style="background:#0A4E75">{% trans "Приемани медикаменти" %}</div>
     <div id="meds-holder" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {% for m in medications %}
-      <div class="rounded-2xl border border-primary/30 p-4 bg-white">
-        <div class="h-28 bg-blockbg rounded-lg mb-3"></div>
-        <div class="text-primaryDark font-semibold mb-1">{{ m.name }}</div>
-        <div class="text-sm text-primaryDark/80">{{ m.subtitle }}</div>
+      <div class="rounded-2xl p-4 bg-white border" style="border-color:rgba(10,78,117,.3)">
+        <div class="h-28 rounded-lg mb-3" style="background:#FFFFF5"></div>
+        <div class="font-semibold mb-1" style="color:#0A1E4A">{{ m.name }}</div>
+        <div class="text-sm" style="color:rgba(10,30,74,.8)">{{ m.subtitle }}</div>
       </div>
       {% empty %}
-      <div class="text-primaryDark/70">{% trans "Няма въведени медикаменти." %}</div>
+      <div class="opacity-70" style="color:#0A1E4A">{% trans "Няма въведени медикаменти." %}</div>
       {% endfor %}
     </div>
   </div>
 
 </div>
+{% endblock %}
 
+{% block scripts_extra %}
+{{ block.super }}
 <script>
 (function(){
   function renderLine(svg, series){
@@ -104,10 +116,7 @@
     }
   }
   document.querySelectorAll('svg[data-series]').forEach(svg=>{
-    try{
-      const series = JSON.parse(svg.getAttribute('data-series'));
-      renderLine(svg, series);
-    }catch(e){}
+    try{ renderLine(svg, JSON.parse(svg.getAttribute('data-series'))); }catch(e){}
   });
 })();
 </script>

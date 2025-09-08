@@ -12,33 +12,32 @@
 </head>
 <body class="min-h-screen bg-sitebg flex flex-col">
   <header>
-    <div class="bg-primary h-[7.6vh] w-[98%] mx-auto px-6 flex items-center justify-between rounded-b-3xl">
-      <!-- Ляв блок: език + MedJ -->
-      <div class="flex items-center gap-3 h-full">
-        <div class="relative flex items-center h-full">
-          <button type="button" id="langBtn" class="flex items-center justify-center">
-            <img id="langIcon" src="{% static 'images/languageicon.png' %}" alt="language">
-          </button>
-          <div id="langMenu" class="hidden absolute top-full mt-2 w-56 z-50 rounded-lg shadow-md bg-blockbg py-1">
-            <form method="post" action="{% url 'set_language' %}" class="p-2">
-              {% csrf_token %}
-              <input type="hidden" name="next" value="{{ request.get_full_path }}">
-              <button type="submit" name="language" value="bg" class="block w-full text-left px-4 py-2 rounded text-primaryDark hover:bg-sitebg">{% trans "Български" %}</button>
-              <button type="submit" name="language" value="en-us" class="block w-full text-left px-4 py-2 rounded text-primaryDark hover:bg-sitebg">{% trans "English (US)" %}</button>
-            </form>
+    <div class="bg-primary h-[7.6vh] w-[98%] mx-auto px-6 rounded-b-3xl">
+      <div class="w-full h-full flex items-center">
+        <div class="flex items-center gap-3 h-full shrink-0">
+          <div class="relative flex items-center h-full">
+            <button type="button" id="langBtn" class="flex items-center justify-center">
+              <img id="langIcon" src="{% static 'images/languageicon.png' %}" alt="language">
+            </button>
+            <div id="langMenu" class="hidden absolute top-full mt-2 w-56 z-50 rounded-lg shadow-md bg-blockbg py-1">
+              <form method="post" action="{% url 'set_language' %}" class="p-2">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button type="submit" name="language" value="bg" class="block w-full text-left px-4 py-2 rounded text-primaryDark hover:bg-sitebg">{% trans "Български" %}</button>
+                <button type="submit" name="language" value="en-us" class="block w-full text-left px-4 py-2 rounded text-primaryDark hover:bg-sitebg">{% trans "English (US)" %}</button>
+              </form>
+            </div>
           </div>
+            <a href="{% if user.is_authenticated %}{% url 'medj:dashboard' %}{% else %}{% url 'medj:landingpage' %}{% endif %}" id="medjText" class="text-blockbg text-xl font-bold flex items-center">MedJ</a>
         </div>
-        <a href="{% if user.is_authenticated %}{% url 'medj:dashboard' %}{% else %}{% url 'medj:landingpage' %}{% endif %}" id="medjText" class="text-blockbg text-xl font-bold flex items-center">
-          MedJ
-        </a>
-      </div>
 
-      <!-- Десен блок: навигационни бутони + потребителски дропдаун -->
-      <div class="flex items-center gap-2">
-        <nav class="flex items-center gap-2">
+        <nav class="flex-1 flex items-center justify-center gap-2 px-4">
           {% block nav_buttons %}{% endblock %}
         </nav>
-        {% block nav_user %}{% endblock %}
+
+        <div class="flex items-center gap-2 h-full shrink-0">
+          {% block nav_user %}{% endblock %}
+        </div>
       </div>
     </div>
   </header>
@@ -61,7 +60,6 @@
         }
       });
     }
-
     function resizeLangIcon() {
       const medj = document.getElementById("medjText");
       const icon = document.getElementById("langIcon");

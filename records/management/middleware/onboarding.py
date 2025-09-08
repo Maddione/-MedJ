@@ -6,6 +6,7 @@ ALLOWED_PREFIXES = (
     "/static/",
     "/favicon.ico/",
     "/robots.txt",
+    "/i18n/",
 )
 
 class OnboardingMiddleware(MiddlewareMixin):
@@ -27,19 +28,21 @@ class OnboardingMiddleware(MiddlewareMixin):
                     "last_name_bg": request.user.last_name or "",
                 },
             )
-        complete = bool(profile.first_name_bg and profile.last_name_bg and profile.date_of_birth and profile.sex)
+
+        complete = bool(profile.first_name_bg and profile.last_name_bg and profile.date_of_birth)
         try:
             view_name = resolve(path).view_name or ""
         except Exception:
             view_name = ""
-        personalcard_url = reverse("medj:personalcard")
-        upload_url = reverse("medj:upload")
-        if not complete:
-            if path != personalcard_url and view_name != "medj:personalcard":
-                request.session["onboarding_gate"] = True
-                return redirect(personalcard_url)
+        if complete:
             return None
-        if request.session.pop("onboarding_gate", False):
-            if path != upload_url and view_name != "medj:upload":
-                return redirect(upload_url)
-        return None
+        allowed_views = {
+           "medj:personalcard",
+           "medj:profile",
+            "medj:logout",
+            "medj:password_change",
+            "medj:password_change_done",
+         }
+        if view_name in allowed_views:
+            return None
+        return redirect(reverse("medj:personalcard"))

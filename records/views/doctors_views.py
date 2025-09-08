@@ -5,7 +5,6 @@ from django.views.decorators.http import require_GET
 from django.db.models import Q, Case, When, IntegerField
 from records.models import Practitioner
 
-
 @login_required
 def doctors_list(request):
     qs = (
@@ -14,7 +13,6 @@ def doctors_list(request):
         .order_by("full_name")
     )
     return render(request, "subpages/doctors.html", {"doctors": qs})
-
 
 @login_required
 @require_GET

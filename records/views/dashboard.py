@@ -1,12 +1,10 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.utils.timezone import now
-from django.db.models import Count
-from records.models import (
-    LabTestMeasurement,
-    MedicalEvent,
-    Document,
-)
+from django.db.models import Count, F
+from django.utils.translation import get_language
+
+from records.models import LabTestMeasurement, MedicalEvent, Document
 
 
 def _require_patient_profile(user):
@@ -19,22 +17,26 @@ def _require_patient_profile(user):
 def dashboard(request):
     patient = _require_patient_profile(request.user)
     today = now().date()
+    lang = get_language()
 
     top_indicators = list(
         LabTestMeasurement.objects
         .filter(medical_event__patient=patient)
-        .values("indicator__name", "indicator__unit")
+        .filter(indicator__translations__language_code=lang)
+        .annotate(indicator_name=F("indicator__translations__name"))
+        .values("indicator_id", "indicator_name", "indicator__unit")
         .annotate(c=Count("id"))
         .order_by("-c")[:4]
     )
 
     charts_data = []
     for item in top_indicators:
-        name = item["indicator__name"]
+        ind_id = item["indicator_id"]
+        name = item["indicator_name"]
         unit = item.get("indicator__unit") or ""
         qs = (
             LabTestMeasurement.objects
-            .filter(medical_event__patient=patient, indicator__name=name)
+            .filter(medical_event__patient=patient, indicator_id=ind_id)
             .order_by("measured_at", "id")
             .values("measured_at", "value")
         )
@@ -61,13 +63,10 @@ def dashboard(request):
     upcoming_events = []
     for ev in upcoming_events_qs:
         spec = ev.specialty.safe_translation_getter("name", any_language=True) if ev.specialty else ""
-        if ev.summary:
-            title = spec or (ev.summary[:60] + "…")
-        else:
-            title = spec or "Преглед"
+        title = ev.summary or spec or "Преглед"
         upcoming_events.append({
             "event_date": ev.event_date.strftime("%d-%m-%Y"),
-            "title": title
+            "title": title,
         })
 
     pres_qs = Document.objects.filter(medical_event__patient=patient)
@@ -94,5 +93,6 @@ def dashboard(request):
             "charts_data": charts_data,
             "upcoming_events": upcoming_events,
             "prescriptions": prescriptions,
+            "medications": [],  # placeholder за секцията „Приемани медикаменти“
         },
     )

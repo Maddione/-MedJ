@@ -68,5 +68,41 @@
 {% endblock %}
 {% block scripts_extra %}
 {% load static %}
-<script src="{% static 'js/share_logic.js' %}" defer></script>
+<script>
+(function(){
+  function getCSRF(){var i=document.querySelector('input[name="csrfmiddlewaretoken"]');return i?i.value:''}
+  var form=document.getElementById('share-filters');
+  if(!form) return;
+  var createUrl=form.dataset.createLinksUrl.trim();
+  var qrUrl=form.dataset.qrForUrl.trim();
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    var fd=new FormData(form);
+    var payload=Object.fromEntries(fd.entries());
+    var res=await fetch(createUrl, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-CSRFToken':getCSRF()},
+      credentials:'same-origin',
+      body:JSON.stringify(payload)
+    });
+    if(!res.ok) return;
+    var data=await res.json();
+    if(data && data.download_url){
+      var q=await fetch(qrUrl, {
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-CSRFToken':getCSRF()},
+        credentials:'same-origin',
+        body:JSON.stringify({url:data.download_url})
+      });
+      if(q.ok){
+        var blob=await q.blob();
+        var imgURL=URL.createObjectURL(blob);
+        var img=document.getElementById('qrPreview');
+        if(img){img.src=imgURL}
+      }
+    }
+  });
+})();
+</script>
+
 {% endblock %}
