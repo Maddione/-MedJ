@@ -102,7 +102,7 @@ urlpatterns = [
     path("share/", login_required(share_document_page), name="share"),
     path("share/create-links/", login_required(create_download_links), name="create_download_links"),
     path("share/qr/", login_required(qr_for_url), name="qr_for_url"),
-    path("share/history/", share_history_page, name="share_history_page"),
+    path("share/history/", login_required(share_history_page), name="share_history_page"),
 
     path("documents/<int:pk>/", login_required(document_detail), name="document_detail"),
     path("documents/<int:pk>/edit/", login_required(document_edit), name="document_edit"),

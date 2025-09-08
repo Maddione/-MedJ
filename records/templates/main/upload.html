@@ -74,30 +74,33 @@
 
         <div id="analysisPayload" data-json="{}" class="hidden"></div>
 
-        <div class="mt-6 rounded-2xl p-4" style="background:#F2F7F9;box-shadow:0 6px 14px rgba(10,30,74,.08)">
-          <label class="inline-flex items-center gap-3 text-[#0A1E4A] font-semibold">
-            <input id="doctorEnable" type="checkbox" class="h-5 w-5">
+        <div id="doctorSection" class="mt-6 rounded-2xl p-4" style="background:#F2F7F9;box-shadow:0 6px 14px rgba(10,30,74,.08)">
+          <label class="flex items-center gap-3 text-[#0A1E4A] font-semibold">
+            <input id="addDoctorToggle" type="checkbox" class="h-5 w-5">
             {% trans "Назначено от лекар" %}
           </label>
-          <div id="doctorBlock" class="mt-4 hidden">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div class="relative">
-                <input id="doctorInput" type="text" class="w-full h-11 rounded-xl px-3 border border-gray-300" placeholder="{% trans 'Име на лекар' %}">
-                <input id="doctorId" type="hidden">
-                <ul id="doctorSuggestBox" class="hidden absolute z-10 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl max-h-56 overflow-auto"></ul>
+          <div id="doctorFields" class="mt-4 hidden">
+            <div class="grid md:grid-cols-3 gap-3">
+              <div class="md:col-span-1">
+                <div class="text-[#0A1E4A] mb-1">{% trans "Изберете от записани" %}</div>
+                <select id="doctorSelect" class="w-full h-11 rounded-xl px-3 border border-gray-300">
+                  <option value="">—</option>
+                </select>
               </div>
-              <div>
+              <div class="md:col-span-1">
+                <div class="text-[#0A1E4A] mb-1">{% trans "Внимателно въведете Име и Фамилия" %}</div>
+                <input id="doctorInput" type="text" class="w-full h-11 rounded-xl px-3 border border-gray-300" placeholder="{% trans 'Име Фамилия' %}">
+              </div>
+              <div class="md:col-span-1">
+                <div class="text-[#0A1E4A] mb-1">{% trans "Специалност" %}</div>
                 <select id="doctorSpecialtySelect" class="w-full h-11 rounded-xl px-3 border border-gray-300">
-                  <option value="">{% trans "Специалност" %}</option>
                   {% for o in specialties %}
                     <option value="{{ o.id }}">{{ o.name }}</option>
                   {% endfor %}
                 </select>
               </div>
-              <div>
-                <input id="doctorPhone" type="text" class="w-full h-11 rounded-xl px-3 border border-gray-300" placeholder="{% trans 'Телефон (по желание)' %}">
-              </div>
             </div>
+            <div id="doctorAiBadge" class="mt-2 hidden text-sm" style="color:#0A4E75">Открито от AI</div>
           </div>
         </div>
 
@@ -127,6 +130,11 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts_extra %}
+{{ block.super }}
+<script src="{% static 'js/upload_logic.js' %}?v={% now "U" %}"></script>
 {% endblock %}
 
 {% block scripts_extra %}
