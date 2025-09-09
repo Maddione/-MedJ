@@ -11,8 +11,6 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docker/compose/docker-compose.dev.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker/compose/docker-compose.dev.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docker/ocrapi/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/docker/ocrapi/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker/ocrapi/entrypoint.dev.sh" beforeDir="false" afterPath="$PROJECT_DIR$/docker/ocrapi/entrypoint.dev.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ocrapi/requirements-ocr.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ocrapi/requirements-ocr.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -276,7 +274,7 @@
       <workItem from="1757054661041" duration="13232000" />
       <workItem from="1757070390912" duration="19022000" />
       <workItem from="1757237262118" duration="8732000" />
-      <workItem from="1757246470246" duration="76848000" />
+      <workItem from="1757246470246" duration="78122000" />
     </task>
     <task id="LOCAL-00001" summary="2.1">
       <option name="closed" value="true" />
@@ -574,7 +572,15 @@
       <option name="project" value="LOCAL" />
       <updated>1757381334229</updated>
     </task>
-    <option name="localTasksCounter" value="38" />
+    <task id="LOCAL-00038" summary="ocr">
+      <option name="closed" value="true" />
+      <created>1757385475486</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1757385475486</updated>
+    </task>
+    <option name="localTasksCounter" value="39" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

@@ -18,7 +18,7 @@ RUN pip install --upgrade pip && \
     pip install -r requirements-ocr.txt
 
 COPY ocrapi/ /app/ocrapi/
-# copy entrypoint script outside of the mounted /app volume
+
 COPY docker/ocrapi/entrypoint.dev.sh /entrypoint.dev.sh
 RUN chmod +x /entrypoint.dev.sh
 

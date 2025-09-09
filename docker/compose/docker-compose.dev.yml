@@ -27,7 +27,7 @@ services:
       GOOGLE_APPLICATION_CREDENTIALS: /secrets/ocr-key-vision.json
       OCR_FALLBACK: "tesseract"
     volumes:
-      - ./:/app
+      - ../..:/app
       - ./secrets:/secrets:ro
     ports:
       - "5000:5000"
@@ -40,13 +40,13 @@ services:
 
   web:
     build:
-      context: .
+      context: ../..
       dockerfile: docker/web/Dockerfile
     environment:
       DATABASE_URL: postgres://medj:medj@db:5432/medj
       OCRAPI_URL: http://ocrapi:5000
     volumes:
-      - ./:/app
+      - ../..:/app
     depends_on:
       db:
         condition: service_healthy
