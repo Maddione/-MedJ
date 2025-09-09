@@ -8,17 +8,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c486bb59-c79b-4440-8fcc-e0c5e6eda3dc" name="Changes" comment="perfect, DO NOT TOUCH AGAIN">
-      <change afterPath="$PROJECT_DIR$/docker/ocrapi/entrypoint.dev.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker/compose/docker-compose.dev.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker/compose/docker-compose.dev.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docker/ocrapi/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/docker/ocrapi/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker/web/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/docker/web/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker/ocrapi/entrypoint.dev.sh" beforeDir="false" afterPath="$PROJECT_DIR$/docker/ocrapi/entrypoint.dev.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docker/web/entrypoint.dev.sh" beforeDir="false" afterPath="$PROJECT_DIR$/docker/web/entrypoint.dev.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/medj/settings/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/medj/settings/base.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ocrapi/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/ocrapi/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/records/templates/main/upload.html" beforeDir="false" afterPath="$PROJECT_DIR$/records/templates/main/upload.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/theme/static/js/upload_logic.js" beforeDir="false" afterPath="$PROJECT_DIR$/theme/static/js/upload_logic.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ocrapi/requirements-ocr.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ocrapi/requirements-ocr.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/management/services/llm/gpt_client.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/management/services/llm/gpt_client.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/api.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/api_upload.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/upload.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/upload.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -87,8 +87,6 @@
     <setting file="file://$PROJECT_DIR$/records/utils/db_checks.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/utils/labs.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/__init__.py" root0="SKIP_INSPECTION" />
-    <setting file="file://$PROJECT_DIR$/records/views/api.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/records/views/api_upload.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/views/auth.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/casefiles.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/views/dashboard.py" root0="FORCE_HIGHLIGHTING" />
@@ -103,7 +101,7 @@
     <setting file="file://$PROJECT_DIR$/records/views/share.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/records/views/share_api.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/views/share_csv.py" root0="SKIP_INSPECTION" />
-    <setting file="file://$PROJECT_DIR$/records/views/upload.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/records/views/upload.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/records/views/utils.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/requirements.txt" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/staticfiles/js/share_logic.js" root0="FORCE_HIGHLIGHTING" />
@@ -284,7 +282,7 @@
       <workItem from="1757054661041" duration="13232000" />
       <workItem from="1757070390912" duration="19022000" />
       <workItem from="1757237262118" duration="8732000" />
-      <workItem from="1757246470246" duration="63107000" />
+      <workItem from="1757246470246" duration="73095000" />
     </task>
     <task id="LOCAL-00001" summary="2.1">
       <option name="closed" value="true" />
@@ -566,7 +564,15 @@
       <option name="project" value="LOCAL" />
       <updated>1757346567797</updated>
     </task>
-    <option name="localTasksCounter" value="36" />
+    <task id="LOCAL-00036" summary="perfect, DO NOT TOUCH AGAIN">
+      <option name="closed" value="true" />
+      <created>1757364007501</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1757364007501</updated>
+    </task>
+    <option name="localTasksCounter" value="37" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -628,6 +634,11 @@
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/records/forms.py</url>
           <option name="timeStamp" value="22" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/records/management/services/llm/anonymizer.py</url>
+          <line>16</line>
+          <option name="timeStamp" value="23" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$USER_HOME$/AppData/Local/spicetify/CustomApps/library/extension.js</url>

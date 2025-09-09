@@ -1,21 +1,30 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
-cd /app/ocrapi
-
-# Диагностика за креденшъли и бекенд
-echo "OCR_BACKEND=${OCR_BACKEND:-unset}"
-echo "GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS:-unset}"
-echo "GCP_PROJECT=${GCP_PROJECT:-unset}"
-
-# Бърз импорт тест за Vision (не фейлва контейнера)
-python - <<'PY' || true
-try:
-  import google.cloud.vision as v  # noqa
-  print("google-cloud-vision import: OK")
-except Exception as e:
-  print("google-cloud-vision import: FAIL ->", e)
+if [ -d "/app/ocrapi" ]; then cd /app/ocrapi; else cd /app; fi
+export FLASK_DEBUG=${FLASK_DEBUG:-0}
+detect=$(python - <<'PY'
+import importlib, sys
+candidates=["ocrapi.app","app"]
+names=["app","flask_app","application"]
+for modname in candidates:
+    try:
+        m=importlib.import_module(modname)
+    except Exception:
+        continue
+    if hasattr(m,"create_app"):
+        print(f"{modname}:create_app()"); sys.exit(0)
+    for n in names:
+        if hasattr(m,n):
+            print(f"{modname}:{n}"); sys.exit(0)
+print("")
 PY
-
-# Flask dev server (както е в Compose)
-exec python -m flask run --host=0.0.0.0 --port=5000
+)
+if [ -z "$detect" ]; then
+  echo "Unable to detect Flask app module" >&2
+  exit 1
+fi
+export FLASK_APP="$detect"
+echo "FLASK_APP=${FLASK_APP}"
+echo "GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS:-unset}"
+echo "PORT=${PORT:-5000}"
+exec python -m flask run --host=0.0.0.0 --port="${PORT:-5000}"

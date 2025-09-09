@@ -2,8 +2,7 @@ FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1 \
-    FLASK_APP=app.py \
+    FLASK_APP=ocrapi/app.py \
     FLASK_RUN_HOST=0.0.0.0 \
     FLASK_RUN_PORT=5000 \
     OCRAPI_LOG_LEVEL=INFO
@@ -14,16 +13,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential tesseract-ocr libtesseract-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Минималните зависимости; адаптирай ако имаш отделен requirements
+COPY ocrapi/requirements-ocr.txt /app/ocrapi/
 RUN pip install --upgrade pip && \
-    pip install flask google-cloud-vision pillow pytesseract
+    pip install -r requirements-ocr.txt
 
-# Код на ocrapi (очаква се app.py тук)
 COPY ocrapi/ /app/ocrapi/
-
-COPY docker/ocrapi/entrypoint.dev.sh /app/ocrapi/entrypoint.dev.sh
+COPY docker/ocrapi/entrypoint.dev.sh /app/ocrapi/
 RUN chmod +x /app/ocrapi/entrypoint.dev.sh
 
 EXPOSE 5000
-
 ENTRYPOINT ["/app/ocrapi/entrypoint.dev.sh"]

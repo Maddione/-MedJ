@@ -48,12 +48,17 @@ def _merge_lines(a, b):
     return "\n".join(out).strip()
 
 def _call_flask_ocr(dj_file, ctx):
-    url = os.getenv("OCR_SERVICE_URL", "http://ocr:5000/ocr")
+    url = os.getenv("OCR_API_URL") or os.getenv("OCR_SERVICE_URL") or "http://ocr:5000/ocr"
+    timeout = float(os.getenv("OCR_HTTP_TIMEOUT", "90"))
     dj_file.seek(0)
     files = {"file": (dj_file.name, dj_file.read(), dj_file.content_type or "application/octet-stream")}
-    data = {"event_type": ctx.get("event_type",""), "category_name": ctx.get("category_name",""), "specialty_name": ctx.get("specialty_name","")}
+    data = {
+        "event_type": ctx.get("event_type",""),
+        "category_name": ctx.get("category_name",""),
+        "specialty_name": ctx.get("specialty_name","")
+    }
     try:
-        r = requests.post(url, files=files, data=data, timeout=90)
+        r = requests.post(url, files=files, data=data, timeout=timeout)
         if r.status_code != 200:
             return ""
         if "application/json" in r.headers.get("content-type",""):
@@ -63,6 +68,15 @@ def _call_flask_ocr(dj_file, ctx):
         return (r.text or "").strip()
     except Exception:
         return ""
+
+def _vision_available():
+    try:
+        from google.cloud import vision
+        client = vision.ImageAnnotatorClient()
+        _ = client
+        return True
+    except Exception:
+        return False
 
 def _call_vision_ocr_bytes(blob):
     try:
@@ -81,6 +95,17 @@ def _call_vision_ocr_bytes(blob):
         return ""
     except Exception:
         return ""
+
+def _ocr_pipeline(dj_file, ctx):
+    dj_file.seek(0)
+    vb = dj_file.read()
+    vision_txt = ""
+    if _vision_available():
+        vision_txt = _call_vision_ocr_bytes(vb)
+    if vision_txt:
+        return vision_txt
+    dj_file.seek(0)
+    return _call_flask_ocr(dj_file, ctx)
 
 def _anonymize(t):
     t = re.sub(r"\b\d{10}\b", "<ID>", t or "")
@@ -135,11 +160,8 @@ def upload_ocr(request):
     ctx = {"event_type": doc_name, "specialty_name": spec_name, "category_name": cat_name}
     merged = ""
     for f in files:
-        flask_txt = _call_flask_ocr(f, ctx)
-        f.seek(0)
-        vb = f.read()
-        vision_txt = _call_vision_ocr_bytes(vb)
-        merged = _merge_lines(merged, _merge_lines(flask_txt, vision_txt))
+        txt = _ocr_pipeline(f, ctx)
+        merged = _merge_lines(merged, txt)
     return JsonResponse({"ocr_text": merged})
 
 @login_required

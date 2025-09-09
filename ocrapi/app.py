@@ -1,97 +1,59 @@
-import io, json, os, time, logging
 from flask import Flask, request, jsonify
-from werkzeug.middleware.proxy_fix import ProxyFix
+import os, base64, io
+from PIL import Image
 
 app = Flask(__name__)
-app.wsgi_app = ProxyFix(app.wsgi_app)
 
-# Логиране
-LOG_LEVEL = os.getenv("OCRAPI_LOG_LEVEL", "INFO").upper()
-logging.basicConfig(
-    level=getattr(logging, LOG_LEVEL, logging.INFO),
-    format="%(asctime)s %(levelname)s %(name)s %(message)s",
-)
-log = logging.getLogger("ocrapi")
+def _vision(image_bytes):
+    from google.cloud import vision
+    client = vision.ImageAnnotatorClient()
+    image = vision.Image(content=image_bytes)
+    resp = client.document_text_detection(image=image)
+    if resp.error.message:
+        raise RuntimeError(resp.error.message)
+    if getattr(resp, "full_text_annotation", None) and getattr(resp.full_text_annotation, "text", ""):
+        return resp.full_text_annotation.text or ""
+    arr = getattr(resp, "text_annotations", None)
+    if arr and len(arr) > 0 and getattr(arr[0], "description", ""):
+        return arr[0].description or ""
+    return ""
 
-BACKEND = os.getenv("OCR_BACKEND", "vision").lower()  # vision|tesseract
-GCP_PROJECT = os.getenv("GCP_PROJECT", "")
-GCP_CREDENTIALS = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "")
-
-def ocr_with_vision(content_bytes, mime_type):
-    start = time.time()
-    try:
-        from google.cloud import vision  # requires google-cloud-vision
-    except Exception as e:
-        log.exception("Vision SDK import failed")
-        return {"error": f"vision_sdk_import_failed: {e}"}, 0
-
-    try:
-        client = vision.ImageAnnotatorClient()
-        image = vision.Image(content=content_bytes)
-        resp = client.document_text_detection(image=image)
-        duration = int((time.time() - start) * 1000)
-        if resp.error.message:
-            log.error("Vision error: %s", resp.error.message)
-            return {"error": f"vision_error: {resp.error.message}"}, duration
-        text = (resp.full_text_annotation.text or "").strip()
-        return {"ocr_text": text, "source": "google_vision"}, duration
-    except Exception as e:
-        duration = int((time.time() - start) * 1000)
-        log.exception("Vision call failed")
-        return {"error": f"vision_call_failed: {e}"}, duration
-
-def ocr_with_tesseract(content_bytes, mime_type):
-    start = time.time()
-    try:
-        import pytesseract
-        from PIL import Image
-    except Exception as e:
-        log.exception("Tesseract/PIL import failed")
-        return {"error": f"tesseract_import_failed: {e}"}, 0
-    try:
-        img = Image.open(io.BytesIO(content_bytes))
-        text = pytesseract.image_to_string(img)
-        duration = int((time.time() - start) * 1000)
-        return {"ocr_text": (text or "").strip(), "source": "tesseract"}, duration
-    except Exception as e:
-        duration = int((time.time() - start) * 1000)
-        log.exception("Tesseract call failed")
-        return {"error": f"tesseract_failed: {e}"}, duration
-
-@app.post("/ocr")
-def ocr():
-    # Лог вход
-    log.info("OCR request: args=%s form=%s content_length=%s", dict(request.args), list(request.form.keys()), request.content_length)
-    f = request.files.get("file")
-    if not f:
-        log.warning("missing file")
-        return jsonify({"error":"missing_file"}), 400
-    file_bytes = f.read()
-    mime = f.mimetype or "application/octet-stream"
-    kind = request.form.get("file_kind","")
-    meta = {
-        "med_category": request.form.get("med_category",""),
-        "specialty": request.form.get("specialty",""),
-        "doc_type": request.form.get("doc_type",""),
-        "file_kind": kind
-    }
-    log.info("meta=%s backend=%s project=%s creds=%s", meta, BACKEND, GCP_PROJECT, bool(GCP_CREDENTIALS))
-
-    if BACKEND == "tesseract":
-        data, duration = ocr_with_tesseract(file_bytes, mime)
-    else:
-        data, duration = ocr_with_vision(file_bytes, mime)
-
-    data["duration_ms"] = duration
-    ok = bool(data.get("ocr_text"))
-    status = 200 if ok else 502
-    # Лог изход
-    log.info("OCR response: ok=%s, duration_ms=%s, keys=%s", ok, duration, list(data.keys()))
-    return jsonify(data), status
+def _tesseract(image_bytes):
+    import pytesseract, cv2, numpy as np
+    arr = np.frombuffer(image_bytes, dtype=np.uint8)
+    img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+    if img is None:
+        with Image.open(io.BytesIO(image_bytes)) as im:
+            im = im.convert("RGB")
+            buf = io.BytesIO()
+            im.save(buf, format="PNG")
+            arr = np.frombuffer(buf.getvalue(), dtype=np.uint8)
+            img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    return pytesseract.image_to_string(gray) or ""
 
 @app.get("/healthz")
 def healthz():
-    return jsonify({"ok": True, "backend": BACKEND, "project": GCP_PROJECT, "creds": bool(GCP_CREDENTIALS)})
+    return jsonify(status="ok"), 200
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")))
+@app.post("/ocr")
+def ocr():
+    if "file" in request.files:
+        image_bytes = request.files["file"].read()
+    else:
+        data = request.get_json(silent=True) or {}
+        b64 = data.get("image_base64", "")
+        if not b64:
+            return jsonify(error="no file or image_base64"), 400
+        image_bytes = base64.b64decode(b64)
+    try:
+        txt = _vision(image_bytes)
+        if txt.strip():
+            return jsonify(engine="vision", ocr_text=txt.strip()), 200
+        raise RuntimeError("empty")
+    except Exception:
+        try:
+            txt = _tesseract(image_bytes)
+            return jsonify(engine="tesseract", ocr_text=(txt or "").strip()), 200
+        except Exception as e:
+            return jsonify(error="ocr_failed", detail=str(e)), 500
