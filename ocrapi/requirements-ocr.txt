@@ -1,5 +1,5 @@
-﻿flask==3.0.3
-pillow==10.3.0
-google-cloud-vision==3.7.4
-pytesseract==0.3.10
-opencv-python-headless==4.10.0.84
+﻿flask
+pillow
+google-cloud-vision
+pytesseract
+opencv-python-headless
