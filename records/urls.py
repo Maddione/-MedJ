@@ -31,9 +31,9 @@ from .views.personalcard import (
     personalcard_qr,
 )
 from .views.settings import SettingsView
-from .views.upload import upload
 from .views.pages import history_view
-from .views.api_upload import (
+from .views.upload import (
+    upload,
     upload_ocr as api_upload_ocr,
     upload_analyze as api_upload_analyze,
     upload_confirm as api_upload_confirm,

@@ -10,7 +10,10 @@
     <list default="true" id="c486bb59-c79b-4440-8fcc-e0c5e6eda3dc" name="Changes" comment="ocr">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docker/compose/docker-compose.dev.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker/compose/docker-compose.dev.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker/ocrapi/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/docker/ocrapi/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker/ocrapi/entrypoint.dev.sh" beforeDir="false" afterPath="$PROJECT_DIR$/docker/ocrapi/entrypoint.dev.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ocrapi/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/ocrapi/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/records/views/upload.py" beforeDir="false" afterPath="$PROJECT_DIR$/records/views/upload.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -274,7 +277,7 @@
       <workItem from="1757054661041" duration="13232000" />
       <workItem from="1757070390912" duration="19022000" />
       <workItem from="1757237262118" duration="8732000" />
-      <workItem from="1757246470246" duration="78122000" />
+      <workItem from="1757246470246" duration="81034000" />
     </task>
     <task id="LOCAL-00001" summary="2.1">
       <option name="closed" value="true" />
@@ -580,7 +583,15 @@
       <option name="project" value="LOCAL" />
       <updated>1757385475486</updated>
     </task>
-    <option name="localTasksCounter" value="39" />
+    <task id="LOCAL-00039" summary="ocr">
+      <option name="closed" value="true" />
+      <created>1757386862806</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1757386862806</updated>
+    </task>
+    <option name="localTasksCounter" value="40" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

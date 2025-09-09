@@ -2,7 +2,12 @@ from django.shortcuts import render
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
-from records.models import DocumentType, MedicalSpecialty, MedicalCategory
+from records.models import (
+    DocumentType,
+    MedicalSpecialty,
+    MedicalCategory,
+    MedicalEvent,
+)
 import os, requests, json, re
 from datetime import datetime
 
@@ -28,11 +33,6 @@ def _id_to_name(model, id_str):
     if not s.isdigit():
         return ""
     obj = model.objects.filter(id=int(s)).first()
-    return _safe_name(obj) if obj else ""
-
-@login_required
-@require_http_methods(["GET"])
-def upload(request):
     doc_types = _q_names(DocumentType)
     specialties = _q_names(MedicalSpecialty)
     categories = _q_names(MedicalCategory)
@@ -153,9 +153,13 @@ def upload_ocr(request):
         files = [request.FILES["file"]]
     if not files:
         return HttpResponseBadRequest("No files")
-    doc_name = _id_to_name(DocumentType, request.POST.get("doc_type",""))
-    spec_name = _id_to_name(MedicalSpecialty, request.POST.get("specialty",""))
-    cat_id = request.POST.get("med_category","") or request.POST.get("category","")
+    doc_name = _id_to_name(DocumentType, request.POST.get("doc_type_id") or request.POST.get("doc_type", ""))
+    spec_name = _id_to_name(MedicalSpecialty, request.POST.get("specialty_id") or request.POST.get("specialty", ""))
+    cat_id = (
+        request.POST.get("category_id")
+        or request.POST.get("med_category", "")
+        or request.POST.get("category", "")
+    )
     cat_name = _id_to_name(MedicalCategory, cat_id)
     ctx = {"event_type": doc_name, "specialty_name": spec_name, "category_name": cat_name}
     merged = ""
@@ -167,10 +171,19 @@ def upload_ocr(request):
 @login_required
 @require_http_methods(["POST"])
 def upload_analyze(request):
-    txt = (request.POST.get("text") or "").strip()
+    try:
+        if request.content_type and "application/json" in request.content_type:
+            payload = json.loads(request.body or "{}")
+            txt = (payload.get("text") or "").strip()
+            specialty_id = payload.get("specialty_id") or payload.get("specialty")
+        else:
+            txt = (request.POST.get("text") or "").strip()
+            specialty_id = request.POST.get("specialty_id") or request.POST.get("specialty")
+    except Exception:
+        txt, specialty_id = "", None
     if not txt:
         return HttpResponseBadRequest("No text")
-    specialty_name = _id_to_name(MedicalSpecialty, request.POST.get("specialty",""))
+    specialty_name = _id_to_name(MedicalSpecialty, specialty_id)
     clean = _anonymize(txt)
     api_key = os.getenv("OPENAI_API_KEY", "").strip()
     model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
@@ -209,3 +222,24 @@ def upload_preview(request):
 @require_http_methods(["GET"])
 def upload_history(request):
     return render(request, "main/upload_history.html")
+
+
+@login_required
+@require_http_methods(["GET"])
+def events_suggest(request):
+    qs = MedicalEvent.objects.filter(owner=request.user)
+    cat_id = request.GET.get("category_id") or request.GET.get("category")
+    spec_id = request.GET.get("specialty_id") or request.GET.get("specialty")
+    doc_id = request.GET.get("doc_type_id") or request.GET.get("doc_type")
+    if cat_id and cat_id.isdigit():
+        qs = qs.filter(category_id=int(cat_id))
+    if spec_id and spec_id.isdigit():
+        qs = qs.filter(specialty_id=int(spec_id))
+    if doc_id and doc_id.isdigit():
+        qs = qs.filter(doc_type_id=int(doc_id))
+    qs = qs.order_by("-event_date", "-id")[:10]
+    items = []
+    for ev in qs:
+        d = ev.event_date.isoformat() if getattr(ev, "event_date", None) else ""
+        items.append({"id": ev.id, "event_date": d})
+    return JsonResponse({"events": items})
