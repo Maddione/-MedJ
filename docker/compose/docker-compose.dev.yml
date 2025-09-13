@@ -23,7 +23,7 @@ services:
     working_dir: /app/ocrapi
     entrypoint: /app/docker/ocrapi/entrypoint.dev.sh
     env_file:
-      - docker/env/ocr.dev.env
+      - ../../env/ocr.dev.env
     environment:
       PORT: ${PORT:-5000}
       GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-/secrets/ocr-key-vision.json}
@@ -43,7 +43,7 @@ services:
       - ../../:/app
       - ../../secrets:/app/secrets:ro
     env_file:
-      - docker/env/web.dev.env
+      - ../../env/web.dev.env
     environment:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-/app/secrets/django-key.txt}
       OPENAI_API_KEY_FILE: ${OPENAI_API_KEY_FILE:-/app/secrets/openai-key.txt}
