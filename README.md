@@ -13,7 +13,7 @@ MedJ е Django приложение за централизирано съхра
 
 ```bash
 git clone https://github.com/Maddione/-MedJ.git
-cd -MedJ
+cd .\-MedJ
 ````
 
 ### 2) Env и Secrets
