@@ -3,9 +3,9 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-medj}
-      POSTGRES_USER: ${POSTGRES_USER:-medj}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-medjpass}
+      POSTGRES_DB: medj
+      POSTGRES_USER: medj
+      POSTGRES_PASSWORD: medjpass
     volumes:
       - medj_pg_data:/var/lib/postgresql/data
     ports:
@@ -32,9 +32,12 @@ services:
       context: ../..
       dockerfile: docker/web/Dockerfile
     environment:
-      DJANGO_SETTINGS_MODULE: medj.settings
-      DB_HOST: db
-      DB_PORT: "5432"
+      DJANGO_SETTINGS_MODULE: medj.settings.dev
+      POSTGRES_DB: medj
+      POSTGRES_USER: medj
+      POSTGRES_PASSWORD: medjpass
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
       OCR_API_URL: http://ocrapi:5000/ocr
       RUN_INITIAL_SEED: "${RUN_INITIAL_SEED:-}"
       DJANGO_SUPERUSER_USERNAME: "${DJANGO_SUPERUSER_USERNAME:-}"

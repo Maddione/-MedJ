@@ -57,12 +57,13 @@ ASGI_APPLICATION = "medj.asgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": os.environ.get("DB_ENGINE", "django.db.backends.postgresql"),
-        "NAME": os.environ.get("DB_NAME", "medj"),
-        "USER": os.environ.get("DB_USER", "medj"),
-        "PASSWORD": os.environ.get("DB_PASSWORD", "medj"),
-        "HOST": os.environ.get("DB_HOST", "db"),
-        "PORT": os.environ.get("DB_PORT", "5432"),
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("POSTGRES_DB", "medj"),
+        "USER": os.getenv("POSTGRES_USER", "medj"),
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "medjpass"),
+        "HOST": os.getenv("POSTGRES_HOST", "db"),
+        "PORT": os.getenv("POSTGRES_PORT", "5432"),
+        "CONN_MAX_AGE": 60,
     },
     "backup": {
         "ENGINE": os.environ.get("DB_ENGINE", "django.db.backends.postgresql"),
