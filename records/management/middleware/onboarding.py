@@ -15,8 +15,10 @@ class OnboardingMiddleware(MiddlewareMixin):
         for p in ALLOWED_PREFIXES:
             if path.startswith(p):
                 return None
+
         if not request.user.is_authenticated:
             return None
+
         try:
             profile = request.user.patient_profile
         except Exception:
@@ -30,19 +32,24 @@ class OnboardingMiddleware(MiddlewareMixin):
             )
 
         complete = bool(profile.first_name_bg and profile.last_name_bg and profile.date_of_birth)
+
         try:
             view_name = resolve(path).view_name or ""
         except Exception:
             view_name = ""
+
         if complete:
             return None
+
         allowed_views = {
-           "medj:personalcard",
-           "medj:profile",
+            "medj:personalcard",
+            "medj:profile",
             "medj:logout",
             "medj:password_change",
             "medj:password_change_done",
-         }
+        }
+
         if view_name in allowed_views:
             return None
+
         return redirect(reverse("medj:personalcard"))
