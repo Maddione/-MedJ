@@ -1,4 +1,4 @@
-﻿set -eu
+set -eu
 
 cd /app/ocrapi 2>/dev/null || cd /app
 
