@@ -30,7 +30,7 @@ services:
       context: ../..
       dockerfile: docker/web/Dockerfile
     working_dir: /app
-    entrypoint: ["sh","-lc","/app/entrypoint.dev.sh"]
+    entrypoint: ["sh","-lc","/app/docker/web/entrypoint.dev.sh"]
     env_file:
       - ../env/web.dev.env
     environment:
