@@ -13,7 +13,7 @@ services:
   ocrapi:
     build:
       context: ../..
-      dockerfile: ../ocrapi/Dockerfile
+      dockerfile: docker/ocrapi/Dockerfile
     working_dir: /app/ocrapi
     env_file:
       - ../env/ocr.dev.env
@@ -28,7 +28,7 @@ services:
   web:
     build:
       context: ../..
-      dockerfile: ../web/Dockerfile
+      dockerfile: docker/web/Dockerfile
     working_dir: /app
     entrypoint: ["sh","-lc","/app/entrypoint.dev.sh"]
     env_file:
