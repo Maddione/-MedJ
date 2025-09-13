@@ -21,14 +21,14 @@ MedJ е Django приложение за централизирано съхра
 
 ## Технологии
 
-* Python 3.11+
-* Django 5.x
-* Google Cloud Vision API
-* Flask OCR fallback
-* OpenAI GPT-4o
-* SQLite за dev / PostgreSQL за prod
-* Tailwind CSS, Django Templates, JavaScript
+*Django 5.x приложение (medj, records)
+*OCR микросървис ocrapi с Google Cloud Vision
+*База: PostgreSQL за продукция, SQLite за разработка
+*Статика: предварително налични CSS/JS активи, без NPM билд стъпки
+*Docker Compose оркестрация
 
+Коренът съдържа основните директории: medj/, records/, ocrapi/, docker/, theme/static/, scripts/, tools/. 
+GitHub
 ## Каноничен поток
 
 ### 1) Upload & OCR
@@ -115,35 +115,54 @@ npm install
 ## Конфигурация на среда
 
 ```
-DJANGO_SECRET_KEY=...
+DJANGO_SECRET_KEY=<secret>
 DJANGO_DEBUG=True
 DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost
 
-OPENAI_API_KEY=...
-OPENAI_CHAT_MODEL=gpt-4o
-OPENAI_API_KEY_FILE=optional/path/to/file
+DATABASE_URL=sqlite:///db.sqlite3
+OPENAI_API_KEY=<key>
 
-GOOGLE_APPLICATION_CREDENTIALS=/path/to/gcp-vision.json
-OCR_SERVICE_URL=http://localhost:5001
+GOOGLE_CLOUD_PROJECT=<gcp-project-id>
+GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/medj_vision_sa
+OCR_SERVICE_URL=http://ocrapi:8001
 
-DJANGO_SETTINGS_MODULE=medj.settings
 ```
 
 PDF темплейти:
 
 * `records/pdf_templates/pdf-template-twopage-bg.pdf`
 * `records/pdf_templates/pdf-template-twopage-eng.pdf`
+## Docker Compose
+services:
+  web:
+    env_file: .env
+    volumes:
+      - ./:/app
+    depends_on:
+      - db
+      - ocrapi
 
+  db:
+    image: postgres:16
+
+  ocrapi:
+    env_file: .env
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/medj_vision_sa
+      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
+    volumes:
+      - C:\medj\secrets\gcp\medj-vision-sa.json:/run/secrets/medj_vision_sa:ro
 ## Старт на средата за разработка
 
 ```bash
-npm run watch:css
-python manage.py migrate
-python manage.py createsuperuser
-python manage.py runserver
+docker compose up -d db
+docker compose up --build web ocrapi
+docker compose exec web python manage.py migrate
+docker compose exec web python manage.py createsuperuser
+docker compose exec web python manage.py collectstatic --noinput
 ```
 
-Админ: `http://127.0.0.1:8000/admin/`
+Админ: `http://localhost:8000/admin/`
 
 ## Основни страници
 
@@ -232,7 +251,7 @@ event_id,event_date,indicator_name,value,unit,reference_low,reference_high,measu
 Локално:
 
 ```bash
-python manage.py test -v 2
+docker compose exec web python manage.py test -v 2
 ```
 
 GitHub Actions:
@@ -255,6 +274,7 @@ GitHub Actions:
 * Дати: външно винаги `dd-mm-yyyy`.
 
 ## Автор
+Таня Узунова. Дипломна работа „Персонален здравен дневник“.
 
 Таня Узунова, 961324004, ТУ-София
 Магистърска теза „Персонален здравен дневник – цялата медицинска информация на едно място“.
