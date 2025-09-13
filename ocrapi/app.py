@@ -68,5 +68,29 @@ def _tesseract(image_bytes):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     return pytesseract.image_to_string(gray) or ""
 
-@app.get("/healthz")
-def healthz():
+def healthz() -> tuple[dict, int]:
+    """Lightweight readiness probe for the OCR service."""
+    return jsonify(status="ok"), 200
+
+@app.post("/ocr")
+def ocr():
+    if "file" in request.files:
+        image_bytes = request.files["file"].read()
+    else:
+        data = request.get_json(silent=True) or {}
+        b64 = data.get("image_base64", "")
+        if not b64:
+            return jsonify(error="no file or image_base64"), 400
+        image_bytes = base64.b64decode(b64)
+    try:
+        txt = _vision(image_bytes)
+        if txt.strip():
+            return jsonify(engine="vision", ocr_text=txt.strip()), 200
+        raise RuntimeError("empty")
+    except Exception:
+        try:
+            txt = _tesseract(image_bytes)
+            return jsonify(engine="tesseract", ocr_text=(txt or "").strip()), 200
+        except Exception as e:
+            return jsonify(error="ocr_failed", detail=str(e)), 500
+

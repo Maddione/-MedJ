@@ -1,36 +1,41 @@
 import os
 import io
-from PIL import Image
-import base64
-import requests
 import json
 
 from google.cloud import vision
 from google.oauth2 import service_account
 
-GOOGLE_CLOUD_VISION_KEY = os.environ.get('GOOGLE_CLOUD_VISION_KEY')
-GOOGLE_APPLICATION_CREDENTIALS = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+try:
+    from .anonymizer import anonymize_text
+except Exception:  # pragma: no cover
+    def anonymize_text(text: str) -> str:
+        return text
+
+GOOGLE_CLOUD_VISION_KEY = os.environ.get("GOOGLE_CLOUD_VISION_KEY")
+GOOGLE_APPLICATION_CREDENTIALS = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
 
 VISION_CLIENT = None
 
-for candidate in (GOOGLE_CLOUD_VISION_KEY, GOOGLE_APPLICATION_CREDENTIALS):
-    if not candidate:
-        continue
-    try:
-        if os.path.exists(candidate):
-            credentials = service_account.Credentials.from_service_account_file(candidate)
-        else:
-            credentials = service_account.Credentials.from_service_account_info(json.loads(candidate))
-        VISION_CLIENT = vision.ImageAnnotatorClient(credentials=credentials)
-        break
-    except Exception:
-        VISION_CLIENT = None
 
-if VISION_CLIENT is None:
+def _init_vision_client():
+    """Lazily construct the Vision API client if credentials are configured."""
+    global VISION_CLIENT
+    if VISION_CLIENT is not None:
+        return VISION_CLIENT
+
+    creds_source = GOOGLE_CLOUD_VISION_KEY or GOOGLE_APPLICATION_CREDENTIALS
+    if not creds_source:
+        return None
+
     try:
-        VISION_CLIENT = vision.ImageAnnotatorClient()
+        if os.path.exists(creds_source):
+            credentials = service_account.Credentials.from_service_account_file(creds_source)
+        else:
+            credentials = service_account.Credentials.from_service_account_info(json.loads(creds_source))
+        VISION_CLIENT = vision.ImageAnnotatorClient(credentials=credentials)
     except Exception:
         VISION_CLIENT = None
+    return VISION_CLIENT
 
 
 
@@ -38,12 +43,13 @@ def extract_text_from_image(image_path: str) -> str:
     if not os.path.exists(image_path):
         raise FileNotFoundError(f"Image file not found at {image_path}")
 
-    if VISION_CLIENT:
+    client = _init_vision_client()
+    if client:
         try:
-            with io.open(image_path, 'rb') as image_file:
+            with io.open(image_path, "rb") as image_file:
                 content = image_file.read()
             image = vision.Image(content=content)
-            response = VISION_CLIENT.document_text_detection(image=image)
+            response = client.document_text_detection(image=image)
 
             full_text = ""
             if getattr(response, "full_text_annotation", None) and getattr(response.full_text_annotation, "text", None):
