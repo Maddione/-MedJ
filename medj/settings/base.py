@@ -5,7 +5,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-secret-key")
 DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "*").split(",")
+ALLOWED_HOSTS = [h.strip() for h in os.environ.get("DJANGO_ALLOWED_HOSTS", "*").split(",")]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -36,9 +36,7 @@ ROOT_URLCONF = "medj.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [
-            BASE_DIR / "records" / "templates",
-        ],
+        "DIRS": [BASE_DIR / "records" / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -87,6 +85,8 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
+SITE_ID = 1
+
 PARLER_LANGUAGES = {
     1: (
         {"code": "en-us"},
@@ -99,7 +99,10 @@ PARLER_LANGUAGES = {
 }
 
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [BASE_DIR / "theme" / "static"]
+STATICFILES_DIRS = [
+    BASE_DIR / "theme" / "static",
+    BASE_DIR / "static",
+]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "/media/"
@@ -107,6 +110,6 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-LOGIN_REDIRECT_URL = '/dashboard/'
-LOGOUT_REDIRECT_URL = '/'
-LOGIN_URL = '/auth/login/'
+LOGIN_REDIRECT_URL = "/dashboard/"
+LOGOUT_REDIRECT_URL = "/"
+LOGIN_URL = "/auth/login/"
