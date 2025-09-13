@@ -38,3 +38,7 @@ secrets/**
 credentials/**
 !credentials/.gitkeep
 **/locale/**/LC_MESSAGES/*.mo
+
+!docker/env/*.env.example
+
+!docker/env/*.env.example
