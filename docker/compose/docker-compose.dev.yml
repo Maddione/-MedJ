@@ -39,7 +39,10 @@ services:
       context: ../..
       dockerfile: ../web/Dockerfile
     working_dir: /app
-    entrypoint: ["sh","-lc","/app/entrypoint.dev.sh"]
+    entrypoint: [ "sh","-lc","/app/entrypoint.dev.sh" ]
+    volumes:
+      - ../../:/app
+      - ../../secrets:/app/secrets:ro
     env_file:
       - ../env/web.dev.env
     environment:
@@ -48,9 +51,6 @@ services:
       OCR_API_URL: ${OCR_API_URL:-http://ocrapi:5000/ocr}
       DB_HOST: ${DB_HOST:-db}
       DB_PORT: ${DB_PORT:-5432}
-    volumes:
-      - ../../:/app
-      - ../../secrets:/app/secrets:ro
     depends_on:
       - db
       - ocrapi
