@@ -20,7 +20,7 @@ services:
     build:
       context: ../..
       dockerfile: ../ocrapi/Dockerfile
-    working_dir: /app/ocrapi
+    working_dir: /-MedJ/ocrapi
     env_file:
       - ../env/ocr.dev.env
     environment:
