@@ -18,7 +18,7 @@ services:
 
   ocrapi:
     build:
-      context: ..
+      context: ../..
       dockerfile: docker/ocrapi/Dockerfile
     working_dir: /app/ocrapi
     env_file:
@@ -27,20 +27,20 @@ services:
       PORT: ${PORT:-5000}
       GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-/secrets/ocr-key-vision.json}
     volumes:
-      - ../ocrapi:/app/ocrapi
-      - ../secrets:/secrets:ro
+      - ../../ocrapi:/app/ocrapi
+      - ../../secrets:/secrets:ro
     ports:
       - "5000:5000"
 
   web:
     build:
-      context: ..
+      context: ../..
       dockerfile: docker/web/Dockerfile
     working_dir: /app
     entrypoint: /app/docker/web/entrypoint.dev.sh
     volumes:
-      - ../:/app
-      - ../secrets:/app/secrets:ro
+      - ../../:/app
+      - ../../secrets:/app/secrets:ro
     env_file:
       - ../env/web.dev.env
     environment:
