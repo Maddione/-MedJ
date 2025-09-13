@@ -1,26 +1,24 @@
-﻿#!/usr/bin/env bash
-set -euo pipefail
+﻿#!/usr/bin/env sh
+set -eu
 cd /app
 
 if [ -n "${DB_HOST:-}" ]; then
-  for i in {1..30}; do
+  tries=30
+  while [ "$tries" -gt 0 ]; do
     python - <<'PY'
-import os, sys, socket
+import os, socket, sys
 h=os.environ.get("DB_HOST","db"); p=int(os.environ.get("DB_PORT","5432"))
 s=socket.socket(); s.settimeout(2)
 try: s.connect((h,p)); sys.exit(0)
 except Exception: sys.exit(1)
 PY
     [ $? -eq 0 ] && break
+    tries=$((tries-1))
     sleep 1
   done
 fi
 
-python manage.py migrate --noinput
-
-if [ -n "${RUN_BACKUP_MIGRATIONS:-}" ]; then
-  python manage.py migrate --database=backup --noinput || true
-fi
+python manage.py migrate --noinput || true
 
 if command -v tailwindcss >/dev/null 2>&1; then
   mkdir -p theme/static/css/dist

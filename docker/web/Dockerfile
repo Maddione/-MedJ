@@ -8,14 +8,11 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential curl libpq-dev git \
-    && rm -rf /var/lib/apt/lists/*
+ && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /app/requirements.txt
-RUN pip install --upgrade pip setuptools wheel && \
-    pip install -r /app/requirements.txt
-
-COPY docker/web/entrypoint.dev.sh /app/entrypoint.dev.sh
-RUN sed -i 's/\r$//' /app/entrypoint.dev.sh && chmod +x /app/entrypoint.dev.sh
+RUN pip install --upgrade pip setuptools wheel \
+ && pip install -r /app/requirements.txt
 
 EXPOSE 8000
-ENTRYPOINT ["sh","-lc","/app/entrypoint.dev.sh"]
+ENTRYPOINT ["sh","-lc","/app/docker/web/entrypoint.dev.sh"]

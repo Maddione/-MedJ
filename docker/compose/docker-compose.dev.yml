@@ -8,7 +8,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-medjpass}
     volumes:
       - medj_pg_data:/var/lib/postgresql/data
-    ports: ["5432:5432"]
+    ports:
+      - "5432:5432"
 
   ocrapi:
     build:
@@ -22,16 +23,16 @@ services:
       GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-/secrets/ocr-key-vision.json}
     entrypoint: ["sh","-lc","/app/docker/ocrapi/entrypoint.dev.sh"]
     volumes:
-      - ../../ocrapi:/app/ocrapi
+      - ../../:/app
       - ../../secrets:/secrets:ro
-    ports: ["5000:5000"]
+    ports:
+      - "5000:5000"
 
   web:
     build:
       context: ../..
       dockerfile: docker/web/Dockerfile
     working_dir: /app
-    entrypoint: ["sh","-lc","/app/docker/web/entrypoint.dev.sh"]
     env_file:
       - ../env/web.dev.env
     environment:
@@ -40,13 +41,15 @@ services:
       OCR_API_URL: ${OCR_API_URL:-http://ocrapi:5000/ocr}
       DB_HOST: ${DB_HOST:-db}
       DB_PORT: ${DB_PORT:-5432}
+    entrypoint: ["sh","-lc","/app/docker/web/entrypoint.dev.sh"]
     volumes:
       - ../../:/app
       - ../../secrets:/app/secrets:ro
     depends_on:
       - db
       - ocrapi
-    ports: ["8000:8000"]
+    ports:
+      - "8000:8000"
 
 volumes:
   medj_pg_data:
