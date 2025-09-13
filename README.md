@@ -48,21 +48,21 @@ cp docker/env/ocr.dev.env.example docker/env/ocr.dev.env
 ### 3) Build
 
 ```bash
-docker compose -f docker/compose/docker-compose.dev.yml --project-directory . build
+docker compose -f docker/compose/docker-compose.dev.yml build
 ```
 
 ### 4) Старт
 
 ```bash
-docker compose -f docker/compose/docker-compose.dev.yml --project-directory . up -d db ocrapi web
+docker compose -f docker/compose/docker-compose.dev.yml up -d db ocrapi web
 ```
 
 ### 5) Проверка
 
 ```bash
-docker compose -f docker/compose/docker-compose.dev.yml --project-directory . ps
-docker compose -f docker/compose/docker-compose.dev.yml --project-directory . logs -f web
-docker compose -f docker/compose/docker-compose.dev.yml --project-directory . logs -f ocrapi
+docker compose -f docker/compose/docker-compose.dev.yml ps
+docker compose -f docker/compose/docker-compose.dev.yml logs -f web
+docker compose -f docker/compose/docker-compose.dev.yml logs -f ocrapi
 ```
 
 ### 6) Достъп
