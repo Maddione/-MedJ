@@ -2,25 +2,20 @@ FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    FLASK_APP=ocrapi.app \
-    FLASK_RUN_HOST=0.0.0.0 \
-    FLASK_RUN_PORT=5000 \
-    OCRAPI_LOG_LEVEL=INFO
+    PIP_NO_CACHE_DIR=1
 
 WORKDIR /app/ocrapi
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential tesseract-ocr libtesseract-dev curl \
+    build-essential curl git \
     && rm -rf /var/lib/apt/lists/*
 
-COPY ocrapi/requirements-ocr.txt /app/ocrapi/
-RUN pip install --upgrade pip && \
-    pip install -r requirements-ocr.txt
+COPY requirements.txt /app/requirements.txt
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install -r /app/requirements.txt
 
-COPY ocrapi/ /app/ocrapi/
-
-COPY docker/ocrapi/entrypoint.dev.sh /app/docker/ocrapi/entrypoint.dev.sh
-RUN chmod +x /app/docker/ocrapi/entrypoint.dev.sh
+COPY docker/ocrapi/entrypoint.dev.sh /app/ocrapi/entrypoint.dev.sh
+RUN sed -i 's/\r$//' /app/ocrapi/entrypoint.dev.sh && chmod +x /app/ocrapi/entrypoint.dev.sh
 
 EXPOSE 5000
-ENTRYPOINT ["/app/docker/ocrapi/entrypoint.dev.sh"]
+ENTRYPOINT ["sh","-lc","/app/ocrapi/entrypoint.dev.sh"]
