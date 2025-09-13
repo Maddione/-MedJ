@@ -109,12 +109,11 @@ cd MedJ
 python -m venv .venv
 .\.venv\Scripts\activate
 pip install -r requirements.txt
-npm install
 ```
 
 ## Конфигурация на среда
 
-```
+```bash
 DJANGO_SECRET_KEY=<secret>
 DJANGO_DEBUG=True
 DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost
@@ -133,6 +132,8 @@ PDF темплейти:
 * `records/pdf_templates/pdf-template-twopage-bg.pdf`
 * `records/pdf_templates/pdf-template-twopage-eng.pdf`
 ## Docker Compose
+
+```bash
 services:
   web:
     env_file: .env
@@ -152,6 +153,8 @@ services:
       - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
     volumes:
       - C:\medj\secrets\gcp\medj-vision-sa.json:/run/secrets/medj_vision_sa:ro
+
+```
 ## Старт на средата за разработка
 
 ```bash
