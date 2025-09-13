@@ -1,14 +1,17 @@
 #!/usr/bin/env sh
-set -e
+set -eu
 
-
-cd /app
+cd /app/ocrapi 2>/dev/null || cd /app
 
 APP_MODULE="${FLASK_APP:-ocrapi.app}"
+PORT="${PORT:-5000}"
 export FLASK_DEBUG="${FLASK_DEBUG:-0}"
 
-echo "FLASK_APP=${APP_MODULE}"
-echo "GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS:-unset}"
-echo "PORT=${PORT:-5000}"
+if [ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]; then
+  for i in $(seq 1 30); do
+    [ -f "${GOOGLE_APPLICATION_CREDENTIALS}" ] && break
+    sleep 1
+  done
+fi
 
-exec python -m flask --app "${APP_MODULE}" run --host=0.0.0.0 --port="${PORT:-5000}"
+exec python -m flask --app "${APP_MODULE}" run --host=0.0.0.0 --port="${PORT}"

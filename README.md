@@ -103,14 +103,70 @@ GitHub
 
 ## Инсталация
 
+### Предварителни изисквания
+- Инсталиран **Git**
+- Инсталиран **Docker Desktop** (с активиран Docker Compose v2)
+
+## Стартиране на проекта (Development)
+
+### 1) Клониране
 ```bash
-git clone https://github.com/Maddione/MedJ.git
-cd MedJ
-python -m venv .venv
-.\.venv\Scripts\activate
-pip install -r requirements.txt
+git clone https://github.com/Maddione/-MedJ.git
+cd -MedJ
 ```
 
+### 2) Env и Secrets
+Създайте нужните файлове и папки.
+
+**Windows PowerShell**
+```powershell
+New-Item -ItemType Directory -Force .\docker\env | Out-Null
+Copy-Item .\docker\env\web.dev.env.example .\docker\env\web.dev.env
+Copy-Item .\docker\env\ocr.dev.env.example .\docker\env\ocr.dev.env
+New-Item -ItemType Directory -Force .\secrets | Out-Null
+ni .\secrets\django-key.txt,.\secrets\openai-key.txt,.\secrets\ocr-key-vision.json,.\secrets\googleocr-key.txt -ItemType File -Force | Out-Null
+```
+
+**macOS/Linux**
+```bash
+mkdir -p docker/env secrets
+cp docker/env/web.dev.env.example docker/env/web.dev.env
+cp docker/env/ocr.dev.env.example docker/env/ocr.dev.env
+:> secrets/django-key.txt
+:> secrets/openai-key.txt
+:> secrets/ocr-key-vision.json
+:> secrets/googleocr-key.txt
+```
+Редактирайте файловете в `secrets/` и попълнете реалните стойности.
+### 3) Build
+```bash
+docker compose -f docker/compose/docker-compose.dev.yml --project-directory . build
+```
+### 4) Старт
+```bash
+docker compose -f docker/compose/docker-compose.dev.yml --project-directory . up -d db ocrapi web
+```
+
+### 5) Проверка
+```bash
+docker compose -f docker/compose/docker-compose.dev.yml --project-directory . ps
+docker compose -f docker/compose/docker-compose.dev.yml --project-directory . logs -f web
+docker compose -f docker/compose/docker-compose.dev.yml --project-directory . logs -f ocrapi
+```
+
+### 6) Достъп
+- Приложение: [http://localhost:8000](http://localhost:8000)  
+- Админ: [http://localhost:8000/admin](http://localhost:8000/admin)  
+- OCR API: [http://localhost:5000](http://localhost:5000)
+
+### 7) Тестове
+```bash
+docker compose -f docker/compose/docker-compose.dev.yml --project-directory . run --rm --no-deps --entrypoint sh web -lc "python manage.py test"
+```
+### 8) Спиране
+```bash
+docker compose -f docker/compose/docker-compose.dev.yml --project-directory . down -v
+```
 ## Конфигурация на среда
 
 ```bash
