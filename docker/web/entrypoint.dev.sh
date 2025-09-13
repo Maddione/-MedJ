@@ -32,9 +32,10 @@ if [ -n "${OPENAI_API_KEY:-}" ] && [ -n "${OPENAI_API_KEY_FILE:-}" ] && [ ! -f "
 fi
 
 if [ -f theme/static/css/styles.css ]; then
-  mkdir -p static/css
   ensure_tailwind
-  tailwindcss -i theme/static/css/styles.css -o static/css/tailwind.css --minify || true
+  mkdir -p theme/static/css/dist static/css
+  tailwindcss -i theme/static/css/styles.css -o theme/static/css/dist/output.css --minify || true
+  cp -f theme/static/css/dist/output.css static/css/tailwind.css || true
 fi
 
 python manage.py migrate --noinput
@@ -55,7 +56,7 @@ fi
 
 if [ "${TAILWIND_WATCH:-1}" = "1" ] && [ -f theme/static/css/styles.css ]; then
   ensure_tailwind
-  tailwindcss -i theme/static/css/styles.css -o static/css/tailwind.css --watch --poll &
+  tailwindcss -i theme/static/css/styles.css -o theme/static/css/dist/output.css --watch --poll &
 fi
 
 exec python manage.py runserver 0.0.0.0:8000
