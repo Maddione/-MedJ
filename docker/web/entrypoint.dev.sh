@@ -17,6 +17,20 @@ ensure_tailwind() {
   chmod +x /usr/local/bin/tailwindcss
 }
 
+mkdir -p /app/secrets
+if [ -n "${DJANGO_SECRET_KEY_FILE:-}" ] && [ ! -f "$DJANGO_SECRET_KEY_FILE" ]; then
+  python - <<'PY'
+import os, secrets
+p=os.environ.get("DJANGO_SECRET_KEY_FILE","/app/secrets/django-key.txt")
+os.makedirs(os.path.dirname(p), exist_ok=True)
+open(p,"w").write(secrets.token_urlsafe(64))
+PY
+fi
+if [ -n "${OPENAI_API_KEY:-}" ] && [ -n "${OPENAI_API_KEY_FILE:-}" ] && [ ! -f "$OPENAI_API_KEY_FILE" ]; then
+  mkdir -p "$(dirname "$OPENAI_API_KEY_FILE")"
+  printf "%s" "$OPENAI_API_KEY" > "$OPENAI_API_KEY_FILE"
+fi
+
 if [ -f theme/static/css/styles.css ]; then
   mkdir -p static/css
   ensure_tailwind
