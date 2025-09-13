@@ -8,12 +8,15 @@ class LanguageParamMiddleware:
 
     def __call__(self, request):
         lang = request.GET.get("lang") or request.GET.get("language")
-        if lang and lang in dict(getattr(settings, "LANGUAGES", ())):
+        if lang:
+            try:
+                lang = translation.get_supported_language_variant(lang)
+            except LookupError:
+                lang = None
+        if lang:
             translation.activate(lang)
             request.LANGUAGE_CODE = lang
-            # proceed to view
             response = self.get_response(request)
-            # persist choice
             if hasattr(request, "session"):
                 request.session[settings.LANGUAGE_COOKIE_NAME] = lang
             response.set_cookie(settings.LANGUAGE_COOKIE_NAME, lang, samesite="Lax")

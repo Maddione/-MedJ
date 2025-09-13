@@ -107,6 +107,12 @@ msgstr "Your digital health record. Secure, accessible, and easy to manage."
 msgid "Създай своето досие сега"
 msgstr "Create your record now"
 
+msgid "Създай своето досие"
+msgstr "Create your record"
+
+msgid "Вход в профил"
+msgstr "Log into your profile"
+
 msgid "Категория"
 msgstr "Category"
 

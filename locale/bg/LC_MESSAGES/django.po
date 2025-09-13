@@ -186,15 +186,19 @@ msgstr "Добре дошли в MedJ"
 
 #. AUTO-ADDED by template scan
 #: records/templates/basetemplates/landingpage.html:13
-msgid ""
-"Вашето дигитално здравно досие. Сигурно, достъпно и лесно за управление."
-msgstr ""
-"Вашето дигитално здравно досие. Сигурно, достъпно и лесно за управление."
+msgid "Вашето дигитално здравно досие. Сигурно, достъпно и лесно за управление."
+msgstr "Вашето дигитално здравно досие. Сигурно, достъпно и лесно за управление."
 
 #. AUTO-ADDED by template scan
 #: records/templates/basetemplates/landingpage.html:17
 msgid "Създай своето досие сега"
 msgstr "Създай своето досие сега"
+
+msgid "Създай своето досие"
+msgstr "Създай своето досие"
+
+msgid "Вход в профил"
+msgstr "Вход в профил"
 
 #. AUTO-ADDED by template scan
 #: records/templates/main/casefiles.html:11
