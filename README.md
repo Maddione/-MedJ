@@ -109,7 +109,6 @@ cd MedJ
 python -m venv .venv
 .\.venv\Scripts\activate
 pip install -r requirements.txt
-npm install
 ```
 
 ## Конфигурация на среда
