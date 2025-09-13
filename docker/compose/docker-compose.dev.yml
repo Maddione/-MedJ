@@ -18,32 +18,31 @@ services:
 
   ocrapi:
     build:
-      context: ../..
+      context: .
       dockerfile: docker/ocrapi/Dockerfile
     working_dir: /app/ocrapi
-    entrypoint: /app/docker/ocrapi/entrypoint.dev.sh
     env_file:
-      - ../../docker/env/ocr.dev.env
+      - docker/env/ocr.dev.env.example
     environment:
       PORT: ${PORT:-5000}
       GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-/secrets/ocr-key-vision.json}
     volumes:
-      - ../../ocrapi:/app/ocrapi
-      - ../../secrets:/secrets:ro
+      - ./ocrapi:/app/ocrapi
+      - ./secrets:/secrets:ro
     ports:
       - "5000:5000"
 
   web:
     build:
-      context: ../..
+      context: .
       dockerfile: docker/web/Dockerfile
     working_dir: /app
     entrypoint: /app/docker/web/entrypoint.dev.sh
     volumes:
-      - ../../:/app
-      - ../../secrets:/app/secrets:ro
+      - ./:/app
+      - ./secrets:/app/secrets:ro
     env_file:
-      - ../../docker/env/web.dev.env
+      - docker/env/web.dev.env.example
     environment:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-/app/secrets/django-key.txt}
       OPENAI_API_KEY_FILE: ${OPENAI_API_KEY_FILE:-/app/secrets/openai-key.txt}
