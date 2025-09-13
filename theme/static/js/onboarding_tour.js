@@ -10,16 +10,20 @@
   function next(){var o=load();o.step+=1;if(o.step>4){o.done=true}save(o);route()}
   function prev(){var o=load();o.step=Math.max(1,o.step-1);save(o);route()}
   function route(){
-    var o=load();if(o.done)return;
-    var path=location.pathname;
-    if(o.step===1 && !/personalcard\/?$/.test(path)){location.href="/personalcard/";return}
-    if(o.step===1 && /personalcard\/?$/.test(path)){show('ob_personalcard');return}
-    if(o.step===2 && !/upload\/?$/.test(path)){location.href="/upload/";return}
-    if(o.step===2 && /upload\/?$/.test(path)){show('ob_upload');return}
-    if(o.step===3 && !/upload\/history\/?$/.test(path)){location.href="/upload/history/";return}
-    if(o.step===3 && /upload\/history\/?$/.test(path)){show('ob_history');return}
-    if(o.step===4){show('ob_welcome');}
-  }
+  var o=load(); if(o.done) return;
+  var path = location.pathname;
+
+  if (o.step===1 && !/personalcard\/?$/.test(path)) { location.href="/personalcard/"; return; }
+  if (o.step===1 &&  /personalcard\/?$/.test(path)) { show('ob_personalcard'); return; }
+
+  if (o.step===2 && !/app\/upload\/?$/.test(path))   { location.href="/app/upload/"; return; }
+  if (o.step===2 &&  /app\/upload\/?$/.test(path))   { show('ob_upload'); return; }
+
+  if (o.step===3 && !/app\/upload\/history\/?$/.test(path)) { location.href="/app/upload/history/"; return; }
+  if (o.step===3 &&  /app\/upload\/history\/?$/.test(path)) { show('ob_history'); return; }
+
+  if (o.step===4) { show('ob_welcome'); }
+}
   function markRequired(){
     document.querySelectorAll('[data-required="true"]').forEach(function(l){
       if(l.querySelector('.reqmark'))return;
