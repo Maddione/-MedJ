@@ -46,9 +46,9 @@ services:
     env_file:
       - ../env/web.dev.env
     environment:
-      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:/app/secrets/django-key.txt}
-      - OPENAI_API_KEY_FILE=${OPENAI_API_KEY_FILE:/app/secrets/openai-key.txt}
-      - OCR_API_URL=${OCR_API_URL:http://ocrapi:5000/ocr}
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-/app/secrets/django-key.txt}
+      - OPENAI_API_KEY_FILE=${OPENAI_API_KEY_FILE:-/app/secrets/openai-key.txt}
+      - OCR_API_URL=${OCR_API_URL:http:-//ocrapi:5000/ocr}
     volumes:
       - ../../secrets:/app/secrets:ro
       - ../../:/app
