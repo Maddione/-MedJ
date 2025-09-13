@@ -20,7 +20,7 @@ services:
     environment:
       PORT: ${PORT:-5000}
       GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-/secrets/ocr-key-vision.json}
-    entrypoint: ["sh","-lc","/app/ocrapi/entrypoint.dev.sh"]
+    entrypoint: ["sh","-lc","/app/docker/ocrapi/entrypoint.dev.sh"]
     volumes:
       - ../../ocrapi:/app/ocrapi
       - ../../secrets:/secrets:ro
@@ -31,7 +31,7 @@ services:
       context: ../..
       dockerfile: docker/web/Dockerfile
     working_dir: /app
-    entrypoint: ["sh","-lc","/app/entrypoint.dev.sh"]
+    entrypoint: ["sh","-lc","/app/docker/web/entrypoint.dev.sh"]
     env_file:
       - ../env/web.dev.env
     environment:
