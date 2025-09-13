@@ -8,10 +8,10 @@ WORKDIR /app/ocrapi
 
 RUN apt-get update && apt-get install -y --no-install-recommends build-essential curl git && rm -rf /var/lib/apt/lists/*
 
-COPY ocrapi/requirments-ocr.txt /app/ocrapi/requirments-ocr.txt
+COPY ocrapi/requirements-ocr.txt /app/ocrapi/requirements-ocr.txt
 
 RUN pip install --upgrade pip setuptools wheel \
- && pip install -r /app/ocrapi/requirments-ocr.txt
+ && pip install -r /app/ocrapi/requirements-ocr.txt
 
 COPY docker/ocrapi/entrypoint.dev.sh /usr/local/bin/ocrapi-entrypoint
 RUN sed -i 's/\r$//' /usr/local/bin/ocrapi-entrypoint && sed -i '1s/^\xEF\xBB\xBF//' /usr/local/bin/ocrapi-entrypoint && chmod +x /usr/local/bin/ocrapi-entrypoint
