@@ -3,8 +3,8 @@ set -eu
 
 cd /app/ocrapi 2>/dev/null || cd /app
 
-APP_MODULE="${FLASK_APP:-ocrapi.app}"
-PORT="${PORT:-5000}"
+APP_MODULE="${FLASK_APP:-app:app}"
+PORT="${FLASK_RUN_PORT:-5000}"
 export FLASK_DEBUG="${FLASK_DEBUG:-0}"
 
 if [ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]; then
