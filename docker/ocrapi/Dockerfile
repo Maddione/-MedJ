@@ -19,8 +19,8 @@ RUN pip install --upgrade pip && \
 
 COPY ocrapi/ /app/ocrapi/
 
-COPY docker/ocrapi/entrypoint.dev.sh /entrypoint.dev.sh
-RUN chmod +x /entrypoint.dev.sh
+COPY docker/ocrapi/entrypoint.dev.sh /app/docker/ocrapi/entrypoint.dev.sh
+RUN chmod +x /app/docker/ocrapi/entrypoint.dev.sh
 
 EXPOSE 5000
-ENTRYPOINT ["/entrypoint.dev.sh"]
+ENTRYPOINT ["/app/docker/ocrapi/entrypoint.dev.sh"]
