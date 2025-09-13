@@ -8,12 +8,17 @@ from django.contrib.auth.views import (
     PasswordChangeView,
     PasswordChangeDoneView,
 )
-from django.urls import path, reverse_lazy
+from django.urls import path
+from django.urls import reverse_lazy
 from django.views.generic import TemplateView
 
+from .views import api_upload
+from .views import upload as upload_views
 from .views.auth import RememberLoginView, RegisterView
-from .views.dashboard import dashboard
 from .views.casefiles import casefiles
+from .views.dashboard import dashboard
+from .views.doctors_api import doctors_suggest
+from .views.doctors_views import doctors_list
 from .views.documents import (
     document_detail,
     document_edit,
@@ -21,25 +26,15 @@ from .views.documents import (
     document_move,
 )
 from .views.events import event_list, event_detail, events_by_specialty, tags_autocomplete
-from .views.doctors_views import doctors_list
 from .views.labs import labtests, labtests_view, labtest_edit, export_lab_csv
-from .views.share import share_document_page, create_download_links, qr_for_url
+from .views.pages import history_view
 from .views.personalcard import (
     PersonalCardView,
-    public_personalcard,
     personalcard_share_enable_api,
     personalcard_qr,
 )
 from .views.settings import SettingsView
-from .views.pages import history_view
-from .views.upload import (
-    upload,
-    upload_ocr as api_upload_ocr,
-    upload_analyze as api_upload_analyze,
-    upload_confirm as api_upload_confirm,
-    events_suggest,
-)
-from .views.doctors_api import doctors_suggest
+from .views.share import share_document_page, create_download_links, qr_for_url
 from .views.share_api import (
     share_create,
     share_history as share_history_api,
@@ -84,8 +79,8 @@ urlpatterns = [
     ), name="password_reset_complete"),
 
     path("dashboard/", login_required(dashboard), name="dashboard"),
-
-    path("upload/", login_required(upload), name="upload"),
+    path("app/upload/", login_required(upload_views.upload_preview), name="upload"),
+    path("app/upload/history/", login_required(upload_views.upload_history), name="upload_history"),
     path("documents/", login_required(history_view), name="documents"),
     path("casefiles/", login_required(casefiles), name="casefiles"),
     path("events/", login_required(event_list), name="medical_event_list"),
@@ -118,10 +113,10 @@ urlpatterns = [
     path("api/share/revoke/<str:token>/", login_required(share_revoke), name="share_revoke"),
     path("api/share/qr/<str:token>.png", login_required(share_qr_png), name="share_qr"),
 
-    path("api/upload/ocr/", login_required(api_upload_ocr), name="upload_ocr"),
-    path("api/upload/analyze/", login_required(api_upload_analyze), name="upload_analyze"),
-    path("api/upload/confirm/", login_required(api_upload_confirm), name="upload_confirm"),
-    path("api/events/suggest/", login_required(events_suggest), name="events_suggest"),
+    path("api/upload/ocr/", login_required(upload_views.upload_ocr), name="upload_ocr"),
+    path("api/upload/analyze/", login_required(upload_views.upload_analyze), name="upload_analyze"),
+    path("api/upload/confirm/", login_required(upload_views.upload_confirm), name="upload_confirm"),
+    path("api/events/suggest/", login_required(api_upload.events_suggest), name="events_suggest"),
     path("api/doctors/suggest/", login_required(doctors_suggest), name="doctors_suggest"),
 
     path("api/personalcard/share/enable/", login_required(personalcard_share_enable_api), name="personalcard_share_enable_api"),

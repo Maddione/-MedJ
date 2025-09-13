@@ -33,10 +33,7 @@ def _id_to_name(model, id_str):
     if not s.isdigit():
         return ""
     obj = model.objects.filter(id=int(s)).first()
-    doc_types = _q_names(DocumentType)
-    specialties = _q_names(MedicalSpecialty)
-    categories = _q_names(MedicalCategory)
-    return render(request, "main/upload.html", {"doc_types": doc_types, "specialties": specialties, "categories": categories})
+    return _safe_name(obj) if obj else ""
 
 def _merge_lines(a, b):
     seen, out = set(), []
@@ -216,13 +213,12 @@ def upload_confirm(request):
 @login_required
 @require_http_methods(["GET"])
 def upload_preview(request):
-    return render(request, "main/upload_preview.html", {})
+    return render(request, "main/upload.html", {})
 
 @login_required
 @require_http_methods(["GET"])
 def upload_history(request):
     return render(request, "main/upload_history.html")
-
 
 @login_required
 @require_http_methods(["GET"])
