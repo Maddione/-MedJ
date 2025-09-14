@@ -3,3 +3,4 @@ pillow
 google-cloud-vision
 pytesseract
 pdf2image
+rapidfuzz
