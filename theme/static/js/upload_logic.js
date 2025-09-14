@@ -7,6 +7,7 @@ function seth(x, h) { if (x) x.innerHTML = h || ""; }
 function setv(x, v) { if (x) x.value = v || ""; }
 function dis(x, f) { if (!x) return; x.disabled = !!f; x.classList.toggle("opacity-50", !!f); x.classList.toggle("cursor-not-allowed", !!f); }
 function getCSRF() { const t = document.querySelector('input[name="csrfmiddlewaretoken"]'); if (t && t.value) return t.value; const m = document.cookie.match(/(?:^|;)\s*csrftoken=([^;]+)/); return m ? decodeURIComponent(m[1]) : ""; }
+function ensureMeta() { let m = el("workMeta"); if (!m) { const ta = el("workText"); if (ta && ta.parentElement) { m = document.createElement("div"); m.id = "workMeta"; m.className = "text-xs text-gray-500 mt-1"; ta.parentElement.insertBefore(m, ta); } } return m; }
 
 let CURRENT_FILE = null;
 let CURRENT_FILE_KIND = "";
@@ -251,8 +252,10 @@ async function doOCR() {
     const area = el("workText");
     area.removeAttribute("disabled");
     setv(area, text);
-    const meta = el("workMeta");
-    if (meta) meta.textContent = (data.engine ? "OCR: " + data.engine : "");
+    const metaEl = ensureMeta();
+    const engine = (data?.telemetry?.engine_chosen) || data.engine || "";
+    const rid = data.rid || data?.telemetry?.rid || "";
+    if (metaEl) metaEl.textContent = engine ? `OCR: ${engine}${rid ? " • " + rid : ""}` : "";
     const labs = parseLabs(text);
     renderLabTable(labs);
     ANALYZED_READY = false;
@@ -323,6 +326,7 @@ function bindUI() {
   if (bAna) bAna.addEventListener("click", (e) => { e.preventDefault(); doAnalyze(); });
   if (bCfm) bCfm.addEventListener("click", (e) => { e.preventDefault(); doConfirm(); });
   ensureLabControls();
+  ensureMeta();
   updateDropdownFlow();
   updateButtons();
 }
