@@ -10,7 +10,7 @@
     <div class="flex flex-nowrap items-center gap-4 justify-start">
       <div class="text-2xl font-bold text-white">{% trans "По време на..." %}</div>
 
-      <select id="sel_category" class="h-11 rounded-xl px-3 border border-gray-300 bg-white min-w-[14rem]">
+      <select id="sel_category" class="h-11 rounded-xl px-3 border border-gray-300 bg-white min-w-[14rem] disabled:opacity-50 disabled:cursor-not-allowed">
         <option value="">{% trans "Изберете категория" %}</option>
         {% for o in categories %}
           <option value="{{ o.id }}">{{ o.name }}</option>
@@ -19,23 +19,23 @@
 
       <div class="text-2xl font-bold text-white">{% trans "при" %}</div>
 
-      <select id="sel_specialty" class="h-11 rounded-xl px-3 border border-gray-300 bg-white min-w-[14rem]" disabled>
+      <select id="sel_specialty" class="h-11 rounded-xl px-3 border border-gray-300 bg-white min-w-[14rem] disabled:opacity-50 disabled:cursor-not-allowed" disabled>
         <option value="">{% trans "Изберете специалност" %}</option>
         {% for o in specialties %}
           <option value="{{ o.id }}">{{ o.name }}</option>
         {% endfor %}
       </select>
 
-      <div class="text-2xl font-bold text-white">{% trans "назначено от" %}</div>
+      <div class="text-2xl font-bold text-white">{% trans ", назначено за" %}</div>
 
-      <select id="sel_doc_type" class="h-11 rounded-xl px-3 border border-gray-300 bg-white min-w-[16rem]" disabled>
+      <select id="sel_doc_type" class="h-11 rounded-xl px-3 border border-gray-300 bg-white min-w-[16rem] disabled:opacity-50 disabled:cursor-not-allowed" disabled>
         <option value="">{% trans "Изберете вид документ" %}</option>
         {% for o in doc_types %}
           <option value="{{ o.id }}">{{ o.name }}</option>
         {% endfor %}
       </select>
 
-      <select id="file_kind" class="shrink-0 h-11 rounded-xl px-3 border border-gray-300 bg-white min-w-[12rem]" disabled>
+      <select id="file_kind" class="shrink-0 h-11 rounded-xl px-3 border border-gray-300 bg-white min-w-[12rem] disabled:opacity-50 disabled:cursor-not-allowed" disabled>
         <option value="">{% trans "Тип файл" %}</option>
         <option value="image">{% trans "Изображение" %}</option>
         <option value="pdf">PDF</option>
@@ -58,23 +58,32 @@
           <button id="chooseFileBtn" type="button" class="px-5 h-12 rounded-xl text-white" style="background:#0A4E75">{% trans "Избери файл за качване" %}</button>
           <div id="fileNameBadge" class="px-4 h-11 rounded-full bg-[#E6F0F4] text-[#0A1E4A] font-semibold hidden flex items-center"></div>
         </div>
+
         <div id="previewBlock" class="rounded-xl overflow-hidden border border-gray-200 hidden">
           <img id="previewImg" class="w-full block" alt="">
+
+          <div id="previewPDF" class="hidden">
+            <embed id="previewEmbed" type="application/pdf" class="w-full h-[360px] block" />
+          </div>
         </div>
+
+        <div id="fileMeta" class="text-xs text-[#0A1E4A] opacity-70 mt-2 hidden"></div>
       </div>
 
       <div>
-        <div class="mb-3">
-          <div class="text-sm text-[#0A1E4A] font-semibold mb-2">{% trans "OCR Текст" %} <span id="ocrSourceInfo" class="text-xs opacity-60 ml-2"></span></div>
-          <textarea id="ocrText" class="w-full h-72 rounded-xl px-4 py-3 border border-gray-300" placeholder="{% trans 'Тук ще се появи OCR текстът. Може да редактирате.' %}" disabled></textarea>
-        </div>
 
         <div class="mb-3">
-          <div class="text-sm text-[#0A1E4A] font-semibold mb-2">{% trans "Резюме" %} <span id="analysisMeta" class="text-xs opacity-60 ml-2"></span></div>
-          <textarea id="summaryText" class="w-full h-56 rounded-xl px-4 py-3 border border-gray-300" placeholder="{% trans 'Тук ще се появи резюмето от анализа. Може да редактирате.' %}" disabled></textarea>
+          <div class="text-sm text-[#0A1E4A] font-semibold mb-2">
+            <span id="workLabel">{% trans "OCR Текст" %}</span>
+            <span id="workMeta" class="text-xs opacity-60 ml-2"></span>
+          </div>
+          <textarea id="workText" class="w-full h-72 rounded-xl px-4 py-3 border border-gray-300" placeholder="{% trans 'Тук ще се визуализира OCR или Анализ в зависимост от етапа.' %}" disabled></textarea>
         </div>
 
-        <div id="analysisPayload" data-json="{}" class="hidden"></div>
+        <div id="labWrap" class="hidden">
+          <div class="text-sm text-[#0A1E4A] font-semibold mb-2">{% trans "Извлечени лабораторни резултати" %} <span id="labSummary" class="text-xs opacity-60 ml-2"></span></div>
+          <div id="labTableSlot"></div>
+        </div>
 
         <div class="mt-5 flex gap-3 items-center">
           <button id="btnOCR" class="px-6 h-12 rounded-xl text-white disabled:opacity-50 hidden" style="background:#0A4E75">{% trans "Изпрати за OCR" %}</button>
@@ -100,12 +109,37 @@
 (function(){
   const $=id=>document.getElementById(id);
   const finput=$('file_input'); const choose=$('chooseFileBtn'); const badge=$('fileNameBadge');
+  const pBlock=$('previewBlock'), pImg=$('previewImg'), pPDF=$('previewPDF'), pEmbed=$('previewEmbed'), fMeta=$('fileMeta');
+
   function wireChoose(){
     if(choose&&finput){ choose.addEventListener('click',()=>finput.click()); }
-    if(finput&&badge){
+    if(finput){
       finput.addEventListener('change',()=>{
-        const n=(finput.files&&finput.files[0])?finput.files[0].name:'';
-        if(n){ badge.textContent=n; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
+        const f=(finput.files&&finput.files[0])?finput.files[0]:null;
+        const n=f? (f.name||'') : '';
+        if(badge){
+          if(n){ badge.textContent=n; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
+        }
+
+        if(pBlock && pImg && pPDF && pEmbed && f){
+          const type=(f.type||'').toLowerCase();
+          const url=URL.createObjectURL(f);
+          if(type.startsWith('image/')){
+            pImg.src=url; pImg.classList.remove('hidden');
+            pPDF.classList.add('hidden');
+            pBlock.classList.remove('hidden');
+          }else if(type==='application/pdf' || n.toLowerCase().endsWith('.pdf')){
+            pEmbed.src=url; pPDF.classList.remove('hidden');
+            pImg.classList.add('hidden');
+            pBlock.classList.remove('hidden');
+          }else{
+            pBlock.classList.add('hidden');
+          }
+          if(fMeta){
+            fMeta.textContent = (n? n+' • ' : '') + (f.type||'') + (f.size? (' • '+Math.round(f.size/1024)+' KB'):'');
+            fMeta.classList.remove('hidden');
+          }
+        }
       });
     }
   }
