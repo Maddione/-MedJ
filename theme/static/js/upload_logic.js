@@ -6,17 +6,15 @@ function hide(x) { if (x) x.classList.add("hidden"); }
 function seth(x, h) { if (x) x.innerHTML = h || ""; }
 function setv(x, v) { if (x) x.value = v || ""; }
 function dis(x, f) { if (!x) return; x.disabled = !!f; x.classList.toggle("opacity-50", !!f); x.classList.toggle("cursor-not-allowed", !!f); }
-
-function getCSRF() {
-  const t = document.querySelector('input[name="csrfmiddlewaretoken"]');
-  if (t && t.value) return t.value;
-  const m = document.cookie.match(/(?:^|;)\s*csrftoken=([^;]+)/);
-  return m ? decodeURIComponent(m[1]) : "";
-}
+function getCSRF() { const t = document.querySelector('input[name="csrfmiddlewaretoken"]'); if (t && t.value) return t.value; const m = document.cookie.match(/(?:^|;)\s*csrftoken=([^;]+)/); return m ? decodeURIComponent(m[1]) : ""; }
 
 let CURRENT_FILE = null;
 let CURRENT_FILE_KIND = "";
 let CURRENT_FILE_URL = null;
+let LAB_EDIT_MODE = false;
+let CLASS_LOCK = false;
+let DOC_LOCK = false;
+let ANALYZED_READY = false;
 
 function picks() {
   return {
@@ -28,39 +26,17 @@ function picks() {
     eventId: (el("existingEventSelect") || {}).value || ""
   };
 }
+function currentTags() { const p = picks(); return { category_id: p.category || "", specialty_id: p.specialty || "", doc_type_id: p.docType || "", file_kind: p.fileKind || "" }; }
 
-function stage() {
-  const p = picks();
-  if (!p.file) return "choose_file";
-  const text = (el("workText") || {}).value || "";
-  if (!text.trim()) return "ocr";
-  return "analyze";
-}
+function lockDocType() { DOC_LOCK = true; dis(el("sel_doc_type"), true); }
+function lockClassification() { CLASS_LOCK = true; ["sel_category","sel_specialty","sel_doc_type","file_kind"].forEach(id => dis(el(id), true)); }
 
-function updateButtons() {
-  const s = stage();
-  const bOCR = el("btnOCR");
-  const bAna = el("btnAnalyze");
-  const bCfm = el("btnConfirm");
-  if (bOCR) (s === "ocr") ? show(bOCR) : hide(bOCR);
-  if (bAna) (s !== "ocr") ? show(bAna) : hide(bAna);
-  if (bCfm) (s !== "ocr") ? show(bCfm) : hide(bCfm);
-}
+function stage() { const p = picks(); if (!p.file) return "choose_file"; const text = (el("workText") || {}).value || ""; if (!text.trim()) return "ocr"; return "analyze"; }
+function updateButtons() { const s = stage(); const bOCR = el("btnOCR"); const bAna = el("btnAnalyze"); const bCfm = el("btnConfirm"); if (bOCR) (s === "ocr") ? show(bOCR) : hide(bOCR); if (bAna) (s !== "ocr") ? show(bAna) : hide(bAna); if (bCfm) (ANALYZED_READY ? show(bCfm) : hide(bCfm)); }
 
-function setBusy(on) {
-  const o = el("loadingOverlay");
-  if (on) show(o); else hide(o);
-}
-
-function showError(msg) {
-  const box = el("errorBox");
-  if (box) { box.textContent = msg || "Грешка."; show(box); }
-}
-
-function clearError() {
-  const box = el("errorBox");
-  if (box) { box.textContent = ""; hide(box); }
-}
+function setBusy(on) { const o = el("loadingOverlay"); if (on) show(o); else hide(o); }
+function showError(msg) { const box = el("errorBox"); if (box) { box.textContent = msg || "Грешка."; show(box); } }
+function clearError() { const box = el("errorBox"); if (box) { box.textContent = ""; hide(box); } }
 
 function renderPreview() {
   const wrap = el("previewBlock");
@@ -69,12 +45,7 @@ function renderPreview() {
   const emb = el("previewEmbed");
   const meta = el("fileMeta");
   const badge = el("fileNameBadge");
-  if (!CURRENT_FILE) {
-    hide(wrap);
-    if (meta) seth(meta, "");
-    if (badge) badge.classList.add("hidden");
-    return;
-  }
+  if (!CURRENT_FILE) { hide(wrap); if (meta) seth(meta, ""); if (badge) badge.classList.add("hidden"); return; }
   if (CURRENT_FILE_URL) { URL.revokeObjectURL(CURRENT_FILE_URL); CURRENT_FILE_URL = null; }
   CURRENT_FILE_URL = URL.createObjectURL(CURRENT_FILE);
   const name = CURRENT_FILE.name || "file";
@@ -93,24 +64,29 @@ function handleFileInputChange() {
   const kind = el("file_kind");
   CURRENT_FILE = fi && fi.files ? fi.files[0] : null;
   CURRENT_FILE_KIND = (kind && kind.value) || "";
+  ANALYZED_READY = false;
   renderPreview();
+  lockDocType();
+  updateDropdownFlow();
   updateButtons();
 }
 
 function updateDropdownFlow() {
   const p = picks();
+  const cat = el("sel_category");
   const spc = el("sel_specialty");
   const doc = el("sel_doc_type");
   const kind = el("file_kind");
   const file = el("file_input");
+  if (CLASS_LOCK) { dis(cat, true); dis(spc, true); dis(doc, true); dis(kind, true); dis(file, false); updateButtons(); return; }
   const readySpc = !!p.category;
   const readyDoc = readySpc && !!p.specialty;
   const readyKind = readyDoc && !!p.docType;
   const readyFile = readyKind && !!p.fileKind;
+  dis(cat, false);
   dis(spc, !readySpc); if (!readySpc) setv(spc, "");
-  dis(doc, !readyDoc); if (!readyDoc) setv(doc, "");
-  dis(kind, !readyKind);
-  if (!readyKind) { setv(kind, ""); CURRENT_FILE_KIND = ""; }
+  dis(doc, !readyDoc || DOC_LOCK); if (!readyDoc && !DOC_LOCK) setv(doc, "");
+  dis(kind, !readyKind); if (!readyKind) { setv(kind, ""); CURRENT_FILE_KIND = ""; }
   dis(file, !readyFile);
   updateButtons();
 }
@@ -127,17 +103,10 @@ async function suggestIfReady() {
     const data = await res.json();
     const items = data.events || [];
     if (!items.length) { if (wrap) hide(wrap); if (select) seth(select, ""); return; }
-    const opts = ['<option value="">—</option>'].concat(items.map(x => {
-      const vid = x.id != null ? String(x.id) : "";
-      const label = x.title || x.name || x.display_name || vid;
-      return `<option value="${vid}">${label}</option>`;
-    }));
+    const opts = ['<option value="">—</option>'].concat(items.map(x => { const vid = x.id != null ? String(x.id) : ""; const label = x.title || x.name || x.display_name || vid; return `<option value="${vid}">${label}</option>`; }));
     if (select) seth(select, opts.join(""));
     if (wrap) show(wrap);
-  } catch (e) {
-    if (wrap) hide(wrap);
-    if (select) seth(select, "");
-  }
+  } catch (_) { if (wrap) hide(wrap); if (select) seth(select, ""); }
 }
 
 function parseLabs(text) {
@@ -184,6 +153,84 @@ function renderLabTable(items) {
   seth(slot, html);
   if (sum) seth(sum, `${items.length} показателя`);
   show(wrap);
+  setTableEditable(LAB_EDIT_MODE);
+}
+
+function setTableEditable(on) {
+  const tbl = document.querySelector("#labTableSlot table");
+  if (!tbl) return;
+  const rows = tbl.querySelectorAll("tbody tr");
+  rows.forEach((r) => {
+    [...r.cells].forEach((c, idx) => {
+      if (idx <= 3) {
+        c.contentEditable = on ? "true" : "false";
+        c.classList.toggle("ring", on);
+        c.classList.toggle("ring-1", on);
+        c.classList.toggle("ring-offset-1", on);
+      }
+    });
+  });
+}
+
+function getLabTableData() {
+  const tbl = document.querySelector("#labTableSlot table");
+  if (!tbl) return [];
+  const rows = tbl.querySelectorAll("tbody tr");
+  const out = [];
+  rows.forEach((r) => {
+    const name = (r.cells[0]?.innerText || "").trim();
+    const valRaw = (r.cells[1]?.innerText || "").trim().replace(",", ".");
+    const value = valRaw && !isNaN(Number(valRaw)) ? Number(valRaw) : valRaw;
+    const unit = (r.cells[2]?.innerText || "").trim();
+    const ref = (r.cells[3]?.innerText || "").trim();
+    let ref_low = null, ref_high = null;
+    if (ref && /-/.test(ref)) {
+      const [lo, hi] = ref.split("-").map((s) => s.trim().replace(",", "."));
+      const loN = Number(lo), hiN = Number(hi);
+      ref_low = isNaN(loN) ? null : loN;
+      ref_high = isNaN(hiN) ? null : hiN;
+    }
+    out.push({ name, value, unit, ref_low, ref_high });
+  });
+  return out;
+}
+
+function refreshTableFromText() {
+  const t = (el("workText")?.value || "");
+  const items = parseLabs(t);
+  renderLabTable(items);
+}
+
+function syncTableToText() {
+  const items = getLabTableData();
+  const lines = items.map((x) => {
+    const v = (typeof x.value === "number" && isFinite(x.value)) ? x.value : (x.value || "");
+    const u = x.unit ? ` ${x.unit}` : "";
+    const ref = (x.ref_low != null && x.ref_high != null) ? ` ${x.ref_low}-${x.ref_high}` : "";
+    return `${x.name} ${v}${u}${ref}`;
+  });
+  const ta = el("workText");
+  if (ta) ta.value = lines.join("\n");
+}
+
+function ensureLabControls() {
+  const wrap = el("labWrap");
+  if (!wrap) return;
+  let bar = el("labControls");
+  if (!bar) {
+    bar = document.createElement("div");
+    bar.id = "labControls";
+    bar.className = "flex gap-2 mb-2";
+    bar.innerHTML = `
+      <button id="btnRefreshTable" class="btn">Обнови таблицата</button>
+      <button id="btnEditTable" class="btn">Редакция на таблицата</button>
+      <button id="btnSyncToText" class="btn">Синхронизирай към текст</button>
+    `;
+    wrap.insertBefore(bar, wrap.firstChild);
+  }
+  el("btnRefreshTable").onclick = (e) => { e.preventDefault(); refreshTableFromText(); };
+  el("btnEditTable").onclick = (e) => { e.preventDefault(); LAB_EDIT_MODE = !LAB_EDIT_MODE; setTableEditable(LAB_EDIT_MODE); e.currentTarget.textContent = LAB_EDIT_MODE ? "Изход от редакция" : "Редакция на таблицата"; };
+  el("btnSyncToText").onclick = (e) => { e.preventDefault(); syncTableToText(); };
 }
 
 async function doOCR() {
@@ -208,12 +255,10 @@ async function doOCR() {
     if (meta) meta.textContent = (data.engine ? "OCR: " + data.engine : "");
     const labs = parseLabs(text);
     renderLabTable(labs);
+    ANALYZED_READY = false;
     updateButtons();
-  } catch (e) {
-    showError("OCR грешка при заявката.");
-  } finally {
-    setBusy(false);
-  }
+  } catch (_) { showError("OCR грешка при заявката."); }
+  finally { setBusy(false); }
 }
 
 async function doAnalyze() {
@@ -223,19 +268,18 @@ async function doAnalyze() {
   if (!text.trim()) { showError("Липсва текст за анализ."); return; }
   setBusy(true);
   try {
-    const res = await fetch(API.analyze, { method: "POST", headers: { "Content-Type": "application/json", "X-CSRFToken": getCSRF() }, credentials: "same-origin", body: JSON.stringify({ text }) });
+    lockClassification();
+    const res = await fetch(API.analyze, { method: "POST", headers: { "Content-Type": "application/json", "X-CSRFToken": getCSRF() }, credentials: "same-origin", body: JSON.stringify({ text, ...currentTags() }) });
     const data = await res.json();
     const summary = (data.summary || "").toString();
     if (!summary.trim()) { showError("Празен резултат от анализ."); return; }
     setv(area, summary);
     const labs = parseLabs(summary);
     renderLabTable(labs);
+    ANALYZED_READY = true;
     updateButtons();
-  } catch (e) {
-    showError("Грешка при анализ.");
-  } finally {
-    setBusy(false);
-  }
+  } catch (_) { showError("Грешка при анализ."); }
+  finally { setBusy(false); }
 }
 
 async function doConfirm() {
@@ -245,13 +289,11 @@ async function doConfirm() {
   if (!text.trim()) { showError("Няма данни за запис."); return; }
   setBusy(true);
   try {
-    const res = await fetch(API.confirm, { method: "POST", headers: { "Content-Type": "application/json", "X-CSRFToken": getCSRF() }, credentials: "same-origin", body: JSON.stringify({ text }) });
+    lockClassification();
+    const res = await fetch(API.confirm, { method: "POST", headers: { "Content-Type": "application/json", "X-CSRFToken": getCSRF() }, credentials: "same-origin", body: JSON.stringify({ text, ...currentTags() }) });
     if (!res.ok) throw new Error("confirm_failed");
-  } catch (e) {
-    showError("Грешка при запис.");
-  } finally {
-    setBusy(false);
-  }
+  } catch (_) { showError("Грешка при запис."); }
+  finally { setBusy(false); }
 }
 
 function bindUI() {
@@ -280,7 +322,9 @@ function bindUI() {
   if (bOCR) bOCR.addEventListener("click", (e) => { e.preventDefault(); doOCR(); });
   if (bAna) bAna.addEventListener("click", (e) => { e.preventDefault(); doAnalyze(); });
   if (bCfm) bCfm.addEventListener("click", (e) => { e.preventDefault(); doConfirm(); });
+  ensureLabControls();
   updateDropdownFlow();
+  updateButtons();
 }
 
 document.addEventListener("DOMContentLoaded", bindUI);
