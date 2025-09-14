@@ -5,7 +5,8 @@ function show(x) { if (x) x.classList.remove("hidden"); }
 function hide(x) { if (x) x.classList.add("hidden"); }
 function seth(x, h) { if (x) x.innerHTML = h || ""; }
 function setv(x, v) { if (x) x.value = v || ""; }
-function dis(x, f) { if (!x) return; x.disabled = !!f; }
+function dis(x, f) { if (!x) return; x.disabled = !!f; x.classList.toggle("opacity-50", !!f); x.classList.toggle("cursor-not-allowed", !!f); }
+
 function getCSRF() {
   const t = document.querySelector('input[name="csrfmiddlewaretoken"]');
   if (t && t.value) return t.value;
@@ -79,8 +80,8 @@ function renderPreview() {
   const name = CURRENT_FILE.name || "file";
   const type = (CURRENT_FILE.type || "").toLowerCase();
   const sizeKB = Math.round((CURRENT_FILE.size || 0) / 1024);
-  if (type.startsWith("image/")) { img.src = CURRENT_FILE_URL; show(img); hide(pdf); }
-  else if (type === "application/pdf" || name.toLowerCase().endsWith(".pdf")) { emb.src = CURRENT_FILE_URL; hide(img); show(pdf); }
+  if (type.startsWith("image/")) { if (img) { img.src = CURRENT_FILE_URL; show(img); } hide(pdf); }
+  else if (type === "application/pdf" || name.toLowerCase().endsWith(".pdf")) { if (emb) emb.src = CURRENT_FILE_URL; hide(img); show(pdf); }
   else { hide(img); hide(pdf); }
   show(wrap);
   if (meta) meta.textContent = `${name} • ${sizeKB} KB • ${type || "unknown"}`;
@@ -94,6 +95,95 @@ function handleFileInputChange() {
   CURRENT_FILE_KIND = (kind && kind.value) || "";
   renderPreview();
   updateButtons();
+}
+
+function updateDropdownFlow() {
+  const p = picks();
+  const spc = el("sel_specialty");
+  const doc = el("sel_doc_type");
+  const kind = el("file_kind");
+  const file = el("file_input");
+  const readySpc = !!p.category;
+  const readyDoc = readySpc && !!p.specialty;
+  const readyKind = readyDoc && !!p.docType;
+  const readyFile = readyKind && !!p.fileKind;
+  dis(spc, !readySpc); if (!readySpc) setv(spc, "");
+  dis(doc, !readyDoc); if (!readyDoc) setv(doc, "");
+  dis(kind, !readyKind);
+  if (!readyKind) { setv(kind, ""); CURRENT_FILE_KIND = ""; }
+  dis(file, !readyFile);
+  updateButtons();
+}
+
+async function suggestIfReady() {
+  const wrap = el("existingEventWrap");
+  const select = el("existingEventSelect");
+  const p = picks();
+  if (!(p.category && p.specialty && p.docType && p.fileKind)) { if (wrap) hide(wrap); if (select) seth(select, ""); return; }
+  try {
+    const qs = new URLSearchParams({ category_id: p.category, specialty_id: p.specialty, doc_type_id: p.docType, file_kind: p.fileKind });
+    const res = await fetch(API.suggest + "?" + qs.toString(), { method: "GET", credentials: "same-origin" });
+    if (!res.ok) throw new Error("suggest_failed");
+    const data = await res.json();
+    const items = data.events || [];
+    if (!items.length) { if (wrap) hide(wrap); if (select) seth(select, ""); return; }
+    const opts = ['<option value="">—</option>'].concat(items.map(x => {
+      const vid = x.id != null ? String(x.id) : "";
+      const label = x.title || x.name || x.display_name || vid;
+      return `<option value="${vid}">${label}</option>`;
+    }));
+    if (select) seth(select, opts.join(""));
+    if (wrap) show(wrap);
+  } catch (e) {
+    if (wrap) hide(wrap);
+    if (select) seth(select, "");
+  }
+}
+
+function parseLabs(text) {
+  const lines = (text || "").split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  const items = [];
+  const kvRe = /^([A-Za-zА-Яа-я0-9\.\(\)\/\-\s]+?)\s+([\-+]?\d+(?:[\.,]\d+)?)(?:\s*([A-Za-zμ%\/\.\-\^\d×]+))?$/;
+  const refRe = /^(\d+(?:[\.,]\d+)?)\s*[-–]\s*(\d+(?:[\.,]\d+)?)/;
+  let refBlock = [];
+  for (let i = 0; i < lines.length; i++) { if (/REFERENCE\s*INTERVAL/i.test(lines[i])) { refBlock = lines.slice(i + 1); break; } }
+  for (const ln of lines) {
+    if (/^(tests|result|flag|units|reference|comp\.|panel)/i.test(ln)) continue;
+    const m = ln.match(kvRe);
+    if (!m) continue;
+    const name = m[1].replace(/\s{2,}/g, " ").trim();
+    const val = m[2].replace(",", ".");
+    const unit = (m[3] || "").trim();
+    items.push({ name, value: parseFloat(val), unit: unit || null, ref_low: null, ref_high: null });
+  }
+  if (refBlock.length) {
+    const refs = refBlock.map(s => s.match(refRe)?.slice(1, 3) || null).filter(Boolean);
+    for (let i = 0; i < items.length && i < refs.length; i++) {
+      const [low, high] = refs[i];
+      items[i].ref_low = parseFloat(String(low).replace(",", "."));
+      items[i].ref_high = parseFloat(String(high).replace(",", "."));
+    }
+  }
+  return items;
+}
+
+function renderLabTable(items) {
+  const wrap = el("labWrap");
+  const slot = el("labTableSlot");
+  const sum = el("labSummary");
+  if (!wrap || !slot) return;
+  if (!items || !items.length) { hide(wrap); seth(slot, ""); if (sum) seth(sum, ""); return; }
+  const rows = items.map(x => {
+    const inRef = (x.ref_low != null && x.ref_high != null && typeof x.value === "number") ? (x.value >= x.ref_low && x.value <= x.ref_high) : null;
+    const cls = inRef === false ? ' style="color:#b91c1c;font-weight:600;"' : "";
+    const unit = x.unit ? x.unit : "";
+    const ref = (x.ref_low != null && x.ref_high != null) ? `${x.ref_low} - ${x.ref_high}` : "";
+    return `<tr><td>${x.name}</td><td${cls}>${x.value}</td><td>${unit}</td><td>${ref}</td></tr>`;
+  });
+  const html = `<table class="tbl"><thead><tr><th>Показател</th><th>Стойност</th><th>Ед.</th><th>Реф.</th></tr></thead><tbody>${rows.join("")}</tbody></table>`;
+  seth(slot, html);
+  if (sum) seth(sum, `${items.length} показателя`);
+  show(wrap);
 }
 
 async function doOCR() {
@@ -116,6 +206,8 @@ async function doOCR() {
     setv(area, text);
     const meta = el("workMeta");
     if (meta) meta.textContent = (data.engine ? "OCR: " + data.engine : "");
+    const labs = parseLabs(text);
+    renderLabTable(labs);
     updateButtons();
   } catch (e) {
     showError("OCR грешка при заявката.");
@@ -136,6 +228,8 @@ async function doAnalyze() {
     const summary = (data.summary || "").toString();
     if (!summary.trim()) { showError("Празен резултат от анализ."); return; }
     setv(area, summary);
+    const labs = parseLabs(summary);
+    renderLabTable(labs);
     updateButtons();
   } catch (e) {
     showError("Грешка при анализ.");
@@ -159,3 +253,34 @@ async function doConfirm() {
     setBusy(false);
   }
 }
+
+function bindUI() {
+  const form = el("uploadForm");
+  if (form) {
+    form.setAttribute("action", "#");
+    form.setAttribute("method", "post");
+    form.setAttribute("novalidate", "novalidate");
+    form.addEventListener("submit", (e) => { e.preventDefault(); return false; });
+  }
+  const cat = el("sel_category");
+  const spc = el("sel_specialty");
+  const doc = el("sel_doc_type");
+  const kind = el("file_kind");
+  const fi = el("file_input");
+  const choose = el("chooseFileBtn");
+  if (cat) cat.addEventListener("change", () => { updateDropdownFlow(); suggestIfReady(); clearError(); });
+  if (spc) spc.addEventListener("change", () => { updateDropdownFlow(); suggestIfReady(); clearError(); });
+  if (doc) doc.addEventListener("change", () => { updateDropdownFlow(); suggestIfReady(); clearError(); });
+  if (kind) kind.addEventListener("change", () => { CURRENT_FILE_KIND = kind.value || ""; updateDropdownFlow(); suggestIfReady(); clearError(); });
+  if (choose) choose.addEventListener("click", (e) => { e.preventDefault(); if (fi) fi.click(); });
+  if (fi) fi.addEventListener("change", handleFileInputChange);
+  const bOCR = el("btnOCR");
+  const bAna = el("btnAnalyze");
+  const bCfm = el("btnConfirm");
+  if (bOCR) bOCR.addEventListener("click", (e) => { e.preventDefault(); doOCR(); });
+  if (bAna) bAna.addEventListener("click", (e) => { e.preventDefault(); doAnalyze(); });
+  if (bCfm) bCfm.addEventListener("click", (e) => { e.preventDefault(); doConfirm(); });
+  updateDropdownFlow();
+}
+
+document.addEventListener("DOMContentLoaded", bindUI);

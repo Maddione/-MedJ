@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 set -eu
 
 log(){ printf '[ocrapi] %s\n' "$*"; }
@@ -13,7 +13,6 @@ if [ -n "$CRED_FILE" ] && [ ! -f "$CRED_FILE" ]; then
   log "ERROR: ключов файл не съществува: $CRED_FILE"; ls -la "$(dirname "$CRED_FILE")" || true; exit 1
 fi
 if ! command -v tesseract >/dev/null 2>&1; then log "ERROR: липсва tesseract"; exit 1; fi
-if ! command -v pdftoppm >/dev/null 2>&1; then log "WARN: липсва poppler-utils (PDF OCR може да е ограничен)"; fi
 
 python - <<'PY'
 import os, importlib
@@ -39,5 +38,6 @@ fi
 export FLASK_ENV="${FLASK_ENV:-development}"
 export FLASK_RUN_HOST="${FLASK_RUN_HOST:-0.0.0.0}"
 export FLASK_RUN_PORT="${FLASK_RUN_PORT:-5000}"
+export FLASK_DEBUG=0
 
-exec python -m flask run --host="$FLASK_RUN_HOST" --port="$FLASK_RUN_PORT"
+exec flask run --host="$FLASK_RUN_HOST" --port="$FLASK_RUN_PORT" --no-reload
