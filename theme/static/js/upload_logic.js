@@ -223,18 +223,21 @@ function syncTableToText() {
 function ensureLabControls() {
   const wrap = el("labWrap");
   if (!wrap) return;
+  const cls = "px-4 h-10 rounded-xl text-white bg-primaryDark hover:brightness-105";
   let bar = el("labControls");
   if (!bar) {
     bar = document.createElement("div");
     bar.id = "labControls";
     bar.className = "flex gap-2 mb-2";
     bar.innerHTML = `
-      <button id="btnRefreshTable" class="btn">Обнови таблицата</button>
-      <button id="btnEditTable" class="btn">Редакция на таблицата</button>
-      <button id="btnSyncToText" class="btn">Синхронизирай към текст</button>
-      <button id="btnRevertOCR" class="btn">Върни OCR текста</button>
+      <button id="btnRefreshTable" class="${cls}">Обнови таблицата</button>
+      <button id="btnEditTable" class="${cls}">Редакция на таблицата</button>
+      <button id="btnSyncToText" class="${cls}">Синхронизирай към текст</button>
+      <button id="btnRevertOCR" class="${cls}">Върни OCR текста</button>
     `;
     wrap.insertBefore(bar, wrap.firstChild);
+  } else {
+    ["btnRefreshTable","btnEditTable","btnSyncToText","btnRevertOCR"].forEach(id => { const b = el(id); if (b) b.className = cls; });
   }
   el("btnRefreshTable").onclick = (e) => { e.preventDefault(); refreshTableFromText(); };
   el("btnEditTable").onclick = (e) => { e.preventDefault(); LAB_EDIT_MODE = !LAB_EDIT_MODE; setTableEditable(LAB_EDIT_MODE); e.currentTarget.textContent = LAB_EDIT_MODE ? "Изход от редакция" : "Редакция на таблицата"; };
@@ -255,22 +258,35 @@ async function doOCR() {
     const ct = (res.headers.get("content-type") || "").toLowerCase();
     const data = ct.includes("application/json") ? await res.json() : { error: "invalid_response" };
     if (data.error) { showError("OCR неуспешен: " + (data.detail || data.error)); return; }
-    const text = (data.ocr_text || "").toString();
+    const text = (data.ocr_text || data.text || "").toString();
     if (!text.trim()) { showError("Празен OCR резултат."); return; }
     const area = el("workText");
     area.removeAttribute("disabled");
     setv(area, text);
     ORIGINAL_OCR_TEXT = text;
     const metaEl = ensureMeta();
-    const engine = (data?.telemetry?.engine_chosen) || data.engine || "";
-    const rid = data.rid || data?.telemetry?.rid || "";
-    if (metaEl) metaEl.textContent = engine ? `OCR: ${engine}${rid ? " • " + rid : ""}` : "";
+    let engine = (data.engine || data?.telemetry?.engine_chosen || data?.meta?.engine || data?.engine_chosen || data?.ocr_engine || "");
+    const vAtt = data?.telemetry?.vision_attempted;
+    const tAtt = data?.telemetry?.tesseract_attempted;
+    if (!engine) {
+      if (vAtt === true && tAtt === true) engine = "vision+tesseract";
+      else if (vAtt === true) engine = "vision";
+      else if (tAtt === true) engine = "tesseract";
+    }
+    const rid = (data.rid || data?.telemetry?.rid || data?.request_id || "");
+    let metaTxt = engine ? `OCR: ${engine}` : `OCR`;
+    if (rid) metaTxt += ` • ${rid}`;
+    if (typeof vAtt === "boolean" || typeof tAtt === "boolean") metaTxt += ` • V:${vAtt ? "Y" : "N"} T:${tAtt ? "Y" : "N"}`;
+    if (metaEl) metaEl.textContent = metaTxt;
     const labs = parseLabs(text);
     renderLabTable(labs);
     ANALYZED_READY = false;
     updateButtons();
-  } catch (_) { showError("OCR грешка при заявката."); }
-  finally { setBusy(false); }
+  } catch (_) {
+    showError("OCR грешка при заявката.");
+  } finally {
+    setBusy(false);
+  }
 }
 
 async function doAnalyze() {

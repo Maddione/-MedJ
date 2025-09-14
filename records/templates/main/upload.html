@@ -3,12 +3,13 @@
 {% block title %}{% trans "Качи документ" %}{% endblock %}
 
 {% block app_content %}
+
 <form id="uploadForm" class="w-full max-w-[1600px] mx-auto" enctype="multipart/form-data" aria-busy="false" action="#" method="post" novalidate onsubmit="return false">
   {% csrf_token %}
 
-  <div class="w-full rounded-2xl p-5 mb-6" style="background:#43B8CF;box-shadow:0 10px 14px rgba(10,30,74,.10),inset 0 0 0 1px rgba(10,30,74,.08)">
+  <div class="w-full rounded-2xl p-5 mb-6 bg-primary shadow-lg ring-1 ring-black/5">
     <div class="flex flex-nowrap items-center gap-4 justify-start">
-      <div class="text-2xl font-bold text-white">{% trans "По време на..." %}</div>
+      <div class="text-2xl font-bold text-primaryDark">{% trans "По време на..." %}</div>
 
       <select id="sel_category" class="h-11 rounded-xl px-3 border border-gray-300 bg-white min-w-[14rem] disabled:opacity-50 disabled:cursor-not-allowed">
         <option value="">{% trans "Изберете категория" %}</option>
@@ -17,7 +18,7 @@
         {% endfor %}
       </select>
 
-      <div class="text-2xl font-bold text白">{% trans "при" %}</div>
+      <div class="text-2xl font-bold text-primaryDark">{% trans "при" %}</div>
 
       <select id="sel_specialty" class="h-11 rounded-xl px-3 border border-gray-300 bg-white min-w-[14rem] disabled:opacity-50 disabled:cursor-not-allowed" disabled>
         <option value="">{% trans "Изберете специалност" %}</option>
@@ -26,7 +27,7 @@
         {% endfor %}
       </select>
 
-      <div class="text-2xl font-bold text-white">{% trans ", назначено за" %}</div>
+      <div class="text-2xl font-bold text-primaryDark">{% trans ", назначено за" %}</div>
 
       <select id="sel_doc_type" class="h-11 rounded-xl px-3 border border-gray-300 bg-white min-w-[16rem] disabled:opacity-50 disabled:cursor-not-allowed" disabled>
         <option value="">{% trans "Изберете вид документ" %}</option>
@@ -48,15 +49,15 @@
     </div>
   </div>
 
-  <div class="rounded-2xl p-6" style="background:#FFFFF5;box-shadow:0 10px 14px rgba(10,30,74,.10),inset 0 0 0 1px rgba(10,30,74,.08)">
-    <div id="errorBox" class="hidden mb-4 rounded-2xl p-4" style="background:#FFE8E7;border:1px solid #FFB7B3;color:#C0392B"></div>
+  <div class="rounded-2xl p-8" style="background:#FFFFF5;box-shadow:0 10px 14px rgba(10,30,74,.10),inset 0 0 0 1px rgba(10,30,74,.08)">
+    <div id="errorBox" class="hidden mb-4 rounded-2xl p-4 bg-white border border-danger text-danger"></div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div>
         <div class="mb-3 flex items-center gap-3">
           <input id="file_input" type="file" class="sr-only" autocomplete="off">
-          <button id="chooseFileBtn" type="button" class="px-5 h-12 rounded-xl text-white" style="background:#0A4E75">{% trans "Избери файл за качване" %}</button>
-          <div id="fileNameBadge" class="px-4 h-11 rounded-full bg-[#E6F0F4] text-[#0A1E4A] font-semibold hidden flex items-center"></div>
+          <button id="chooseFileBtn" type="button" class="btn px-5 h-12 rounded-xl text-white bg-primaryDark hover:brightness-105 aria-[disabled=true]:pointer-events-none aria-[disabled=true]:opacity-50" aria-disabled="true">{% trans "Избери файл за качване" %}</button>
+          <div id="fileNameBadge" class="px-4 h-11 rounded-full bg-sitebg text-primaryDark font-semibold hidden flex items-center"></div>
         </div>
 
         <div id="previewBlock" class="rounded-xl overflow-hidden border border-gray-200 hidden">
@@ -66,35 +67,38 @@
           </div>
         </div>
 
-        <div id="fileMeta" class="text-xs text-[#0A1E4A] opacity-70 mt-2 hidden"></div>
+        <div id="fileMeta" class="text-xs text-primaryDark/70 mt-2 hidden"></div>
       </div>
 
       <div>
         <div class="mb-3">
-          <div class="text-sm text-[#0A1E4A] font-semibold mb-2">
+          <div class="text-sm text-primaryDark font-semibold mb-2">
             <span id="workLabel">{% trans "OCR Текст" %}</span>
-            <span id="workMeta" class="text-xs opacity-60 ml-2"></span>
+            <span id="workMeta" class="ml-2 inline-flex items-center px-2 py-0.5 rounded border border-primary text-xs text-primaryDark" aria-live="polite"></span>
           </div>
           <textarea id="workText" class="w-full h-72 rounded-xl px-4 py-3 border border-gray-300" placeholder="{% trans 'Тук ще се визуализира OCR или Анализ в зависимост от етапа.' %}" disabled></textarea>
         </div>
 
         <div id="labWrap" class="hidden">
-          <div class="text-sm text-[#0A1E4A] font-semibold mb-2">{% trans "Извлечени лабораторни резултати" %} <span id="labSummary" class="text-xs opacity-60 ml-2"></span></div>
+          <div class="text-sm text-primaryDark font-semibold mb-2">
+            {% trans "Извлечени лабораторни резултати" %}
+            <span id="labSummary" class="text-xs text-primaryDark/60 ml-2"></span>
+          </div>
           <div id="labTableSlot"></div>
         </div>
 
         <div class="mt-5 flex gap-3 items-center">
-          <button id="btnOCR" type="button" class="px-6 h-12 rounded-xl text-white disabled:opacity-50 hidden" style="background:#0A4E75">{% trans "Изпрати за OCR" %}</button>
-          <button id="btnAnalyze" type="button" class="px-6 h-12 rounded-xl text-white disabled:opacity-50 hidden" style="background:#43B8CF">{% trans "Анализ" %}</button>
-          <button id="btnConfirm" type="button" class="px-6 h-12 rounded-xl text-white disabled:opacity-50 hidden" style="background:#15BC11">{% trans "Запази" %}</button>
+          <button id="btnOCR" type="button" class="px-6 h-12 rounded-xl text-white bg-primaryDark hover:brightness-105 hidden">{% trans "Изпрати за OCR" %}</button>
+          <button id="btnAnalyze" type="button" class="px-6 h-12 rounded-xl text-white bg-primary hover:brightness-105 hidden">{% trans "Анализ" %}</button>
+          <button id="btnConfirm" type="button" class="px-6 h-12 rounded-xl text-white bg-success hover:brightness-105 hidden">{% trans "Запази" %}</button>
         </div>
       </div>
     </div>
   </div>
 </form>
 
-<div id="loadingOverlay" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.45)">
-  <div class="rounded-2xl px-6 py-5 text-white text-lg font-semibold" style="background:#0A4E75;box-shadow:0 10px 14px rgba(10,30,74,.25)">
+<div id="loadingOverlay" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/45">
+  <div class="rounded-2xl px-6 py-5 text-white text-lg font-semibold bg-primaryDark shadow-2xl">
     {% trans "Работи се... Моля изчакайте" %}
   </div>
 </div>
@@ -102,5 +106,5 @@
 
 {% block scripts_extra %}
 {{ block.super }}
-<script src="{% static 'js/upload_logic.js' %}?v={% now "U" %}"></script>
+<script src="{% static 'js/upload_logic.js' %}?v={{ now|date:"U" }}"></script>
 {% endblock %}
