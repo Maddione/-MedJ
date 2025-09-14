@@ -18,29 +18,18 @@ cd .\-MedJ
 
 ### 2) Env и Secrets
 
-Създайте локални `.env` и ключове
-
 **Windows PowerShell**
 
 ```powershell
-New-Item -ItemType Directory -Force .\docker\env | Out-Null
-Copy-Item .\docker\env\web.dev.env.example .\docker\env\web.dev.env
-Copy-Item .\docker\env\ocr.dev.env.example .\docker\env\ocr.dev.env
-
 New-Item -ItemType Directory -Force .\secrets | Out-Null
-ni .\secrets\django-key.txt,.\secrets\openai-key.txt,.\secrets\ocr-key-vision.json,.\secrets\googleocr-key.txt -ItemType File -Force | Out-Null
+ni .\secrets\django-key.txt,.\secrets\openai-key.txt,.\secrets\gcp-vision.json -ItemType File -Force | Out-Null
 ```
 
 **macOS/Linux**
 
 ```bash
 mkdir -p docker/env secrets
-cp docker/env/web.dev.env.example docker/env/web.dev.env
-cp docker/env/ocr.dev.env.example docker/env/ocr.dev.env
-:> secrets/django-key.txt
-:> secrets/openai-key.txt
-:> secrets/ocr-key-vision.json
-:> secrets/googleocr-key.txt
+touch secrets/django-key.txt secrets/openai-key.txt secrets/gcp-vision.json
 ```
 
 Попълнете реални стойности в `secrets/`. Примерните env ключове са в `docker/env/*.env.example`.
