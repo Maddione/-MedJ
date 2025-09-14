@@ -105,8 +105,6 @@ function updateUI(){
 
   const readyForFile = readyForKind && p.fileKind;
   dis(file, !readyForFile);
-  // НИКОГА не нулирай file, ако вече има файл. Това предотвратява повторно отваряне на диалога.
-  // if (!readyForFile) setv(file,"");  // премахнато
 
   const hasFile = readyForFile && p.file;
   if (bOCR) dis(bOCR, !hasFile);
@@ -129,16 +127,15 @@ async function suggestIfReady(){
     if (wrap) hide(wrap); if (select) seth(select,""); return;
   }
   try{
-    const res = await fetch(API.suggest, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json", "X-CSRFToken": getCSRF() },
-      credentials:"same-origin",
-      body: JSON.stringify({
-        category_id: p.category,
-        specialty_id: p.specialty,
-        doc_type_id: p.docType,
-        file_kind: p.fileKind
-      })
+    const qs = new URLSearchParams({
+      category_id: p.category,
+      specialty_id: p.specialty,
+      doc_type_id: p.docType,
+      file_kind: p.fileKind
+    });
+    const res = await fetch(API.suggest + "?" + qs.toString(), {
+      method:"GET",
+      credentials:"same-origin"
     });
     if (!res.ok) throw new Error("suggest_failed");
     const data = await res.json();
@@ -272,7 +269,7 @@ function bindUI(){
 
   if (bOCR){ bOCR.addEventListener("click", (e)=>{ e.preventDefault(); doOCR(); }); }
   if (bAna){ bAna.addEventListener("click", (e)=>{ e.preventDefault(); doAnalyze(); }); }
-  if (bCfm){ bCfm.addEventListener("click", (e)=>{ e.preventDefault(); /* doConfirm(); */ }); }
+  if (bCfm){ bCfm.addEventListener("click", (e)=>{ e.preventDefault(); }); }
 
   updateUI();
   suggestIfReady();

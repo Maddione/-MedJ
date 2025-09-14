@@ -213,12 +213,17 @@ def upload_confirm(request):
 @login_required
 @require_http_methods(["GET"])
 def upload_preview(request):
-    return render(request, "main/upload.html", {})
+    ctx = {
+        "categories": MedicalCategory.objects.order_by("id"),
+        "specialties": MedicalSpecialty.objects.order_by("id"),
+        "doc_types": DocumentType.objects.order_by("id"),
+    }
+    return render(request, "main/upload.html", ctx)
 
 @login_required
 @require_http_methods(["GET"])
 def upload_history(request):
-    return render(request, "main/upload_history.html")
+    return render(request, "main/upload_history.html", {})
 
 @login_required
 @require_http_methods(["GET"])
