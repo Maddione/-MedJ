@@ -6,4 +6,4 @@ WORKDIR /app
 COPY ocrapi/requirements-ocr.txt /app/requirements-ocr.txt
 RUN pip install --no-cache-dir -r /app/requirements-ocr.txt
 COPY ocrapi/ /app/
-ENTRYPOINT ["/app/entrypoint.dev.sh"]
+ENTRYPOINT ["/usr/local/bin/ocrapi-entrypoint"]
