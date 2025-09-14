@@ -6,10 +6,10 @@ import base64
 from PIL import Image
 from google.cloud import vision
 from google.oauth2 import service_account
-from normalizer import normalize_ocr_text
+from .normalizer import normalize_ocr_text
 
 try:
-    from anonymizer import anonymize_text
+    from .anonymizer import anonymize_text
 except Exception:
     def anonymize_text(x: str) -> str:
         return x
@@ -98,7 +98,7 @@ def ocr():
         if not blob:
             return jsonify(error="no_file"), 400
         client = build_client()
-        csv_path = os.environ.get("LAB_DB_CSV", "/app/data/labtests-database.csv")
+        csv_path = os.path.join("/app", "data", "labtests-database.csv")
         if kind == "pdf":
             try:
                 txt = extract_text_from_pdf_bytes(blob, client).strip()
