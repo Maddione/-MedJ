@@ -3,3 +3,4 @@ pillow
 google-cloud-vision
 pytesseract
 opencv-python-headless
+pdf2image
