@@ -1,96 +1,133 @@
 from flask import Flask, request, jsonify
-import os, base64, io, json
+import os
+import io
+import json
+import base64
 from PIL import Image
 from google.cloud import vision
 from google.oauth2 import service_account
 
+try:
+    from anonymizer import anonymize_text
+except Exception:
+    def anonymize_text(x: str) -> str:
+        return x
+
+try:
+    from vision_handler import build_client, extract_text_from_image_bytes, extract_text_from_pdf_bytes
+except Exception:
+    def build_client() -> vision.ImageAnnotatorClient | None:
+        creds_path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+        creds_json = os.environ.get("GOOGLE_CLOUD_VISION_KEY")
+        if creds_json:
+            try:
+                info = json.loads(creds_json)
+                creds = service_account.Credentials.from_service_account_info(info)
+                return vision.ImageAnnotatorClient(credentials=creds)
+            except Exception:
+                pass
+        if creds_path and os.path.exists(creds_path):
+            try:
+                creds = service_account.Credentials.from_service_account_file(creds_path)
+                return vision.ImageAnnotatorClient(credentials=creds)
+            except Exception:
+                pass
+        try:
+            return vision.ImageAnnotatorClient()
+        except Exception:
+            return None
+
+    def extract_text_from_image_bytes(b: bytes, client: vision.ImageAnnotatorClient | None) -> str:
+        if client:
+            try:
+                img = vision.Image(content=b)
+                r = client.document_text_detection(image=img)
+                if getattr(r, "error", None) and getattr(r.error, "message", ""):
+                    raise RuntimeError(r.error.message)
+                if getattr(r, "full_text_annotation", None) and getattr(r.full_text_annotation, "text", None):
+                    return anonymize_text(r.full_text_annotation.text or "")
+                if getattr(r, "text_annotations", None):
+                    t = r.text_annotations[0].description if r.text_annotations else ""
+                    return anonymize_text(t or "")
+            except Exception:
+                pass
+        try:
+            import pytesseract
+            im = Image.open(io.BytesIO(b))
+            return anonymize_text(pytesseract.image_to_string(im) or "")
+        except Exception:
+            raise
+
+    def extract_text_from_pdf_bytes(b: bytes, client: vision.ImageAnnotatorClient | None) -> str:
+        try:
+            from pdf2image import convert_from_bytes
+            pages = convert_from_bytes(b, dpi=300, fmt="png")
+            out = []
+            for p in pages:
+                buf = io.BytesIO()
+                p.save(buf, format="PNG")
+                out.append(extract_text_from_image_bytes(buf.getvalue(), client))
+            return anonymize_text("\n".join([x for x in out if x]))
+        except Exception:
+            raise
+
 app = Flask(__name__)
 
-
-def _vision_client() -> vision.ImageAnnotatorClient | None:
-    """Create a Vision client using available credentials.
-
-    Looks for a path in ``GOOGLE_APPLICATION_CREDENTIALS`` or a JSON string
-    in ``GOOGLE_CLOUD_VISION_KEY``. If neither works, fall back to the
-    default credentials chain.
-    """
-
-    creds_path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
-    creds_json = os.environ.get("GOOGLE_CLOUD_VISION_KEY")
-
-    for candidate in (creds_path, creds_json):
-        if not candidate:
-            continue
+def _decode_payload_file(req) -> tuple[bytes, str]:
+    f = req.files.get("file")
+    b64 = req.form.get("image_base64") or req.json.get("image_base64") if req.is_json else None
+    kind = (req.form.get("file_kind") or req.json.get("file_kind") if req.is_json else None or "").lower()
+    if f:
+        data = f.read()
+        name = f.filename or ""
+        if name.lower().endswith(".pdf"):
+            return data, "pdf"
+        return data, kind or "image"
+    if b64:
         try:
-            if os.path.exists(candidate):
-                creds = service_account.Credentials.from_service_account_file(candidate)
-            else:
-                creds = service_account.Credentials.from_service_account_info(json.loads(candidate))
-            return vision.ImageAnnotatorClient(credentials=creds)
+            data = base64.b64decode(b64)
+            return data, kind or "image"
         except Exception:
-            continue
-
-    try:
-        return vision.ImageAnnotatorClient()
-    except Exception:
-        return None
-
-
-VISION_CLIENT = _vision_client()
-
-
-def _vision(image_bytes: bytes) -> str:
-    if not VISION_CLIENT:
-        raise RuntimeError("vision client not configured")
-
-    image = vision.Image(content=image_bytes)
-    resp = VISION_CLIENT.document_text_detection(image=image)
-    if resp.error.message:
-        raise RuntimeError(resp.error.message)
-    if getattr(resp, "full_text_annotation", None) and getattr(resp.full_text_annotation, "text", ""):
-        return resp.full_text_annotation.text or ""
-    arr = getattr(resp, "text_annotations", None)
-    if arr and len(arr) > 0 and getattr(arr[0], "description", ""):
-        return arr[0].description or ""
-    return ""
-
-def _tesseract(image_bytes):
-    import pytesseract, cv2, numpy as np
-    arr = np.frombuffer(image_bytes, dtype=np.uint8)
-    img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
-    if img is None:
-        with Image.open(io.BytesIO(image_bytes)) as im:
-            im = im.convert("RGB")
-            buf = io.BytesIO()
-            im.save(buf, format="PNG")
-            arr = np.frombuffer(buf.getvalue(), dtype=np.uint8)
-            img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    return pytesseract.image_to_string(gray) or ""
-
-def healthz() -> tuple[dict, int]:
-    """Lightweight readiness probe for the OCR service."""
-    return jsonify(status="ok"), 200
+            return b"", ""
+    return b"", ""
 
 @app.post("/ocr")
 def ocr():
-    if "file" in request.files:
-        image_bytes = request.files["file"].read()
-    else:
-        data = request.get_json(silent=True) or {}
-        b64 = data.get("image_base64", "")
-        if not b64:
-            return jsonify(error="no file or image_base64"), 400
-        image_bytes = base64.b64decode(b64)
-    try:
-        txt = _vision(image_bytes)
-        if txt.strip():
+    blob, kind = _decode_payload_file(request)
+    if not blob:
+        return jsonify(error="no_file"), 400
+    client = build_client()
+    if kind == "pdf":
+        try:
+            txt = extract_text_from_pdf_bytes(blob, client)
+            if not txt or not txt.strip():
+                raise RuntimeError("empty")
             return jsonify(engine="vision", ocr_text=txt.strip()), 200
-        raise RuntimeError("empty")
+        except Exception as e:
+            try:
+                from pdf2image import convert_from_bytes
+                import pytesseract
+                pages = convert_from_bytes(blob, dpi=300, fmt="png")
+                out = []
+                for p in pages:
+                    buf = io.BytesIO()
+                    p.save(buf, format="PNG")
+                    out.append(pytesseract.image_to_string(Image.open(io.BytesIO(buf.getvalue()))))
+                txt = "\n".join([x for x in out if x]).strip()
+                if not txt:
+                    raise RuntimeError("empty")
+                return jsonify(engine="tesseract", ocr_text=anonymize_text(txt)), 200
+            except Exception as ex:
+                return jsonify(error="ocr_failed", detail=str(ex)), 500
+    try:
+        txt = extract_text_from_image_bytes(blob, client)
+        if not txt or not txt.strip():
+            raise RuntimeError("empty")
+        return jsonify(engine="vision", ocr_text=txt.strip()), 200
     except Exception:
         try:
-            txt = _tesseract(image_bytes)
-            return jsonify(engine="tesseract", ocr_text=(txt or "").strip()), 200
+            import pytesseract
+            txt = pytesseract.image_to_string(Image.open(io.BytesIO(blob))) or ""
+            return jsonify(engine="tesseract", ocr_text=anonymize_text(txt.strip())), 200
         except Exception as e:
             return jsonify(error="ocr_failed", detail=str(e)), 500
-

@@ -1,68 +1,64 @@
 import os
 import io
 import json
-
+from PIL import Image
 from google.cloud import vision
 from google.oauth2 import service_account
 
 try:
-    from .anonymizer import anonymize_text
-except Exception:  # pragma: no cover
-    def anonymize_text(text: str) -> str:
-        return text
+    from anonymizer import anonymize_text
+except Exception:
+    def anonymize_text(x: str) -> str:
+        return x
 
-GOOGLE_CLOUD_VISION_KEY = os.environ.get("GOOGLE_CLOUD_VISION_KEY")
-GOOGLE_APPLICATION_CREDENTIALS = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
-
-VISION_CLIENT = None
-
-
-def _init_vision_client():
-    """Lazily construct the Vision API client if credentials are configured."""
-    global VISION_CLIENT
-    if VISION_CLIENT is not None:
-        return VISION_CLIENT
-
-    creds_source = GOOGLE_CLOUD_VISION_KEY or GOOGLE_APPLICATION_CREDENTIALS
-    if not creds_source:
-        return None
-
-    try:
-        if os.path.exists(creds_source):
-            credentials = service_account.Credentials.from_service_account_file(creds_source)
-        else:
-            credentials = service_account.Credentials.from_service_account_info(json.loads(creds_source))
-        VISION_CLIENT = vision.ImageAnnotatorClient(credentials=credentials)
-    except Exception:
-        VISION_CLIENT = None
-    return VISION_CLIENT
-
-
-
-def extract_text_from_image(image_path: str) -> str:
-    if not os.path.exists(image_path):
-        raise FileNotFoundError(f"Image file not found at {image_path}")
-
-    client = _init_vision_client()
-    if client:
+def build_client() -> vision.ImageAnnotatorClient | None:
+    p = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+    j = os.environ.get("GOOGLE_CLOUD_VISION_KEY")
+    if j:
         try:
-            with io.open(image_path, "rb") as image_file:
-                content = image_file.read()
-            image = vision.Image(content=content)
-            response = client.document_text_detection(image=image)
-
-            full_text = ""
-            if getattr(response, "full_text_annotation", None) and getattr(response.full_text_annotation, "text", None):
-                full_text = response.full_text_annotation.text or ""
-            elif getattr(response, "text_annotations", None):
-                full_text = (response.text_annotations[0].description or "") if response.text_annotations else ""
-
-            return anonymize_text(full_text)
+            info = json.loads(j)
+            creds = service_account.Credentials.from_service_account_info(info)
+            return vision.ImageAnnotatorClient(credentials=creds)
         except Exception:
             pass
+    if p and os.path.exists(p):
+        try:
+            creds = service_account.Credentials.from_service_account_file(p)
+            return vision.ImageAnnotatorClient(credentials=creds)
+        except Exception:
+            pass
+    try:
+        return vision.ImageAnnotatorClient()
+    except Exception:
+        return None
 
-    raise RuntimeError("Нито един конфигуриран OCR метод не успя да извлече текст от изображението.")
+def extract_text_from_image_bytes(b: bytes, client: vision.ImageAnnotatorClient | None) -> str:
+    if client:
+        try:
+            img = vision.Image(content=b)
+            r = client.document_text_detection(image=img)
+            if getattr(r, "error", None) and getattr(r.error, "message", ""):
+                raise RuntimeError(r.error.message)
+            if getattr(r, "full_text_annotation", None) and getattr(r.full_text_annotation, "text", None):
+                return anonymize_text(r.full_text_annotation.text or "")
+            if getattr(r, "text_annotations", None):
+                t = r.text_annotations[0].description if r.text_annotations else ""
+                return anonymize_text(t or "")
+        except Exception:
+            pass
+    try:
+        import pytesseract
+        im = Image.open(io.BytesIO(b))
+        return anonymize_text(pytesseract.image_to_string(im) or "")
+    except Exception:
+        raise
 
-
-def perform_ocr_space(file_path: str) -> str:
-    return extract_text_from_image(file_path)
+def extract_text_from_pdf_bytes(b: bytes, client: vision.ImageAnnotatorClient | None) -> str:
+    from pdf2image import convert_from_bytes
+    pages = convert_from_bytes(b, dpi=300, fmt="png")
+    out = []
+    for p in pages:
+        buf = io.BytesIO()
+        p.save(buf, format="PNG")
+        out.append(extract_text_from_image_bytes(buf.getvalue(), client))
+    return anonymize_text("\n".join([x for x in out if x]))

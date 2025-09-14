@@ -14,6 +14,24 @@ from .models import (
 
 User = get_user_model()
 
+SEX_CHOICES = (
+    ("female", _("Жена")),
+    ("male", _("Мъж")),
+    ("other", _("Друго")),
+    ("unknown", _("Неизвестен")),
+)
+
+BLOOD_CHOICES = (
+    ("O-", "O−"),
+    ("O+", "O+"),
+    ("A-", "A−"),
+    ("A+", "A+"),
+    ("B-", "B−"),
+    ("B+", "B+"),
+    ("AB-", "AB−"),
+    ("AB+", "AB+"),
+)
+
 
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(label=_("Имейл"))
@@ -29,6 +47,9 @@ class LoginForm(AuthenticationForm):
 
 
 class PatientProfileForm(forms.ModelForm):
+    sex = forms.ChoiceField(choices=SEX_CHOICES, required=False, widget=forms.Select, label=_("Пол"))
+    blood_type = forms.ChoiceField(choices=BLOOD_CHOICES, required=False, widget=forms.Select, label=_("Кръвна група"))
+
     class Meta:
         model = PatientProfile
         fields = [
@@ -39,6 +60,10 @@ class PatientProfileForm(forms.ModelForm):
             "middle_name_en",
             "last_name_en",
             "date_of_birth",
+            "sex",
+            "blood_type",
+            "height_cm",
+            "weight_kg",
             "phone",
             "address",
         ]
@@ -53,6 +78,8 @@ class PatientProfileForm(forms.ModelForm):
             "middle_name_en": _("Middle name (EN)"),
             "last_name_en": _("Last name (EN)"),
             "date_of_birth": _("Дата на раждане"),
+            "height_cm": _("Височина (см)"),
+            "weight_kg": _("Тегло (кг)"),
             "phone": _("Телефон"),
             "address": _("Адрес"),
         }

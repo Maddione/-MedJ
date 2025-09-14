@@ -214,7 +214,7 @@ async function doAnalyze(){
     });
     if (!res.ok) throw new Error("analyze_failed");
     const data = await res.json();
-    const summary = (data && (data.summary || (data.data && data.data.summary) || (data.result && data.result.summary) || "")) || "";
+    const summary = (data && (data.summary || (data.data && data.data.summary) || (data.result and data.result.summary) || "")) || "";
     if (!summary.trim()) throw new Error("empty_summary");
     if (sumOut){ sumOut.removeAttribute("disabled"); setv(sumOut, summary); }
     const meta = el("analysisMeta");
