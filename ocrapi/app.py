@@ -50,15 +50,13 @@ def _preprocess_image_bytes(b: bytes) -> bytes:
     buf = io.BytesIO(); im.save(buf, format="PNG")
     return buf.getvalue()
 
-def _vision_image(b, client):
-    if not client: return ""
+def _vision_once(payload: bytes, client):
     try:
-        pb = _preprocess_image_bytes(b)
-        img = vision.Image(content=pb)
+        img = vision.Image(content=payload)
         ctx = vision.ImageContext(language_hints=_lang_hints())
         r = client.document_text_detection(image=img, image_context=ctx)
         if getattr(r, "error", None) and getattr(r.error, "message", ""):
-            raise RuntimeError(r.error.message)
+            return ""
         fta = getattr(r, "full_text_annotation", None)
         if fta and getattr(fta, "text", None):
             return anonymize_text((fta.text or "").strip())
@@ -66,16 +64,28 @@ def _vision_image(b, client):
         if tas:
             return anonymize_text((tas[0].description or "").strip())
     except Exception:
-        pass
+        return ""
     return ""
 
-def _tess_image(b):
+def _vision_image(b, client):
+    if not client: return ""
+    txt = _vision_once(_preprocess_image_bytes(b), client)
+    if not txt:
+        txt = _vision_once(b, client)
+    return txt
+
+def _tess_once(payload: bytes, cfg: str):
     import pytesseract
-    pb = _preprocess_image_bytes(b)
-    im = Image.open(io.BytesIO(pb))
+    im = Image.open(io.BytesIO(payload))
+    t = pytesseract.image_to_string(im, lang=_tess_langs(), config=cfg) or ""
+    return anonymize_text(t.strip())
+
+def _tess_image(b):
     cfg = "--psm 6 -c preserve_interword_spaces=1"
-    txt = pytesseract.image_to_string(im, lang=_tess_langs(), config=cfg) or ""
-    return anonymize_text(txt.strip())
+    txt = _tess_once(_preprocess_image_bytes(b), cfg)
+    if not txt:
+        txt = _tess_once(b, cfg)
+    return txt
 
 def _image_ocr(b, client):
     txt = _vision_image(b, client)
@@ -128,19 +138,22 @@ def ocr():
             return jsonify(error="no_file"), 200
         client = build_client()
         csv_path = os.environ.get("LAB_DB_CSV", "/app/data/labtests-database.csv")
+
         if kind == "pdf":
             raw = _pdf_ocr(blob, client)
             if not raw:
                 return jsonify(error="empty_ocr"), 200
-            txt = normalize_ocr_text(raw, csv_path)
+            txt = normalize_ocr_text(raw, csv_path) or raw
             u, i = _metrics(txt, csv_path)
             return jsonify(engine="vision+tesseract", ocr_text=txt, units_found=u, indicators_found=i), 200
+
         raw = _image_ocr(blob, client)
         if not raw:
             return jsonify(error="empty_ocr"), 200
-        txt = normalize_ocr_text(raw, csv_path)
+        txt = normalize_ocr_text(raw, csv_path) or raw
         u, i = _metrics(txt, csv_path)
         eng = "vision" if client else "tesseract"
         return jsonify(engine=eng, ocr_text=txt, units_found=u, indicators_found=i), 200
+
     except Exception as ex:
         return jsonify(error="ocr_unhandled", detail=str(ex)), 200
