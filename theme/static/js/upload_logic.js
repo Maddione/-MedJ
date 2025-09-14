@@ -8,13 +8,16 @@ function setv(x, v) { if (x) x.value = v || ""; }
 function dis(x, f) { if (!x) return; x.disabled = !!f; x.classList.toggle("opacity-50", !!f); x.classList.toggle("cursor-not-allowed", !!f); }
 function getCSRF() { const t = document.querySelector('input[name="csrfmiddlewaretoken"]'); if (t && t.value) return t.value; const m = document.cookie.match(/(?:^|;)\s*csrftoken=([^;]+)/); return m ? decodeURIComponent(m[1]) : ""; }
 function ensureMeta() { let m = el("workMeta"); if (!m) { const ta = el("workText"); if (ta && ta.parentElement) { m = document.createElement("div"); m.id = "workMeta"; m.className = "text-xs text-gray-500 mt-1"; ta.parentElement.insertBefore(m, ta); } } return m; }
+function ensureUXStyles() { if (document.getElementById("uxUploadInject")) return; const s = document.createElement("style"); s.id = "uxUploadInject"; s.textContent = `.btn[aria-disabled="true"]{opacity:.5;cursor:not-allowed;pointer-events:none}.btn.btn-armed:hover{filter:brightness(1.05)}`; document.head.appendChild(s); }
 
 let CURRENT_FILE = null;
 let CURRENT_FILE_KIND = "";
 let CURRENT_FILE_URL = null;
+let ORIGINAL_OCR_TEXT = "";
 let LAB_EDIT_MODE = false;
 let CLASS_LOCK = false;
 let DOC_LOCK = false;
+let FILE_KIND_LOCK = false;
 let ANALYZED_READY = false;
 
 function picks() {
@@ -65,6 +68,8 @@ function handleFileInputChange() {
   const kind = el("file_kind");
   CURRENT_FILE = fi && fi.files ? fi.files[0] : null;
   CURRENT_FILE_KIND = (kind && kind.value) || "";
+  FILE_KIND_LOCK = true;
+  dis(kind, true);
   ANALYZED_READY = false;
   renderPreview();
   lockDocType();
@@ -79,7 +84,8 @@ function updateDropdownFlow() {
   const doc = el("sel_doc_type");
   const kind = el("file_kind");
   const file = el("file_input");
-  if (CLASS_LOCK) { dis(cat, true); dis(spc, true); dis(doc, true); dis(kind, true); dis(file, false); updateButtons(); return; }
+  const choose = el("chooseFileBtn");
+  if (CLASS_LOCK) { dis(cat, true); dis(spc, true); dis(doc, true); dis(kind, true); dis(file, false); if (choose) { choose.setAttribute("aria-disabled","true"); choose.classList.remove("btn-armed"); } updateButtons(); return; }
   const readySpc = !!p.category;
   const readyDoc = readySpc && !!p.specialty;
   const readyKind = readyDoc && !!p.docType;
@@ -87,8 +93,9 @@ function updateDropdownFlow() {
   dis(cat, false);
   dis(spc, !readySpc); if (!readySpc) setv(spc, "");
   dis(doc, !readyDoc || DOC_LOCK); if (!readyDoc && !DOC_LOCK) setv(doc, "");
-  dis(kind, !readyKind); if (!readyKind) { setv(kind, ""); CURRENT_FILE_KIND = ""; }
+  if (FILE_KIND_LOCK) dis(kind, true); else { dis(kind, !readyKind); if (!readyKind) { setv(kind, ""); CURRENT_FILE_KIND = ""; } }
   dis(file, !readyFile);
+  if (choose) { if (readyFile) { choose.removeAttribute("aria-disabled"); choose.classList.add("btn-armed"); } else { choose.setAttribute("aria-disabled","true"); choose.classList.remove("btn-armed"); } }
   updateButtons();
 }
 
@@ -142,8 +149,7 @@ function renderLabTable(items) {
   const slot = el("labTableSlot");
   const sum = el("labSummary");
   if (!wrap || !slot) return;
-  if (!items || !items.length) { hide(wrap); seth(slot, ""); if (sum) seth(sum, ""); return; }
-  const rows = items.map(x => {
+  const rows = (items || []).map(x => {
     const inRef = (x.ref_low != null && x.ref_high != null && typeof x.value === "number") ? (x.value >= x.ref_low && x.value <= x.ref_high) : null;
     const cls = inRef === false ? ' style="color:#b91c1c;font-weight:600;"' : "";
     const unit = x.unit ? x.unit : "";
@@ -151,8 +157,8 @@ function renderLabTable(items) {
     return `<tr><td>${x.name}</td><td${cls}>${x.value}</td><td>${unit}</td><td>${ref}</td></tr>`;
   });
   const html = `<table class="tbl"><thead><tr><th>Показател</th><th>Стойност</th><th>Ед.</th><th>Реф.</th></tr></thead><tbody>${rows.join("")}</tbody></table>`;
-  seth(slot, html);
-  if (sum) seth(sum, `${items.length} показателя`);
+  seth(slot, rows.length ? html : "");
+  if (sum) seth(sum, rows.length ? `${rows.length} показателя` : "");
   show(wrap);
   setTableEditable(LAB_EDIT_MODE);
 }
@@ -226,12 +232,14 @@ function ensureLabControls() {
       <button id="btnRefreshTable" class="btn">Обнови таблицата</button>
       <button id="btnEditTable" class="btn">Редакция на таблицата</button>
       <button id="btnSyncToText" class="btn">Синхронизирай към текст</button>
+      <button id="btnRevertOCR" class="btn">Върни OCR текста</button>
     `;
     wrap.insertBefore(bar, wrap.firstChild);
   }
   el("btnRefreshTable").onclick = (e) => { e.preventDefault(); refreshTableFromText(); };
   el("btnEditTable").onclick = (e) => { e.preventDefault(); LAB_EDIT_MODE = !LAB_EDIT_MODE; setTableEditable(LAB_EDIT_MODE); e.currentTarget.textContent = LAB_EDIT_MODE ? "Изход от редакция" : "Редакция на таблицата"; };
   el("btnSyncToText").onclick = (e) => { e.preventDefault(); syncTableToText(); };
+  el("btnRevertOCR").onclick = (e) => { e.preventDefault(); if (!ORIGINAL_OCR_TEXT) return; const ta = el("workText"); setv(ta, ORIGINAL_OCR_TEXT); renderLabTable(parseLabs(ORIGINAL_OCR_TEXT)); ANALYZED_READY = false; updateButtons(); };
 }
 
 async function doOCR() {
@@ -252,6 +260,7 @@ async function doOCR() {
     const area = el("workText");
     area.removeAttribute("disabled");
     setv(area, text);
+    ORIGINAL_OCR_TEXT = text;
     const metaEl = ensureMeta();
     const engine = (data?.telemetry?.engine_chosen) || data.engine || "";
     const rid = data.rid || data?.telemetry?.rid || "";
@@ -300,6 +309,7 @@ async function doConfirm() {
 }
 
 function bindUI() {
+  ensureUXStyles();
   const form = el("uploadForm");
   if (form) {
     form.setAttribute("action", "#");
@@ -316,8 +326,8 @@ function bindUI() {
   if (cat) cat.addEventListener("change", () => { updateDropdownFlow(); suggestIfReady(); clearError(); });
   if (spc) spc.addEventListener("change", () => { updateDropdownFlow(); suggestIfReady(); clearError(); });
   if (doc) doc.addEventListener("change", () => { updateDropdownFlow(); suggestIfReady(); clearError(); });
-  if (kind) kind.addEventListener("change", () => { CURRENT_FILE_KIND = kind.value || ""; updateDropdownFlow(); suggestIfReady(); clearError(); });
-  if (choose) choose.addEventListener("click", (e) => { e.preventDefault(); if (fi) fi.click(); });
+  if (kind) kind.addEventListener("change", () => { if (!FILE_KIND_LOCK) { CURRENT_FILE_KIND = kind.value || ""; updateDropdownFlow(); suggestIfReady(); clearError(); } });
+  if (choose) choose.addEventListener("click", (e) => { e.preventDefault(); if (choose.getAttribute("aria-disabled")==="true") return; if (fi) fi.click(); });
   if (fi) fi.addEventListener("change", handleFileInputChange);
   const bOCR = el("btnOCR");
   const bAna = el("btnAnalyze");
