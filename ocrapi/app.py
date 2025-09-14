@@ -6,6 +6,7 @@ import base64
 from PIL import Image
 from google.cloud import vision
 from google.oauth2 import service_account
+from normalizer import normalize_ocr_text
 
 try:
     from anonymizer import anonymize_text
@@ -16,6 +17,13 @@ except Exception:
 try:
     from vision_handler import build_client, extract_text_from_image_bytes, extract_text_from_pdf_bytes
 except Exception:
+    def _lang_hints():
+        env = os.environ.get("GOOGLE_VISION_LANGUAGE_HINTS","en,bg")
+        return [x.strip() for x in env.split(",") if x.strip()]
+
+    def _tess_langs():
+        return os.environ.get("TESSERACT_LANGS","eng+bul")
+
     def build_client() -> vision.ImageAnnotatorClient | None:
         creds_path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
         creds_json = os.environ.get("GOOGLE_CLOUD_VISION_KEY")
@@ -41,7 +49,8 @@ except Exception:
         if client:
             try:
                 img = vision.Image(content=b)
-                r = client.document_text_detection(image=img)
+                ctx = vision.ImageContext(language_hints=_lang_hints())
+                r = client.document_text_detection(image=img, image_context=ctx)
                 if getattr(r, "error", None) and getattr(r.error, "message", ""):
                     raise RuntimeError(r.error.message)
                 if getattr(r, "full_text_annotation", None) and getattr(r.full_text_annotation, "text", None):
@@ -54,14 +63,14 @@ except Exception:
         try:
             import pytesseract
             im = Image.open(io.BytesIO(b))
-            return anonymize_text(pytesseract.image_to_string(im) or "")
+            return anonymize_text(pytesseract.image_to_string(im, lang=_tess_langs(), config="--psm 6") or "")
         except Exception:
             raise
 
     def extract_text_from_pdf_bytes(b: bytes, client: vision.ImageAnnotatorClient | None) -> str:
         try:
             from pdf2image import convert_from_bytes
-            pages = convert_from_bytes(b, dpi=300, fmt="png")
+            pages = convert_from_bytes(b, dpi=400, fmt="png")
             out = []
             for p in pages:
                 buf = io.BytesIO()
@@ -72,6 +81,13 @@ except Exception:
             raise
 
 app = Flask(__name__)
+
+def _lang_hints():
+    env = os.environ.get("GOOGLE_VISION_LANGUAGE_HINTS","en,bg")
+    return [x.strip() for x in env.split(",") if x.strip()]
+
+def _tess_langs():
+    return os.environ.get("TESSERACT_LANGS","eng+bul")
 
 def _decode_payload_file(req) -> tuple[bytes, str]:
     f = req.files.get("file")
@@ -97,37 +113,42 @@ def ocr():
     if not blob:
         return jsonify(error="no_file"), 400
     client = build_client()
+    csv_path = os.environ.get("LAB_DB_CSV","/app/data/labtests-database.csv")
     if kind == "pdf":
         try:
             txt = extract_text_from_pdf_bytes(blob, client)
             if not txt or not txt.strip():
                 raise RuntimeError("empty")
-            return jsonify(engine="vision", ocr_text=txt.strip()), 200
-        except Exception as e:
+            txt = normalize_ocr_text(txt.strip(), csv_path)
+            return jsonify(engine="vision", ocr_text=txt), 200
+        except Exception:
             try:
                 from pdf2image import convert_from_bytes
                 import pytesseract
-                pages = convert_from_bytes(blob, dpi=300, fmt="png")
+                pages = convert_from_bytes(blob, dpi=400, fmt="png")
                 out = []
                 for p in pages:
                     buf = io.BytesIO()
                     p.save(buf, format="PNG")
-                    out.append(pytesseract.image_to_string(Image.open(io.BytesIO(buf.getvalue()))))
+                    out.append(pytesseract.image_to_string(Image.open(io.BytesIO(buf.getvalue())), lang=_tess_langs(), config="--psm 6"))
                 txt = "\n".join([x for x in out if x]).strip()
                 if not txt:
                     raise RuntimeError("empty")
-                return jsonify(engine="tesseract", ocr_text=anonymize_text(txt)), 200
+                txt = normalize_ocr_text(anonymize_text(txt), csv_path)
+                return jsonify(engine="tesseract", ocr_text=txt), 200
             except Exception as ex:
                 return jsonify(error="ocr_failed", detail=str(ex)), 500
     try:
         txt = extract_text_from_image_bytes(blob, client)
         if not txt or not txt.strip():
             raise RuntimeError("empty")
-        return jsonify(engine="vision", ocr_text=txt.strip()), 200
+        txt = normalize_ocr_text(txt.strip(), csv_path)
+        return jsonify(engine="vision", ocr_text=txt), 200
     except Exception:
         try:
             import pytesseract
-            txt = pytesseract.image_to_string(Image.open(io.BytesIO(blob))) or ""
-            return jsonify(engine="tesseract", ocr_text=anonymize_text(txt.strip())), 200
+            txt = pytesseract.image_to_string(Image.open(io.BytesIO(blob)), lang=_tess_langs(), config="--psm 6") or ""
+            txt = normalize_ocr_text(anonymize_text(txt.strip()), csv_path)
+            return jsonify(engine="tesseract", ocr_text=txt), 200
         except Exception as e:
             return jsonify(error="ocr_failed", detail=str(e)), 500
