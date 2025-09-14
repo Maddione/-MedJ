@@ -10,11 +10,8 @@ try:
 except Exception:
     def anonymize_text(x: str) -> str: return x
 
-LEVEL = os.environ.get("OCR_LOG_LEVEL", "INFO").upper()
-logging.basicConfig(
-    level=getattr(logging, LEVEL, logging.INFO),
-    format="%(asctime)s [%(levelname)s] %(message)s",
-)
+logging.basicConfig(level=getattr(logging, os.environ.get("OCR_LOG_LEVEL","INFO").upper(), logging.INFO),
+                    format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("ocrapi")
 
 app = Flask(__name__)
@@ -53,24 +50,26 @@ def _preprocess_image_bytes(b: bytes) -> bytes:
     if im.mode not in ("L", "RGB"): im = im.convert("RGB")
     w, h = im.size
     if w < 1600:
-        scale = 1600.0 / float(w)
-        im = im.resize((int(w*scale), int(h*scale)), Image.BICUBIC)
+        s = 1600.0 / float(w)
+        im = im.resize((int(w*s), int(h*s)), Image.BICUBIC)
     im = im.convert("L")
     im = ImageOps.autocontrast(im, cutoff=2)
     im = im.filter(ImageFilter.UnsharpMask(radius=1.0, percent=120, threshold=2))
     buf = io.BytesIO(); im.save(buf, format="PNG")
     return buf.getvalue()
 
-def _vision_once(payload: bytes, client, rid: str, tag: str):
+def _vision_once(payload: bytes, client, ctx, tag: str, meta: dict):
     if not client: return ""
+    meta["vision_attempted"] = True
     try:
         t0 = time.perf_counter()
         img = vision.Image(content=payload)
-        ctx = vision.ImageContext(language_hints=_lang_hints())
         r = client.document_text_detection(image=img, image_context=ctx)
         dt = (time.perf_counter()-t0)*1000
+        meta[f"vision_dt_ms_{tag}"] = round(dt,1)
         if getattr(r, "error", None) and getattr(r.error, "message", ""):
-            log.warning("%s vision.%s error=%s dt=%.1fms", rid, tag, r.error.message, dt)
+            meta["vision_error"] = r.error.message
+            log.warning("vision.%s error=%s dt=%.1fms", tag, r.error.message, dt)
             return ""
         text = ""
         fta = getattr(r, "full_text_annotation", None)
@@ -80,19 +79,21 @@ def _vision_once(payload: bytes, client, rid: str, tag: str):
             tas = r.text_annotations
             text = tas[0].description if tas else ""
         text = anonymize_text((text or "").strip())
-        log.info("%s vision.%s len=%d dt=%.1fms", rid, tag, len(text), dt)
+        meta[f"vision_len_{tag}"] = len(text)
+        log.info("vision.%s len=%d dt=%.1fms", tag, len(text), dt)
         return text
     except Exception as e:
-        log.exception("%s vision.%s exception: %s", rid, tag, e)
+        meta["vision_error"] = str(e)
+        log.exception("vision.%s exception: %s", tag, e)
         return ""
 
-def _vision_image(b, client, rid: str):
-    txt = _vision_once(_preprocess_image_bytes(b), client, rid, "pre")
-    if not txt:
-        txt = _vision_once(b, client, rid, "raw")
-    return txt
+def _vision_image(b: bytes, client, meta: dict):
+    ctx = vision.ImageContext(language_hints=_lang_hints()) if client else None
+    t1 = _vision_once(_preprocess_image_bytes(b), client, ctx, "pre", meta)
+    if t1: return t1
+    return _vision_once(b, client, ctx, "raw", meta)
 
-def _tess_once(payload: bytes, cfg: str, rid: str, tag: str):
+def _tess_once(payload: bytes, cfg: str, tag: str, meta: dict):
     import pytesseract
     t0 = time.perf_counter()
     im = Image.open(io.BytesIO(payload))
@@ -100,57 +101,57 @@ def _tess_once(payload: bytes, cfg: str, rid: str, tag: str):
         t = pytesseract.image_to_string(im, lang=_tess_langs(), config=cfg) or ""
         t = anonymize_text(t.strip())
         dt = (time.perf_counter()-t0)*1000
-        log.info("%s tesseract.%s len=%d cfg='%s' dt=%.1fms", rid, tag, len(t), cfg, dt)
+        meta[f"tess_dt_ms_{tag}"] = round(dt,1)
+        meta[f"tess_len_{tag}"] = len(t)
+        log.info("tesseract.%s len=%d dt=%.1fms", tag, len(t), dt)
         return t
     except Exception as e:
-        log.exception("%s tesseract.%s exception: %s", rid, tag, e)
+        meta["tess_error"] = str(e)
+        log.exception("tesseract.%s exception: %s", tag, e)
         return ""
 
-def _tess_image(b, rid: str):
+def _tess_image(b: bytes, meta: dict):
     cfg = "--psm 6 -c preserve_interword_spaces=1"
-    txt = _tess_once(_preprocess_image_bytes(b), cfg, rid, "pre")
-    if not txt:
-        txt = _tess_once(b, cfg, rid, "raw")
-    return txt
+    t1 = _tess_once(_preprocess_image_bytes(b), cfg, "pre", meta)
+    if t1: return t1
+    return _tess_once(b, cfg, "raw", meta)
 
-def _image_ocr(b, client, rid: str):
-    v = _vision_image(b, client, rid)
-    t = _tess_image(b, rid)
+def _image_ocr(b: bytes, client, meta: dict):
+    v = _vision_image(b, client, meta)
+    t = _tess_image(b, meta)
     out = v if len(v) >= len(t) else t
-    log.info("%s choose=%s vlen=%d tlen=%d", rid, ("vision" if out is v else "tesseract"), len(v), len(t))
+    meta["engine_chosen"] = "vision" if out is v else "tesseract"
+    meta["vision_len_best"] = len(v)
+    meta["tess_len_best"] = len(t)
     return out
 
-def _pdf_ocr(b, client, rid: str):
+def _pdf_ocr(b: bytes, client, meta: dict):
     from pdf2image import convert_from_bytes
     pages = convert_from_bytes(b, dpi=400, fmt="png")
-    log.info("%s pdf pages=%d", rid, len(pages))
     out = []
-    for idx, p in enumerate(pages, 1):
+    for p in pages:
         buf = io.BytesIO(); p.save(buf, format="PNG")
-        log.info("%s page=%d size=%d", rid, idx, len(buf.getvalue()))
-        out.append(_image_ocr(buf.getvalue(), client, rid))
-    txt = "\n".join([x for x in out if x]).strip()
-    log.info("%s pdf-ocr total_len=%d", rid, len(txt))
-    return txt
+        out.append(_image_ocr(buf.getvalue(), client, meta))
+    return "\n".join([x for x in out if x]).strip()
 
-def _decode_payload_file(req, rid: str):
+def _decode_payload_file(req, meta: dict):
     f = req.files.get("file")
     b64 = req.form.get("image_base64") or (req.json.get("image_base64") if req.is_json else None)
     kind = (req.form.get("file_kind") or (req.json.get("file_kind") if req.is_json else None) or "").lower()
     if f:
         data = f.read(); name = f.filename or ""
         k = "pdf" if name.lower().endswith(".pdf") else (kind or "image")
-        log.info("%s decode file name=%s size=%d kind=%s", rid, name, len(data), k)
+        meta["filename"] = name; meta["payload_size"] = len(data); meta["file_kind"] = k
         return data, k
     if b64:
         try:
             data = base64.b64decode(b64)
-            log.info("%s decode base64 size=%d kind=%s", rid, len(data), kind or "image")
+            meta["payload_size"] = len(data); meta["file_kind"] = kind or "image"
             return data, (kind or "image")
         except Exception as e:
-            log.error("%s decode base64 fail: %s", rid, e)
+            meta["decode_error"] = str(e)
             return b"", ""
-    log.warning("%s decode empty payload", rid)
+    meta["decode_error"] = "empty_payload"
     return b"", ""
 
 _unit_re = re.compile(r"\b(?:g/dL|mg/dL|µg/dL|ug/dL|ng/mL|pg/mL|IU/L|mIU/L|U/L|kU/L|mmol/L|mol/L|mEq/L|µmol/L|nmol/L|pmol/L|fL|pg|%)\b|×10\^3/µL|×10\^6/µL")
@@ -172,35 +173,36 @@ def _metrics(text: str, csv_path: str):
 @app.post("/ocr")
 def ocr():
     rid = request.headers.get("X-Request-ID") or uuid.uuid4().hex[:12]
+    meta = {"rid": rid, "vision_attempted": False}
     try:
-        blob, kind = _decode_payload_file(request, rid)
+        blob, kind = _decode_payload_file(request, meta)
         if not blob:
-            log.warning("%s no_file", rid)
-            return jsonify(error="no_file", rid=rid), 200
+            return jsonify(error="no_file", rid=rid, telemetry=meta), 200
 
         client = build_client()
+        meta["vision_client"] = bool(client)
         csv_path = os.environ.get("LAB_DB_CSV", "/app/data/labtests-database.csv")
 
         if kind == "pdf":
-            raw = _pdf_ocr(blob, client, rid)
+            raw = _pdf_ocr(blob, client, meta)
             if not raw:
-                log.warning("%s empty_ocr after pdf pipeline", rid)
-                return jsonify(error="empty_ocr", stage="pdf_pipeline", rid=rid), 200
+                return jsonify(error="empty_ocr", stage="pdf_pipeline", rid=rid, telemetry=meta), 200
             txt = normalize_ocr_text(raw, csv_path) or raw
             u, i = _metrics(txt, csv_path)
-            log.info("%s normalized len=%d units=%d indicators=%d", rid, len(txt), u, i)
-            return jsonify(engine="vision+tesseract", ocr_text=txt, units_found=u, indicators_found=i, rid=rid), 200
+            return jsonify(engine=meta.get("engine_chosen","vision+tesseract"), ocr_text=txt,
+                           units_found=u, indicators_found=i, rid=rid,
+                           telemetry=meta), 200
 
-        raw = _image_ocr(blob, client, rid)
+        raw = _image_ocr(blob, client, meta)
         if not raw:
-            log.warning("%s empty_ocr after image pipeline", rid)
-            return jsonify(error="empty_ocr", stage="image_pipeline", rid=rid), 200
+            return jsonify(error="empty_ocr", stage="image_pipeline", rid=rid, telemetry=meta), 200
         txt = normalize_ocr_text(raw, csv_path) or raw
         u, i = _metrics(txt, csv_path)
-        eng = "vision" if client else "tesseract"
-        log.info("%s normalized len=%d units=%d indicators=%d", rid, len(txt), u, i)
-        return jsonify(engine=eng, ocr_text=txt, units_found=u, indicators_found=i, rid=rid), 200
+        eng = meta.get("engine_chosen", "vision")
+        return jsonify(engine=eng, ocr_text=txt, units_found=u, indicators_found=i,
+                       rid=rid, telemetry=meta), 200
 
     except Exception as ex:
+        meta["unhandled"] = str(ex)
         log.exception("%s ocr_unhandled: %s", rid, ex)
-        return jsonify(error="ocr_unhandled", detail=str(ex), rid=rid), 200
+        return jsonify(error="ocr_unhandled", detail=str(ex), rid=rid, telemetry=meta), 200
