@@ -187,7 +187,12 @@ def ocr():
             raw = _pdf_ocr(blob, client, meta)
             if not raw:
                 return jsonify(error="empty_ocr", stage="pdf_pipeline", rid=rid, telemetry=meta), 200
-            txt = normalize_ocr_text(raw, csv_path) or raw
+            try:
+                txt = normalize_ocr_text(raw, csv_path)
+            except Exception as e:
+                meta["normalization_error"] = str(e)
+                txt = raw
+
             u, i = _metrics(txt, csv_path)
             return jsonify(engine=meta.get("engine_chosen","vision+tesseract"), ocr_text=txt,
                            units_found=u, indicators_found=i, rid=rid,
@@ -196,7 +201,12 @@ def ocr():
         raw = _image_ocr(blob, client, meta)
         if not raw:
             return jsonify(error="empty_ocr", stage="image_pipeline", rid=rid, telemetry=meta), 200
-        txt = normalize_ocr_text(raw, csv_path) or raw
+        try:
+            txt = normalize_ocr_text(raw, csv_path)
+        except Exception as e:
+            meta["normalization_error"] = str(e)
+            txt = raw
+
         u, i = _metrics(txt, csv_path)
         eng = meta.get("engine_chosen", "vision")
         return jsonify(engine=eng, ocr_text=txt, units_found=u, indicators_found=i,
