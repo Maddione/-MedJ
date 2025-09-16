@@ -232,15 +232,19 @@ def events_suggest(request):
     cat_id = request.GET.get("category_id") or request.GET.get("category")
     spec_id = request.GET.get("specialty_id") or request.GET.get("specialty")
     doc_id = request.GET.get("doc_type_id") or request.GET.get("doc_type")
-    if cat_id and cat_id.isdigit():
+    file_kind = (request.GET.get("file_kind") or "").strip()
+    if cat_id and str(cat_id).isdigit():
         qs = qs.filter(category_id=int(cat_id))
-    if spec_id and spec_id.isdigit():
+    if spec_id and str(spec_id).isdigit():
         qs = qs.filter(specialty_id=int(spec_id))
-    if doc_id and doc_id.isdigit():
+    if doc_id and str(doc_id).isdigit():
         qs = qs.filter(doc_type_id=int(doc_id))
-    qs = qs.order_by("-event_date", "-id")[:10]
+    if file_kind:
+        qs = qs.filter(documents__doc_kind=file_kind).distinct()
+    qs = qs.order_by("-event_date", "-id")[:20]
     items = []
     for ev in qs:
         d = ev.event_date.isoformat() if getattr(ev, "event_date", None) else ""
-        items.append({"id": ev.id, "event_date": d})
+        title = " • ".join([x for x in [d, _safe_name(ev.specialty), _safe_name(ev.doc_type)] if x])
+        items.append({"id": ev.id, "event_date": d, "title": title})
     return JsonResponse({"events": items})
