@@ -84,7 +84,7 @@ docker compose -f docker/compose/docker-compose.dev.yml --project-directory . do
 * **OCR API (Flask)**
 
   * Порт: `5000` (local → `http://localhost:5000`);
-  * `GOOGLE_APPLICATION_CREDENTIALS=/secrets/ocr-key-vision.json`;
+  * `GOOGLE_APPLICATION_CREDENTIALS=/app/secrets/gcloudvision-service-key.json`;
 
 ## Docker Compose
 
