@@ -12,7 +12,6 @@ from django.urls import path
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView
 
-from .views import api_upload
 from .views import upload as upload_views
 from .views.auth import RememberLoginView, RegisterView
 from .views.casefiles import casefiles
@@ -137,7 +136,7 @@ urlpatterns = [
     path("api/upload/ocr/", login_required(upload_views.upload_ocr), name="upload_ocr"),
     path("api/upload/analyze/", login_required(upload_views.upload_analyze), name="upload_analyze"),
     path("api/upload/confirm/", login_required(upload_views.upload_confirm), name="upload_confirm"),
-    path("api/events/suggest/", login_required(api_upload.events_suggest), name="events_suggest"),
+    path("api/events/suggest/", login_required(upload_views.events_suggest), name="events_suggest"),
     path("api/doctors/suggest/", login_required(doctors_suggest), name="doctors_suggest"),
 
     path("api/personalcard/share/enable/", login_required(personalcard_share_enable_api), name="personalcard_share_enable_api"),
