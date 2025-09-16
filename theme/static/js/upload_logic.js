@@ -149,16 +149,37 @@ function renderLabTable(items) {
   const slot = el("labTableSlot");
   const sum = el("labSummary");
   if (!wrap || !slot) return;
-  const rows = (items || []).map(x => {
-    const inRef = (x.ref_low != null && x.ref_high != null && typeof x.value === "number") ? (x.value >= x.ref_low && x.value <= x.ref_high) : null;
-    const cls = inRef === false ? ' style="color:#b91c1c;font-weight:600;"' : "";
+  if (!items || !items.length) { hide(wrap); seth(slot, ""); if (sum) seth(sum, ""); return; }
+
+  const rows = items.map(x => {
+    const inRef = (x.ref_low != null && x.ref_high != null && typeof x.value === "number")
+      ? (x.value >= x.ref_low && x.value <= x.ref_high) : null;
+    const warn = inRef === false ? "font-semibold text-danger" : "";
     const unit = x.unit ? x.unit : "";
     const ref = (x.ref_low != null && x.ref_high != null) ? `${x.ref_low} - ${x.ref_high}` : "";
-    return `<tr><td>${x.name}</td><td${cls}>${x.value}</td><td>${unit}</td><td>${ref}</td></tr>`;
-  });
-  const html = `<table class="tbl"><thead><tr><th>Показател</th><th>Стойност</th><th>Ед.</th><th>Реф.</th></tr></thead><tbody>${rows.join("")}</tbody></table>`;
-  seth(slot, rows.length ? html : "");
-  if (sum) seth(sum, rows.length ? `${rows.length} показателя` : "");
+    return `
+      <tr>
+        <td class="border border-primaryDark bg-white px-3 py-2">${x.name}</td>
+        <td class="border border-primaryDark bg-white px-3 py-2 ${warn}">${x.value}</td>
+        <td class="border border-primaryDark bg-white px-3 py-2">${unit}</td>
+        <td class="border border-primaryDark bg-white px-3 py-2">${ref}</td>
+      </tr>`;
+  }).join("");
+
+  const html = `
+    <table class="w-full border-separate border-spacing-0 text-primaryDark">
+      <thead>
+        <tr>
+          <th class="border border-primaryDark bg-white px-3 py-2 text-left">Показател</th>
+          <th class="border border-primaryDark bg-white px-3 py-2 text-left">Стойност</th>
+          <th class="border border-primaryDark bg-white px-3 py-2 text-left">Ед.</th>
+          <th class="border border-primaryDark bg-white px-3 py-2 text-left">Реф.</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  seth(slot, html);
+  if (sum) seth(sum, `${items.length} показателя`);
   show(wrap);
   setTableEditable(LAB_EDIT_MODE);
 }
@@ -264,20 +285,25 @@ async function doOCR() {
     area.removeAttribute("disabled");
     setv(area, text);
     ORIGINAL_OCR_TEXT = text;
+
     const metaEl = ensureMeta();
-    let engine = (data.engine || data?.telemetry?.engine_chosen || data?.meta?.engine || data?.engine_chosen || data?.ocr_engine || "");
+    const engRaw = (data?.telemetry?.engine_chosen || data?.engine || data?.meta?.engine || data?.engine_chosen || data?.ocr_engine || "").toString().toLowerCase();
     const vAtt = data?.telemetry?.vision_attempted;
     const tAtt = data?.telemetry?.tesseract_attempted;
-    if (!engine) {
-      if (vAtt === true && tAtt === true) engine = "vision+tesseract";
-      else if (vAtt === true) engine = "vision";
-      else if (tAtt === true) engine = "tesseract";
+    let eng = engRaw;
+    if (!eng) {
+      if (vAtt === true && tAtt === true) eng = "vision+tesseract";
+      else if (vAtt === true) eng = "vision";
+      else if (tAtt === true) eng = "tesseract";
     }
-    const rid = (data.rid || data?.telemetry?.rid || data?.request_id || "");
-    let metaTxt = engine ? `OCR: ${engine}` : `OCR`;
-    if (rid) metaTxt += ` • ${rid}`;
-    if (typeof vAtt === "boolean" || typeof tAtt === "boolean") metaTxt += ` • V:${vAtt ? "Y" : "N"} T:${tAtt ? "Y" : "N"}`;
-    if (metaEl) metaEl.textContent = metaTxt;
+    const engine = eng === "vision" ? "Google Vision" : eng === "tesseract" ? "Tesseract" : eng === "vision+tesseract" ? "Vision→Tesseract" : "неизвестен";
+    const rid = (data?.rid || data?.telemetry?.rid || data?.request_id || "");
+    const parts = [`OCR: ${engine}`];
+    if (rid) parts.push(rid);
+    if (typeof vAtt === "boolean") parts.push(`V:${vAtt ? "Y" : "N"}`);
+    if (typeof tAtt === "boolean") parts.push(`T:${tAtt ? "Y" : "N"}`);
+    if (metaEl) metaEl.textContent = parts.join(" • ");
+
     const labs = parseLabs(text);
     renderLabTable(labs);
     ANALYZED_READY = false;
@@ -288,6 +314,7 @@ async function doOCR() {
     setBusy(false);
   }
 }
+
 
 async function doAnalyze() {
   clearError();
