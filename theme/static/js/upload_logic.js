@@ -1,46 +1,76 @@
 const API = { ocr: "/api/upload/ocr/", analyze: "/api/upload/analyze/", confirm: "/api/upload/confirm/", suggest: "/api/events/suggest/" };
 
 function el(id) { return document.getElementById(id); }
-function q(sel, root) { return (root || document).querySelector(sel); }
 function show(x) { if (x) x.classList.remove("hidden"); }
 function hide(x) { if (x) x.classList.add("hidden"); }
 function seth(x, h) { if (x) x.innerHTML = h || ""; }
 function setv(x, v) { if (x) x.value = v || ""; }
 function dis(x, f) { if (!x) return; x.disabled = !!f; x.classList.toggle("opacity-50", !!f); x.classList.toggle("cursor-not-allowed", !!f); }
-function getCSRF() { const t = q('input[name="csrfmiddlewaretoken"]'); if (t && t.value) return t.value; const m = document.cookie.match(/(?:^|;)\s*csrftoken=([^;]+)/); return m ? decodeURIComponent(m[1]) : ""; }
-function ensureUXStyles() { if (el("uxUploadInject")) return; const s = document.createElement("style"); s.id = "uxUploadInject"; s.textContent = `.btn[aria-disabled="true"]{opacity:.5;cursor:not-allowed;pointer-events:none}.btn.btn-armed:hover{filter:brightness(1.05)}`; document.head.appendChild(s); }
+function getCSRF() { const t = document.querySelector('input[name="csrfmiddlewaretoken"]'); if (t && t.value) return t.value; const m = document.cookie.match(/(?:^|;)\s*csrftoken=([^;]+)/); return m ? decodeURIComponent(m[1]) : ""; }
+function ensureUXStyles() { if (document.getElementById("uxUploadInject")) return; const s = document.createElement("style"); s.id = "uxUploadInject"; s.textContent = `.btn[aria-disabled="true"]{opacity:.5;cursor:not-allowed;pointer-events:none}.btn.btn-armed:hover{filter:brightness(1.05)}`; document.head.appendChild(s); }
 
 let CURRENT_FILE = null;
 let CURRENT_FILE_KIND = "";
 let CURRENT_FILE_URL = null;
 let ORIGINAL_OCR_TEXT = "";
+let OCR_META = {};
+let ANALYSIS = { summary: "", data: { tables: [], blood_test_results: [], suggested_tags: [] } };
 let LAB_EDIT_MODE = false;
 let CLASS_LOCK = false;
 let DOC_LOCK = false;
 let FILE_KIND_LOCK = false;
 let ANALYZED_READY = false;
 
-let LAST_OCR_META = {};
-let LAST_AI_META = {};
+function picks() {
+  return {
+    category: (el("sel_category") || {}).value || "",
+    specialty: (el("sel_specialty") || {}).value || "",
+    docType: (el("sel_doc_type") || {}).value || "",
+    fileKind: (el("file_kind") || {}).value || "",
+    file: (el("file_input") && el("file_input").files ? el("file_input").files[0] : null) || CURRENT_FILE,
+    eventId: (el("existingEventSelect") || {}).value || ""
+  };
+}
 
-function getTextArea() { return el("workText") || q('textarea#ocr_text, textarea[name="ocr_text"], textarea[data-role="ocrText"]'); }
-function getTextLabel() { const ta = getTextArea(); if (!ta) return null; let lb = ta.id ? q(`label[for="${ta.id}"]`) : null; if (!lb) lb = ta.closest("div")?.querySelector("label"); return lb; }
-function setStatusLabel(txt) { const lb = getTextLabel(); if (lb) lb.textContent = txt || ""; }
+function picksPayload() {
+  const p = picks();
+  return { category_id: p.category || "", specialty_id: p.specialty || "", doc_type_id: p.docType || "", file_kind: p.fileKind || "", event_id: p.eventId || "" };
+}
 
-function buildOCRStatus(meta) { const eng = (meta.engine || (meta.engines || [])[0] || "").toString(); const method = (meta.method || "").toString(); const lang = (meta.lang || (meta.langs || [])[0] || "").toString(); const pages = meta.pages_total || meta.pages || ""; const p = ["Стъпка 1: OCR сканиране"]; if (eng) p.push(eng); if (method) p.push(method); if (lang) p.push(lang); if (pages) p.push(`стр.${pages}`); return p.join(" • "); }
-function buildAIStatus(meta, payload) { const provider = (meta.provider || "").toString(); const model = (meta.model || meta.engine || "").toString(); const method = (meta.method || meta.strategy || "").toString(); const lang = (meta.lang || meta.language || "").toString(); const fmt = payload && payload.format_hint ? `format:${payload.format_hint}` : ""; const p = ["Стъпка 2: AI Анализ"]; if (provider && model) p.push(`${provider}:${model}`); else if (provider) p.push(provider); else if (model) p.push(model); if (method) p.push(method); if (lang) p.push(lang); if (fmt) p.push(fmt); p.push("anon"); return p.filter(Boolean).join(" • "); }
-
-function picks() { return { category: (el("sel_category") || {}).value || "", specialty: (el("sel_specialty") || {}).value || "", docType: (el("sel_doc_type") || {}).value || "", fileKind: CURRENT_FILE_KIND || "", file: CURRENT_FILE, eventId: (el("existingEventSelect") || {}).value || "" }; }
 function requiredTagsReady() { const p = picks(); return !!(p.category && p.specialty && p.docType); }
 function pipelineReady() { const p = picks(); return !!(p.category && p.specialty && p.docType && p.fileKind); }
-function currentTags() { const p = picks(); return { category_id: p.category || "", specialty_id: p.specialty || "", doc_type_id: p.docType || "", file_kind: p.fileKind || "" }; }
+
+function currentTags() { const p = picksPayload(); return { category_id: p.category_id, specialty_id: p.specialty_id, doc_type_id: p.doc_type_id, file_kind: p.file_kind }; }
 
 function lockDocType() { DOC_LOCK = true; dis(el("sel_doc_type"), true); }
 function lockClassification() { CLASS_LOCK = true; ["sel_category","sel_specialty","sel_doc_type","file_kind"].forEach(id => dis(el(id), true)); }
 
-function stage() { const p = picks(); if (!p.file) return "choose_file"; const text = (getTextArea() || {}).value || ""; if (!text.trim()) return "ocr"; return ANALYZED_READY ? "done" : "analyze"; }
+function stepLabelNode() {
+  let n = document.querySelector('label[for="workText"]');
+  if (!n) n = el("workLabel") || el("ocrLabel") || el("workMeta");
+  if (!n) { const ta = el("workText"); if (ta && ta.parentElement) { n = document.createElement("div"); n.id = "workMeta"; n.className = "text-xs text-gray-600 mb-1"; ta.parentElement.insertBefore(n, ta); } }
+  return n;
+}
 
-function updateButtons() { const s = stage(); const bOCR = el("btnOCR"); const bAna = el("btnAnalyze"); const bCfm = el("btnConfirm"); if (bOCR) (s === "ocr" && pipelineReady() && !ANALYZED_READY) ? show(bOCR) : hide(bOCR); if (bAna) (s === "analyze" && requiredTagsReady() && !ANALYZED_READY) ? show(bAna) : hide(bAna); if (bCfm) (ANALYZED_READY && requiredTagsReady()) ? show(bCfm) : hide(bCfm); }
+function setStepLabel(text) { const n = stepLabelNode(); if (n) n.textContent = text || ""; }
+
+function stage() {
+  const p = picks();
+  if (!p.file) return "choose";
+  const text = (el("workText") || {}).value || "";
+  if (!text.trim()) return "ocr";
+  return "analyze";
+}
+
+function updateButtons() {
+  const s = stage();
+  const bOCR = el("btnOCR");
+  const bAna = el("btnAnalyze");
+  const bCfm = el("btnConfirm");
+  if (bOCR) (s === "ocr" && pipelineReady()) ? show(bOCR) : hide(bOCR);
+  if (bAna) (s === "analyze" && requiredTagsReady() && !ANALYZED_READY) ? show(bAna) : hide(bAna);
+  if (bCfm) (ANALYZED_READY && requiredTagsReady()) ? show(bCfm) : hide(bCfm);
+}
 
 function setBusy(on) { const o = el("loadingOverlay"); if (on) show(o); else hide(o); }
 function showError(msg) { const box = el("errorBox"); if (box) { box.textContent = msg || "Грешка."; show(box); } }
@@ -75,7 +105,6 @@ function handleFileInputChange() {
   FILE_KIND_LOCK = true;
   dis(kind, true);
   ANALYZED_READY = false;
-  setStatusLabel("");
   renderPreview();
   lockDocType();
   updateDropdownFlow();
@@ -107,10 +136,10 @@ function updateDropdownFlow() {
 async function suggestIfReady() {
   const wrap = el("existingEventWrap");
   const select = el("existingEventSelect");
-  const p = picks();
-  if (!(p.category && p.specialty && p.docType && p.fileKind)) { if (wrap) hide(wrap); if (select) seth(select, ""); return; }
+  const p = picksPayload();
+  if (!(p.category_id && p.specialty_id && p.doc_type_id && p.file_kind)) { if (wrap) hide(wrap); if (select) seth(select, ""); return; }
   try {
-    const qs = new URLSearchParams({ category_id: p.category, specialty_id: p.specialty, doc_type_id: p.docType, file_kind: p.fileKind });
+    const qs = new URLSearchParams({ category_id: p.category_id, specialty_id: p.specialty_id, doc_type_id: p.doc_type_id, file_kind: p.file_kind });
     const res = await fetch(API.suggest + "?" + qs.toString(), { method: "GET", credentials: "same-origin" });
     if (!res.ok) throw new Error("suggest_failed");
     const data = await res.json();
@@ -147,6 +176,26 @@ function parseLabs(text) {
     }
   }
   return items;
+}
+
+function normalizeRows(rows) {
+  const out = [];
+  (rows || []).forEach(r => {
+    const name = (r.indicator_name || r.name || "").toString().trim();
+    const unit = (r.unit || "").toString().trim() || null;
+    const v = r.value;
+    let value = typeof v === "number" ? v : parseFloat(String(v || "").replace(",", "."));
+    if (Number.isNaN(value)) value = String(v || "").trim();
+    const ref = (r.reference_range || "").toString().trim();
+    let rl = r.reference_low, rh = r.reference_high;
+    if ((rl == null || rh == null) && ref && ref.includes("-")) {
+      const [a, b] = ref.split("-").map(s => s.trim().replace(",", "."));
+      rl = rl != null ? rl : (isNaN(parseFloat(a)) ? null : parseFloat(a));
+      rh = rh != null ? rh : (isNaN(parseFloat(b)) ? null : parseFloat(b));
+    }
+    out.push({ name, value, unit, ref_low: rl != null ? rl : null, ref_high: rh != null ? rh : null });
+  });
+  return out;
 }
 
 function renderLabTable(items) {
@@ -225,28 +274,23 @@ function getLabTableData() {
   return out;
 }
 
-function refreshTableFromText() {
-  const t = (getTextArea()?.value || "");
-  const items = parseLabs(t);
-  renderLabTable(items);
+function renderSummary(summary, data) {
+  const box = el("analysisSummary") || el("summaryBox") || el("summaryPanel") || el("summarySlot");
+  if (!box) return;
+  const labs = normalizeRows((data && (data.blood_test_results || [])) || []);
+  const tags = (data && data.suggested_tags) || [];
+  const tableStats = labs.length ? `<div class="text-sm">Показатели: ${labs.length}</div>` : "";
+  const tagsLine = tags.length ? `<div class="text-sm">Тагове: ${tags.join(", ")}</div>` : "";
+  const text = (summary || "").trim();
+  const body = text ? `<div class="whitespace-pre-line text-sm leading-6">${text}</div>` : `<div class="text-sm italic text-gray-600">Няма обобщение.</div>`;
+  seth(box, `<div class="space-y-2">${body}${tableStats}${tagsLine}</div>`);
+  show(box);
 }
 
-function normalizeRows(rows) {
-  return (rows || []).map(r => {
-    const name = (r.name || r.indicator_name || "").toString().trim();
-    const val = r.value != null ? r.value : "";
-    const unit = (r.unit || "").toString().trim();
-    const lo = r.ref_low != null ? r.ref_low : (r.reference_low != null ? r.reference_low : null);
-    const hi = r.ref_high != null ? r.ref_high : (r.reference_high != null ? r.reference_high : null);
-    const rr = (r.reference_range || "").toString();
-    let lo2 = lo, hi2 = hi;
-    if ((lo2 == null || hi2 == null) && rr.includes("-")) {
-      const parts = rr.split("-").map(s => s.trim().replace(",", "."));
-      if (parts.length === 2) { const a = Number(parts[0]); const b = Number(parts[1]); lo2 = isNaN(a) ? null : a; hi2 = isNaN(b) ? null : b; }
-    }
-    const vnum = typeof val === "number" ? val : (isFinite(Number((val + "").replace(",", "."))) ? Number((val + "").replace(",", ".")) : val);
-    return { name, value: vnum, unit, ref_low: lo2, ref_high: hi2 };
-  }).filter(x => x.name);
+function refreshTableFromText() {
+  const t = (el("workText")?.value || "");
+  const items = parseLabs(t);
+  renderLabTable(items);
 }
 
 function syncTableToText() {
@@ -257,7 +301,7 @@ function syncTableToText() {
     const ref = (x.ref_low != null && x.ref_high != null) ? ` ${x.ref_low}-${x.ref_high}` : "";
     return `${x.name} ${v}${u}${ref}`;
   });
-  const ta = getTextArea();
+  const ta = el("workText");
   if (ta) ta.value = lines.join("\n");
 }
 
@@ -283,11 +327,19 @@ function ensureLabControls() {
   el("btnRefreshTable").onclick = (e) => { e.preventDefault(); refreshTableFromText(); ANALYZED_READY = false; updateButtons(); };
   el("btnEditTable").onclick = (e) => { e.preventDefault(); LAB_EDIT_MODE = !LAB_EDIT_MODE; setTableEditable(LAB_EDIT_MODE); ANALYZED_READY = false; updateButtons(); e.currentTarget.textContent = LAB_EDIT_MODE ? "Изход от редакция" : "Редакция на таблицата"; };
   el("btnSyncToText").onclick = (e) => { e.preventDefault(); syncTableToText(); ANALYZED_READY = false; updateButtons(); };
-  el("btnRevertOCR").onclick = (e) => { e.preventDefault(); if (!ORIGINAL_OCR_TEXT) return; const ta = getTextArea(); setv(ta, ORIGINAL_OCR_TEXT); renderLabTable(parseLabs(ORIGINAL_OCR_TEXT)); ANALYZED_READY = false; setStatusLabel(buildOCRStatus(LAST_OCR_META)); updateButtons(); };
+  el("btnRevertOCR").onclick = (e) => { e.preventDefault(); if (!ORIGINAL_OCR_TEXT) return; const ta = el("workText"); setv(ta, ORIGINAL_OCR_TEXT); renderLabTable(parseLabs(ORIGINAL_OCR_TEXT)); ANALYZED_READY = false; updateButtons(); };
 }
 
 function getSelectedLabel(selId) { const s = el(selId); if (!s) return ""; const o = s.options && s.options[s.selectedIndex]; return o ? (o.text || "").trim() : ""; }
-function inferFormatHint() { const label = getSelectedLabel("sel_doc_type").toLowerCase(); if (!label) return ""; if (label.includes("кръв")) return "table"; if (label.includes("епикриз")) return "paragraph"; if (label.includes("рецепт")) return "list"; return ""; }
+
+function inferFormatHint() {
+  const label = getSelectedLabel("sel_doc_type").toLowerCase();
+  if (!label) return "";
+  if (label.includes("кръв")) return "table";
+  if (label.includes("епикриз")) return "paragraph";
+  if (label.includes("рецепт")) return "list";
+  return "";
+}
 
 function anonymizeText(src) {
   let text = src || "";
@@ -299,6 +351,40 @@ function anonymizeText(src) {
   repl(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi);
   repl(/№\s*\d+/g);
   return { text, meta: { redactions: count } };
+}
+
+function setMetaOCR(meta) {
+  OCR_META = meta || {};
+  const eng = (meta.engine || (meta.engines || [])[0] || "").toString();
+  const method = (meta.method || "").toString();
+  const lang = (meta.lang || (meta.langs || [])[0] || "").toString();
+  const pages = meta.pages_total || meta.pages || "";
+  const parts = [];
+  parts.push("Стъпка 1: OCR сканиране");
+  if (eng) parts.push(eng);
+  if (method) parts.push(method);
+  if (lang) parts.push(lang);
+  if (pages) parts.push(`стр.${pages}`);
+  setStepLabel(parts.join(" • "));
+}
+
+function setMetaAnalyze(data, payloadUsed) {
+  const am = data.analysis_meta || data.meta || {};
+  const provider = (am.provider || data.provider || data.vendor || "").toString();
+  const model = (am.model || am.engine || data.model || data.engine || "").toString();
+  const method = (am.method || am.strategy || "").toString();
+  const lang = (am.lang || am.language || "").toString();
+  const fmt = payloadUsed && payloadUsed.format_hint ? `format:${payloadUsed.format_hint}` : "";
+  const parts = [];
+  parts.push("Стъпка 2: AI Анализ");
+  if (provider && model) parts.push(`${provider}:${model}`);
+  else if (provider) parts.push(provider);
+  else if (model) parts.push(model);
+  if (method) parts.push(method);
+  if (lang) parts.push(lang);
+  if (fmt) parts.push(fmt);
+  parts.push("anon");
+  setStepLabel(parts.filter(Boolean).join(" • "));
 }
 
 async function doOCR() {
@@ -317,12 +403,11 @@ async function doOCR() {
     if (data.error) { showError("OCR неуспешен: " + (data.detail || data.error)); return; }
     const text = (data.ocr_text || data.text || "").toString();
     if (!text.trim()) { showError("Празен OCR резултат."); return; }
-    const area = getTextArea();
+    const area = el("workText");
     if (area) area.removeAttribute("disabled");
-    ORIGINAL_OCR_TEXT = text;
-    LAST_OCR_META = data.ocr_meta || {};
     setv(area, text);
-    setStatusLabel(buildOCRStatus(LAST_OCR_META));
+    ORIGINAL_OCR_TEXT = text;
+    setMetaOCR(data.ocr_meta || {});
     renderLabTable(parseLabs(text));
     ANALYZED_READY = false;
     updateButtons();
@@ -336,7 +421,7 @@ async function doOCR() {
 async function doAnalyze() {
   clearError();
   if (!requiredTagsReady()) { showError("Изберете Категория, Специалност и Вид документ."); return; }
-  const area = getTextArea();
+  const area = el("workText");
   const raw = (area ? area.value : "") || "";
   if (!raw.trim()) { showError("Липсва текст за анализ."); return; }
   setBusy(true);
@@ -352,15 +437,13 @@ async function doAnalyze() {
     if (!res.ok) throw new Error("analyze_failed");
     const data = await res.json();
     const summary = (data.summary || "").toString();
-    if (area && summary) setv(area, summary);
-    const tablesA = (data?.data?.tables || []);
-    const tablesB = Array.isArray(data?.tables) ? data.tables : [];
-    const rowsFromTables = [...tablesA, ...tablesB].flatMap(t => normalizeRows(t.rows || t));
-    const rowsFromBlood = normalizeRows((data.blood_test_results || data?.data?.blood_test_results || []));
-    const rows = rowsFromTables.length ? rowsFromTables : rowsFromBlood.length ? rowsFromBlood : parseLabs(anon.text);
+    ANALYSIS = { summary, data: data.data || { tables: [], blood_test_results: [], suggested_tags: [] } };
+    const tablesA = (ANALYSIS.data.tables || []).flatMap(t => normalizeRows(t.rows || t));
+    const rowsFromBlood = normalizeRows(ANALYSIS.data.blood_test_results || []);
+    const rows = tablesA.length ? tablesA : rowsFromBlood.length ? rowsFromBlood : parseLabs(raw);
+    renderSummary(ANALYSIS.summary, ANALYSIS.data);
     renderLabTable(rows);
-    LAST_AI_META = data.analysis_meta || data.meta || {};
-    setStatusLabel(buildAIStatus(LAST_AI_META, payload));
+    setMetaAnalyze(data, payload);
     ANALYZED_READY = true;
     updateButtons();
   } catch (_) { showError("Грешка при анализ."); }
@@ -370,18 +453,26 @@ async function doAnalyze() {
 async function doConfirm() {
   clearError();
   if (!requiredTagsReady()) { showError("Изберете Категория, Специалност и Вид документ."); return; }
-  if (!ANАЛYZED_READY) { showError("Първо стартирайте AI анализ."); return; }
-  const area = getTextArea();
+  if (!ANALYZED_READY) { showError("Първо стартирайте AI анализ."); return; }
+  const area = el("workText");
   const text = (area ? area.value : "") || "";
   if (!text.trim()) { showError("Няма данни за запис."); return; }
   setBusy(true);
   try {
     lockClassification();
-    const p = picks();
-    const body = { text, category_id: Number(p.category), specialty_id: Number(p.specialty), doc_type_id: Number(p.docType), file_kind: p.fileKind || "", lab_rows: getLabTableData() };
-    if (p.eventId) body.event_id = Number(p.eventId);
+    const body = { picks: picksPayload(), text, summary: ANALYSIS.summary || "", data: ANALYSIS.data || {}, ocr_meta: OCR_META || {}, suggested_tags: (ANALYSIS.data && ANALYSIS.data.suggested_tags) || [] };
     const res = await fetch(API.confirm, { method: "POST", headers: { "Content-Type": "application/json", "X-CSRFToken": getCSRF() }, credentials: "same-origin", body: JSON.stringify(body) });
     if (!res.ok) throw new Error("confirm_failed");
+    const out = await res.json().catch(() => ({}));
+    const msg = el("successBox");
+    if (msg) {
+      const eid = out.event_id ? `Събитие #${out.event_id}` : "";
+      const did = out.document_id ? `Документ #${out.document_id}` : "";
+      const labs = typeof out.labs_saved === "number" ? `Записани показатели: ${out.labs_saved}` : "";
+      const lines = [eid, did, labs].filter(Boolean).join(" • ");
+      msg.textContent = lines || "Записано.";
+      show(msg);
+    }
   } catch (_) { showError("Грешка при запис."); }
   finally { setBusy(false); }
 }
@@ -414,12 +505,12 @@ function bindUI() {
   if (bAna) bAna.addEventListener("click", (e) => { e.preventDefault(); doAnalyze(); });
   if (bCfm) bCfm.addEventListener("click", (e) => { e.preventDefault(); doConfirm(); });
   ensureLabControls();
-  setStatusLabel("");
   updateDropdownFlow();
   updateButtons();
   suggestIfReady();
-  const ta = getTextArea();
+  const ta = el("workText");
   if (ta) ta.addEventListener("input", () => { ANALYZED_READY = false; updateButtons(); });
+  setStepLabel("Стъпка 1: OCR сканиране");
 }
 
 document.addEventListener("DOMContentLoaded", bindUI);
