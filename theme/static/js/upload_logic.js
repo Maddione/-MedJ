@@ -1,14 +1,14 @@
 const API = { ocr: "/api/upload/ocr/", analyze: "/api/upload/analyze/", confirm: "/api/upload/confirm/", suggest: "/api/events/suggest/" };
 
 function el(id) { return document.getElementById(id); }
+function q(sel, root) { return (root || document).querySelector(sel); }
 function show(x) { if (x) x.classList.remove("hidden"); }
 function hide(x) { if (x) x.classList.add("hidden"); }
 function seth(x, h) { if (x) x.innerHTML = h || ""; }
 function setv(x, v) { if (x) x.value = v || ""; }
 function dis(x, f) { if (!x) return; x.disabled = !!f; x.classList.toggle("opacity-50", !!f); x.classList.toggle("cursor-not-allowed", !!f); }
-function getCSRF() { const t = document.querySelector('input[name="csrfmiddlewaretoken"]'); if (t && t.value) return t.value; const m = document.cookie.match(/(?:^|;)\s*csrftoken=([^;]+)/); return m ? decodeURIComponent(m[1]) : ""; }
-function ensureMeta() { let m = el("workMeta"); if (!m) { const ta = el("workText"); if (ta && ta.parentElement) { m = document.createElement("div"); m.id = "workMeta"; m.className = "text-xs text-gray-600 mt-1"; ta.parentElement.insertBefore(m, ta); } } return m; }
-function ensureUXStyles() { if (document.getElementById("uxUploadInject")) return; const s = document.createElement("style"); s.id = "uxUploadInject"; s.textContent = `.btn[aria-disabled="true"]{opacity:.5;cursor:not-allowed;pointer-events:none}.btn.btn-armed:hover{filter:brightness(1.05)}`; document.head.appendChild(s); }
+function getCSRF() { const t = q('input[name="csrfmiddlewaretoken"]'); if (t && t.value) return t.value; const m = document.cookie.match(/(?:^|;)\s*csrftoken=([^;]+)/); return m ? decodeURIComponent(m[1]) : ""; }
+function ensureUXStyles() { if (el("uxUploadInject")) return; const s = document.createElement("style"); s.id = "uxUploadInject"; s.textContent = `.btn[aria-disabled="true"]{opacity:.5;cursor:not-allowed;pointer-events:none}.btn.btn-armed:hover{filter:brightness(1.05)}`; document.head.appendChild(s); }
 
 let CURRENT_FILE = null;
 let CURRENT_FILE_KIND = "";
@@ -21,28 +21,26 @@ let FILE_KIND_LOCK = false;
 let ANALYZED_READY = false;
 
 let LAST_OCR_META = {};
-let LAST_AI_HEADER = "";
+let LAST_AI_META = {};
 
-function getTextArea() { return el("workText") || document.querySelector('textarea#ocr_text, textarea[name="ocr_text"], textarea[data-role="ocrText"]'); }
-function ensureStepLabel() { const ta = getTextArea(); if (!ta) return null; let lab = el("workStepLabel"); if (!lab) { const old = (ta.id && document.querySelector(`label[for="${ta.id}"]`)) || ta.closest("div")?.querySelector("label"); if (old) old.style.display = "none"; lab = document.createElement("div"); lab.id = "workStepLabel"; lab.className = "text-xs text-gray-600 mb-1"; ta.parentElement?.insertBefore(lab, ta); } return lab; }
-function setStepLabel(txt) { const lab = ensureStepLabel(); if (lab) lab.textContent = txt || ""; }
-function buildOCRHeader(meta) { const eng = (meta.engine || (meta.engines || [])[0] || "").toString(); const method = (meta.method || "").toString(); const lang = (meta.lang || (meta.langs || [])[0] || "").toString(); const pages = meta.pages_total || meta.pages || ""; const parts = ["Стъпка 1: OCR сканиране"]; if (eng) parts.push(eng); if (method) parts.push(method); if (lang) parts.push(lang); if (pages) parts.push(`стр.${pages}`); return parts.join(" • "); }
-function buildAIHeader(data, payloadUsed) { const am = data.analysis_meta || data.meta || {}; const provider = (am.provider || data.provider || data.vendor || "").toString(); const model = (am.model || am.engine || data.model || data.engine || "").toString(); const method = (am.method || am.strategy || "").toString(); const lang = (am.lang || am.language || "").toString(); const fmt = payloadUsed && payloadUsed.format_hint ? `format:${payloadUsed.format_hint}` : ""; const parts = ["Стъпка 2: AI Анализ"]; if (provider && model) parts.push(`${provider}:${model}`); else if (provider) parts.push(provider); else if (model) parts.push(model); if (method) parts.push(method); if (lang) parts.push(lang); if (fmt) parts.push(fmt); parts.push("anon"); return parts.filter(Boolean).join(" • "); }
-function stripStepHeaders(text) { const lines = (text || "").split(/\r?\n/); while (lines.length && /^Стъпка\s*[12]/i.test(lines[0])) lines.shift(); return lines.join("\n"); }
-function upsertStepLinesInTextarea({ s1, s2, content }) { const ta = getTextArea(); if (!ta) return; const body = content != null ? content : stripStepHeaders(ta.value || ""); const header = [s2 || "", s1 || ""].filter(Boolean).join("\n"); ta.value = header ? `${header}\n\n${body}` : body; }
+function getTextArea() { return el("workText") || q('textarea#ocr_text, textarea[name="ocr_text"], textarea[data-role="ocrText"]'); }
+function getTextLabel() { const ta = getTextArea(); if (!ta) return null; let lb = ta.id ? q(`label[for="${ta.id}"]`) : null; if (!lb) lb = ta.closest("div")?.querySelector("label"); return lb; }
+function setStatusLabel(txt) { const lb = getTextLabel(); if (lb) lb.textContent = txt || ""; }
+
+function buildOCRStatus(meta) { const eng = (meta.engine || (meta.engines || [])[0] || "").toString(); const method = (meta.method || "").toString(); const lang = (meta.lang || (meta.langs || [])[0] || "").toString(); const pages = meta.pages_total || meta.pages || ""; const p = ["Стъпка 1: OCR сканиране"]; if (eng) p.push(eng); if (method) p.push(method); if (lang) p.push(lang); if (pages) p.push(`стр.${pages}`); return p.join(" • "); }
+function buildAIStatus(meta, payload) { const provider = (meta.provider || "").toString(); const model = (meta.model || meta.engine || "").toString(); const method = (meta.method || meta.strategy || "").toString(); const lang = (meta.lang || meta.language || "").toString(); const fmt = payload && payload.format_hint ? `format:${payload.format_hint}` : ""; const p = ["Стъпка 2: AI Анализ"]; if (provider && model) p.push(`${provider}:${model}`); else if (provider) p.push(provider); else if (model) p.push(model); if (method) p.push(method); if (lang) p.push(lang); if (fmt) p.push(fmt); p.push("anon"); return p.filter(Boolean).join(" • "); }
 
 function picks() { return { category: (el("sel_category") || {}).value || "", specialty: (el("sel_specialty") || {}).value || "", docType: (el("sel_doc_type") || {}).value || "", fileKind: CURRENT_FILE_KIND || "", file: CURRENT_FILE, eventId: (el("existingEventSelect") || {}).value || "" }; }
 function requiredTagsReady() { const p = picks(); return !!(p.category && p.specialty && p.docType); }
 function pipelineReady() { const p = picks(); return !!(p.category && p.specialty && p.docType && p.fileKind); }
-
 function currentTags() { const p = picks(); return { category_id: p.category || "", specialty_id: p.specialty || "", doc_type_id: p.docType || "", file_kind: p.fileKind || "" }; }
 
 function lockDocType() { DOC_LOCK = true; dis(el("sel_doc_type"), true); }
 function lockClassification() { CLASS_LOCK = true; ["sel_category","sel_specialty","sel_doc_type","file_kind"].forEach(id => dis(el(id), true)); }
 
-function stage() { const p = picks(); if (!p.file) return "choose_file"; const text = (getTextArea() || {}).value || ""; if (!text.trim()) return "ocr"; return "analyze"; }
+function stage() { const p = picks(); if (!p.file) return "choose_file"; const text = (getTextArea() || {}).value || ""; if (!text.trim()) return "ocr"; return ANALYZED_READY ? "done" : "analyze"; }
 
-function updateButtons() { const s = stage(); const bOCR = el("btnOCR"); const bAna = el("btnAnalyze"); const bCfm = el("btnConfirm"); if (bOCR) (s === "ocr" && pipelineReady()) ? show(bOCR) : hide(bOCR); if (bAna) (s === "analyze" && requiredTagsReady()) ? show(bAna) : hide(bAna); if (bCfm) (ANALYZED_READY && requiredTagsReady()) ? show(bCfm) : hide(bCfm); }
+function updateButtons() { const s = stage(); const bOCR = el("btnOCR"); const bAna = el("btnAnalyze"); const bCfm = el("btnConfirm"); if (bOCR) (s === "ocr" && pipelineReady() && !ANALYZED_READY) ? show(bOCR) : hide(bOCR); if (bAna) (s === "analyze" && requiredTagsReady() && !ANALYZED_READY) ? show(bAna) : hide(bAna); if (bCfm) (ANALYZED_READY && requiredTagsReady()) ? show(bCfm) : hide(bCfm); }
 
 function setBusy(on) { const o = el("loadingOverlay"); if (on) show(o); else hide(o); }
 function showError(msg) { const box = el("errorBox"); if (box) { box.textContent = msg || "Грешка."; show(box); } }
@@ -77,6 +75,7 @@ function handleFileInputChange() {
   FILE_KIND_LOCK = true;
   dis(kind, true);
   ANALYZED_READY = false;
+  setStatusLabel("");
   renderPreview();
   lockDocType();
   updateDropdownFlow();
@@ -131,7 +130,6 @@ function parseLabs(text) {
   let refBlock = [];
   for (let i = 0; i < lines.length; i++) { if (/REFERENCE\s*INTERVAL/i.test(lines[i])) { refBlock = lines.slice(i + 1); break; } }
   for (const ln of lines) {
-    if (/^Стъпка\s*[12]/i.test(ln)) continue;
     if (/^(tests|result|flag|units|reference|comp\.|panel)/i.test(ln)) continue;
     const m = ln.match(kvRe);
     if (!m) continue;
@@ -229,7 +227,7 @@ function getLabTableData() {
 
 function refreshTableFromText() {
   const t = (getTextArea()?.value || "");
-  const items = parseLabs(stripStepHeaders(t));
+  const items = parseLabs(t);
   renderLabTable(items);
 }
 
@@ -260,11 +258,7 @@ function syncTableToText() {
     return `${x.name} ${v}${u}${ref}`;
   });
   const ta = getTextArea();
-  if (!ta) return;
-  const body = lines.join("\n");
-  const s1 = buildOCRHeader(LAST_OCR_META || {});
-  const s2 = LAST_AI_HEADER || "";
-  ta.value = [s2, s1, "", body].filter(Boolean).join("\n").replace(/\n{3,}/g, "\n\n");
+  if (ta) ta.value = lines.join("\n");
 }
 
 function ensureLabControls() {
@@ -289,19 +283,11 @@ function ensureLabControls() {
   el("btnRefreshTable").onclick = (e) => { e.preventDefault(); refreshTableFromText(); ANALYZED_READY = false; updateButtons(); };
   el("btnEditTable").onclick = (e) => { e.preventDefault(); LAB_EDIT_MODE = !LAB_EDIT_MODE; setTableEditable(LAB_EDIT_MODE); ANALYZED_READY = false; updateButtons(); e.currentTarget.textContent = LAB_EDIT_MODE ? "Изход от редакция" : "Редакция на таблицата"; };
   el("btnSyncToText").onclick = (e) => { e.preventDefault(); syncTableToText(); ANALYZED_READY = false; updateButtons(); };
-  el("btnRevertOCR").onclick = (e) => { e.preventDefault(); if (!ORIGINAL_OCR_TEXT) return; const ta = getTextArea(); setv(ta, [LAST_AI_HEADER || "", buildOCRHeader(LAST_OCR_META || {}), "", ORIGINAL_OCR_TEXT].filter(Boolean).join("\n")); renderLabTable(parseLabs(ORIGINAL_OCR_TEXT)); ANALYZED_READY = false; updateButtons(); };
+  el("btnRevertOCR").onclick = (e) => { e.preventDefault(); if (!ORIGINAL_OCR_TEXT) return; const ta = getTextArea(); setv(ta, ORIGINAL_OCR_TEXT); renderLabTable(parseLabs(ORIGINAL_OCR_TEXT)); ANALYZED_READY = false; setStatusLabel(buildOCRStatus(LAST_OCR_META)); updateButtons(); };
 }
 
 function getSelectedLabel(selId) { const s = el(selId); if (!s) return ""; const o = s.options && s.options[s.selectedIndex]; return o ? (o.text || "").trim() : ""; }
-
-function inferFormatHint() {
-  const label = getSelectedLabel("sel_doc_type").toLowerCase();
-  if (!label) return "";
-  if (label.includes("кръв")) return "table";
-  if (label.includes("епикриз")) return "paragraph";
-  if (label.includes("рецепт")) return "list";
-  return "";
-}
+function inferFormatHint() { const label = getSelectedLabel("sel_doc_type").toLowerCase(); if (!label) return ""; if (label.includes("кръв")) return "table"; if (label.includes("епикриз")) return "paragraph"; if (label.includes("рецепт")) return "list"; return ""; }
 
 function anonymizeText(src) {
   let text = src || "";
@@ -313,24 +299,6 @@ function anonymizeText(src) {
   repl(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi);
   repl(/№\s*\d+/g);
   return { text, meta: { redactions: count } };
-}
-
-function setMetaOCR(meta) {
-  LAST_OCR_META = meta || {};
-  const metaEl = ensureMeta();
-  const line = buildOCRHeader(LAST_OCR_META);
-  if (metaEl) metaEl.textContent = line;
-  setStepLabel("Стъпка 1: OCR сканиране");
-}
-
-function setMetaAnalyze(data, payloadUsed) {
-  const metaEl = ensureMeta();
-  const s2 = buildAIHeader(data, payloadUsed);
-  LAST_AI_HEADER = s2;
-  const s1 = buildOCRHeader(LAST_OCR_META || {});
-  if (metaEl) metaEl.textContent = [s2, s1].filter(Boolean).join(" • ");
-  setStepLabel("Стъпка 2: AI Анализ");
-  upsertStepLinesInTextarea({ s1: s1, s2: s2, content: null });
 }
 
 async function doOCR() {
@@ -352,8 +320,9 @@ async function doOCR() {
     const area = getTextArea();
     if (area) area.removeAttribute("disabled");
     ORIGINAL_OCR_TEXT = text;
-    setMetaOCR(data.ocr_meta || {});
-    upsertStepLinesInTextarea({ s1: buildOCRHeader(data.ocr_meta || {}), s2: null, content: text });
+    LAST_OCR_META = data.ocr_meta || {};
+    setv(area, text);
+    setStatusLabel(buildOCRStatus(LAST_OCR_META));
     renderLabTable(parseLabs(text));
     ANALYZED_READY = false;
     updateButtons();
@@ -374,7 +343,7 @@ async function doAnalyze() {
   try {
     lockClassification();
     const p = picks();
-    const anon = anonymizeText(stripStepHeaders(raw));
+    const anon = anonymizeText(raw);
     const payload = { text: anon.text, anonymized: true, anonymization_meta: anon.meta, ...currentTags() };
     const fmt = inferFormatHint();
     if (fmt) payload.format_hint = fmt;
@@ -390,7 +359,8 @@ async function doAnalyze() {
     const rowsFromBlood = normalizeRows((data.blood_test_results || data?.data?.blood_test_results || []));
     const rows = rowsFromTables.length ? rowsFromTables : rowsFromBlood.length ? rowsFromBlood : parseLabs(anon.text);
     renderLabTable(rows);
-    setMetaAnalyze(data, payload);
+    LAST_AI_META = data.analysis_meta || data.meta || {};
+    setStatusLabel(buildAIStatus(LAST_AI_META, payload));
     ANALYZED_READY = true;
     updateButtons();
   } catch (_) { showError("Грешка при анализ."); }
@@ -400,7 +370,7 @@ async function doAnalyze() {
 async function doConfirm() {
   clearError();
   if (!requiredTagsReady()) { showError("Изберете Категория, Специалност и Вид документ."); return; }
-  if (!ANALYZED_READY) { showError("Първо стартирайте AI анализ."); return; }
+  if (!ANАЛYZED_READY) { showError("Първо стартирайте AI анализ."); return; }
   const area = getTextArea();
   const text = (area ? area.value : "") || "";
   if (!text.trim()) { showError("Няма данни за запис."); return; }
@@ -444,8 +414,7 @@ function bindUI() {
   if (bAna) bAna.addEventListener("click", (e) => { e.preventDefault(); doAnalyze(); });
   if (bCfm) bCfm.addEventListener("click", (e) => { e.preventDefault(); doConfirm(); });
   ensureLabControls();
-  ensureMeta();
-  ensureStepLabel();
+  setStatusLabel("");
   updateDropdownFlow();
   updateButtons();
   suggestIfReady();
