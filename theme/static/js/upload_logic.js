@@ -7,7 +7,7 @@ function seth(x, h) { if (x) x.innerHTML = h || ""; }
 function setv(x, v) { if (x) x.value = v || ""; }
 function dis(x, f) { if (!x) return; x.disabled = !!f; x.classList.toggle("opacity-50", !!f); x.classList.toggle("cursor-not-allowed", !!f); }
 function getCSRF() { const t = document.querySelector('input[name="csrfmiddlewaretoken"]'); if (t && t.value) return t.value; const m = document.cookie.match(/(?:^|;)\s*csrftoken=([^;]+)/); return m ? decodeURIComponent(m[1]) : ""; }
-function ensureMeta() { let m = el("workMeta"); if (!m) { const ta = el("workText"); if (ta && ta.parentElement) { m = document.createElement("div"); m.id = "workMeta"; m.className = "text-xs text-gray-500 mt-1"; ta.parentElement.insertBefore(m, ta); } } return m; }
+function ensureMeta() { let m = el("workMeta"); if (!m) { const ta = el("workText"); if (ta && ta.parentElement) { m = document.createElement("div"); m.id = "workMeta"; m.className = "text-xs text-gray-600 mt-1"; ta.parentElement.insertBefore(m, ta); } } return m; }
 function ensureUXStyles() { if (document.getElementById("uxUploadInject")) return; const s = document.createElement("style"); s.id = "uxUploadInject"; s.textContent = `.btn[aria-disabled="true"]{opacity:.5;cursor:not-allowed;pointer-events:none}.btn.btn-armed:hover{filter:brightness(1.05)}`; document.head.appendChild(s); }
 
 let CURRENT_FILE = null;
@@ -30,13 +30,33 @@ function picks() {
     eventId: (el("existingEventSelect") || {}).value || ""
   };
 }
+
+function requiredTagsReady() { const p = picks(); return !!(p.category && p.specialty && p.docType); }
+function pipelineReady() { const p = picks(); return !!(p.category && p.specialty && p.docType && p.fileKind); }
+
 function currentTags() { const p = picks(); return { category_id: p.category || "", specialty_id: p.specialty || "", doc_type_id: p.docType || "", file_kind: p.fileKind || "" }; }
 
 function lockDocType() { DOC_LOCK = true; dis(el("sel_doc_type"), true); }
 function lockClassification() { CLASS_LOCK = true; ["sel_category","sel_specialty","sel_doc_type","file_kind"].forEach(id => dis(el(id), true)); }
 
-function stage() { const p = picks(); if (!p.file) return "choose_file"; const text = (el("workText") || {}).value || ""; if (!text.trim()) return "ocr"; return "analyze"; }
-function updateButtons() { const s = stage(); const bOCR = el("btnOCR"); const bAna = el("btnAnalyze"); const bCfm = el("btnConfirm"); if (bOCR) (s === "ocr") ? show(bOCR) : hide(bOCR); if (bAna) (s !== "ocr") ? show(bAna) : hide(bAna); if (bCfm) (ANALYZED_READY ? show(bCfm) : hide(bCfm)); }
+function stage() {
+  const p = picks();
+  if (!p.file) return "choose_file";
+  const text = (el("workText") || {}).value || "";
+  if (!text.trim()) return "ocr";
+  return "analyze";
+}
+
+function updateButtons() {
+  const s = stage();
+  const p = picks();
+  const bOCR = el("btnOCR");
+  const bAna = el("btnAnalyze");
+  const bCfm = el("btnConfirm");
+  if (bOCR) (s === "ocr" && pipelineReady()) ? show(bOCR) : hide(bOCR);
+  if (bAna) (s === "analyze" && requiredTagsReady()) ? show(bAna) : hide(bAna);
+  if (bCfm) (ANALYZED_READY && requiredTagsReady()) ? show(bCfm) : hide(bCfm);
+}
 
 function setBusy(on) { const o = el("loadingOverlay"); if (on) show(o); else hide(o); }
 function showError(msg) { const box = el("errorBox"); if (box) { box.textContent = msg || "Грешка."; show(box); } }
@@ -50,7 +70,7 @@ function renderPreview() {
   const meta = el("fileMeta");
   const badge = el("fileNameBadge");
   if (!CURRENT_FILE) { hide(wrap); if (meta) seth(meta, ""); if (badge) badge.classList.add("hidden"); return; }
-  if (CURRENT_FILE_URL) { URL.revokeObjectURL(CURRENT_FILE_URL); CURRENT_FILE_URL = null; }
+  if (CURRENT_FILE_URL) { try { URL.revokeObjectURL(CURRENT_FILE_URL); } catch(_) {} CURRENT_FILE_URL = null; }
   CURRENT_FILE_URL = URL.createObjectURL(CURRENT_FILE);
   const name = CURRENT_FILE.name || "file";
   const type = (CURRENT_FILE.type || "").toLowerCase();
@@ -150,10 +170,8 @@ function renderLabTable(items) {
   const sum = el("labSummary");
   if (!wrap || !slot) return;
   if (!items || !items.length) { hide(wrap); seth(slot, ""); if (sum) seth(sum, ""); return; }
-
   const rows = items.map(x => {
-    const inRef = (x.ref_low != null && x.ref_high != null && typeof x.value === "number")
-      ? (x.value >= x.ref_low && x.value <= x.ref_high) : null;
+    const inRef = (x.ref_low != null && x.ref_high != null && typeof x.value === "number") ? (x.value >= x.ref_low && x.value <= x.ref_high) : null;
     const warn = inRef === false ? "font-semibold text-danger" : "";
     const unit = x.unit ? x.unit : "";
     const ref = (x.ref_low != null && x.ref_high != null) ? `${x.ref_low} - ${x.ref_high}` : "";
@@ -165,7 +183,6 @@ function renderLabTable(items) {
         <td class="border border-primaryDark bg-white px-3 py-2">${ref}</td>
       </tr>`;
   }).join("");
-
   const html = `
     <table class="w-full border-separate border-spacing-0 text-primaryDark">
       <thead>
@@ -260,14 +277,73 @@ function ensureLabControls() {
   } else {
     ["btnRefreshTable","btnEditTable","btnSyncToText","btnRevertOCR"].forEach(id => { const b = el(id); if (b) b.className = cls; });
   }
-  el("btnRefreshTable").onclick = (e) => { e.preventDefault(); refreshTableFromText(); };
-  el("btnEditTable").onclick = (e) => { e.preventDefault(); LAB_EDIT_MODE = !LAB_EDIT_MODE; setTableEditable(LAB_EDIT_MODE); e.currentTarget.textContent = LAB_EDIT_MODE ? "Изход от редакция" : "Редакция на таблицата"; };
-  el("btnSyncToText").onclick = (e) => { e.preventDefault(); syncTableToText(); };
+  el("btnRefreshTable").onclick = (e) => { e.preventDefault(); refreshTableFromText(); ANALYZED_READY = false; updateButtons(); };
+  el("btnEditTable").onclick = (e) => { e.preventDefault(); LAB_EDIT_MODE = !LAB_EDIT_MODE; setTableEditable(LAB_EDIT_MODE); ANALYZED_READY = false; updateButtons(); e.currentTarget.textContent = LAB_EDIT_MODE ? "Изход от редакция" : "Редакция на таблицата"; };
+  el("btnSyncToText").onclick = (e) => { e.preventDefault(); syncTableToText(); ANALYZED_READY = false; updateButtons(); };
   el("btnRevertOCR").onclick = (e) => { e.preventDefault(); if (!ORIGINAL_OCR_TEXT) return; const ta = el("workText"); setv(ta, ORIGINAL_OCR_TEXT); renderLabTable(parseLabs(ORIGINAL_OCR_TEXT)); ANALYZED_READY = false; updateButtons(); };
+}
+
+function getSelectedLabel(selId) { const s = el(selId); if (!s) return ""; const o = s.options && s.options[s.selectedIndex]; return o ? (o.text || "").trim() : ""; }
+
+function inferFormatHint() {
+  const label = getSelectedLabel("sel_doc_type").toLowerCase();
+  if (!label) return "";
+  if (label.includes("кръв")) return "table";
+  if (label.includes("епикриз")) return "paragraph";
+  if (label.includes("рецепт")) return "list";
+  return "";
+}
+
+function anonymizeText(src) {
+  let text = src || "";
+  let count = 0;
+  const repl = (re) => { const before = text; text = text.replace(re, "[REDACTED]"); if (text !== before) count++; };
+  repl(/\b(?:ЕГН|EGN)\s*[:\-]?\s*\d{10}\b/gi);
+  repl(/\b\d{10}\b/g);
+  repl(/\b(?:\+?359|0)\d{8,9}\b/g);
+  repl(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi);
+  repl(/№\s*\d+/g);
+  return { text, meta: { redactions: count } };
+}
+
+function setMetaOCR(meta) {
+  const metaEl = ensureMeta();
+  const eng = (meta.engine || (meta.engines || [])[0] || "").toString();
+  const method = (meta.method || "").toString();
+  const lang = (meta.lang || (meta.langs || [])[0] || "").toString();
+  const pages = meta.pages_total || meta.pages || "";
+  const parts = [];
+  parts.push("Стъпка 1: OCR сканиране");
+  if (eng) parts.push(eng);
+  if (method) parts.push(method);
+  if (lang) parts.push(lang);
+  if (pages) parts.push(`стр.${pages}`);
+  if (metaEl) metaEl.textContent = parts.join(" • ");
+}
+
+function setMetaAnalyze(data, payloadUsed) {
+  const metaEl = ensureMeta();
+  const am = data.analysis_meta || data.meta || {};
+  const provider = (am.provider || data.provider || data.vendor || "").toString();
+  const model = (am.model || am.engine || data.model || data.engine || "").toString();
+  const method = (am.method || am.strategy || "").toString();
+  const lang = (am.lang || am.language || "").toString();
+  const fmt = payloadUsed && payloadUsed.format_hint ? `format:${payloadUsed.format_hint}` : "";
+  const parts = [];
+  parts.push("Стъпка 2: AI Анализ");
+  if (provider && model) parts.push(`${provider}:${model}`);
+  else if (provider) parts.push(provider);
+  else if (model) parts.push(model);
+  if (method) parts.push(method);
+  if (lang) parts.push(lang);
+  if (fmt) parts.push(fmt);
+  parts.push("anon");
+  if (metaEl) metaEl.textContent = parts.filter(Boolean).join(" • ");
 }
 
 async function doOCR() {
   clearError();
+  if (!pipelineReady()) { showError("Задайте Категория, Специалност, Вид документ и Вид файл."); return; }
   const p = picks();
   if (!p.file) { showError("Моля изберете файл."); return; }
   setBusy(true);
@@ -282,30 +358,11 @@ async function doOCR() {
     const text = (data.ocr_text || data.text || "").toString();
     if (!text.trim()) { showError("Празен OCR резултат."); return; }
     const area = el("workText");
-    area.removeAttribute("disabled");
+    if (area) area.removeAttribute("disabled");
     setv(area, text);
     ORIGINAL_OCR_TEXT = text;
-
-    const metaEl = ensureMeta();
-    const engRaw = (data?.telemetry?.engine_chosen || data?.engine || data?.meta?.engine || data?.engine_chosen || data?.ocr_engine || "").toString().toLowerCase();
-    const vAtt = data?.telemetry?.vision_attempted;
-    const tAtt = data?.telemetry?.tesseract_attempted;
-    let eng = engRaw;
-    if (!eng) {
-      if (vAtt === true && tAtt === true) eng = "vision+tesseract";
-      else if (vAtt === true) eng = "vision";
-      else if (tAtt === true) eng = "tesseract";
-    }
-    const engine = eng === "vision" ? "Google Vision" : eng === "tesseract" ? "Tesseract" : eng === "vision+tesseract" ? "Vision→Tesseract" : "неизвестен";
-    const rid = (data?.rid || data?.telemetry?.rid || data?.request_id || "");
-    const parts = [`OCR: ${engine}`];
-    if (rid) parts.push(rid);
-    if (typeof vAtt === "boolean") parts.push(`V:${vAtt ? "Y" : "N"}`);
-    if (typeof tAtt === "boolean") parts.push(`T:${tAtt ? "Y" : "N"}`);
-    if (metaEl) metaEl.textContent = parts.join(" • ");
-
-    const labs = parseLabs(text);
-    renderLabTable(labs);
+    setMetaOCR(data.ocr_meta || {});
+    renderLabTable(parseLabs(text));
     ANALYZED_READY = false;
     updateButtons();
   } catch (_) {
@@ -315,22 +372,33 @@ async function doOCR() {
   }
 }
 
-
 async function doAnalyze() {
   clearError();
+  if (!requiredTagsReady()) { showError("Изберете Категория, Специалност и Вид документ."); return; }
   const area = el("workText");
-  const text = (area ? area.value : "") || "";
-  if (!text.trim()) { showError("Липсва текст за анализ."); return; }
+  const raw = (area ? area.value : "") || "";
+  if (!raw.trim()) { showError("Липсва текст за анализ."); return; }
   setBusy(true);
   try {
     lockClassification();
-    const res = await fetch(API.analyze, { method: "POST", headers: { "Content-Type": "application/json", "X-CSRFToken": getCSRF() }, credentials: "same-origin", body: JSON.stringify({ text, ...currentTags() }) });
+    const p = picks();
+    const anon = anonymizeText(raw);
+    const payload = { text: anon.text, anonymized: true, anonymization_meta: anon.meta, ...currentTags() };
+    const fmt = inferFormatHint();
+    if (fmt) payload.format_hint = fmt;
+    if (p.eventId) payload.event_id = p.eventId;
+    const res = await fetch(API.analyze, { method: "POST", headers: { "Content-Type": "application/json", "X-CSRFToken": getCSRF() }, credentials: "same-origin", body: JSON.stringify(payload) });
+    if (!res.ok) throw new Error("analyze_failed");
     const data = await res.json();
     const summary = (data.summary || "").toString();
-    if (!summary.trim()) { showError("Празен резултат от анализ."); return; }
-    setv(area, summary);
-    const labs = parseLabs(summary);
-    renderLabTable(labs);
+    if (area && summary) setv(area, summary);
+    const tablesA = (data?.data?.tables || []);
+    const tablesB = Array.isArray(data?.tables) ? data.tables : [];
+    const rowsFromTables = [...tablesA, ...tablesB].flatMap(t => normalizeRows(t.rows || t));
+    const rowsFromBlood = normalizeRows((data.blood_test_results || data?.data?.blood_test_results || []));
+    const rows = rowsFromTables.length ? rowsFromTables : rowsFromBlood.length ? rowsFromBlood : parseLabs(raw);
+    renderLabTable(rows);
+    setMetaAnalyze(data, payload);
     ANALYZED_READY = true;
     updateButtons();
   } catch (_) { showError("Грешка при анализ."); }
@@ -339,13 +407,18 @@ async function doAnalyze() {
 
 async function doConfirm() {
   clearError();
+  if (!requiredTagsReady()) { showError("Изберете Категория, Специалност и Вид документ."); return; }
+  if (!ANALYZED_READY) { showError("Първо стартирайте AI анализ."); return; }
   const area = el("workText");
   const text = (area ? area.value : "") || "";
   if (!text.trim()) { showError("Няма данни за запис."); return; }
   setBusy(true);
   try {
     lockClassification();
-    const res = await fetch(API.confirm, { method: "POST", headers: { "Content-Type": "application/json", "X-CSRFToken": getCSRF() }, credentials: "same-origin", body: JSON.stringify({ text, ...currentTags() }) });
+    const p = picks();
+    const body = { text, ...currentTags(), lab_rows: getLabTableData() };
+    if (p.eventId) body.event_id = p.eventId;
+    const res = await fetch(API.confirm, { method: "POST", headers: { "Content-Type": "application/json", "X-CSRFToken": getCSRF() }, credentials: "same-origin", body: JSON.stringify(body) });
     if (!res.ok) throw new Error("confirm_failed");
   } catch (_) { showError("Грешка при запис."); }
   finally { setBusy(false); }
@@ -382,6 +455,9 @@ function bindUI() {
   ensureMeta();
   updateDropdownFlow();
   updateButtons();
+  suggestIfReady();
+  const ta = el("workText");
+  if (ta) ta.addEventListener("input", () => { ANALYZED_READY = false; updateButtons(); });
 }
 
 document.addEventListener("DOMContentLoaded", bindUI);
