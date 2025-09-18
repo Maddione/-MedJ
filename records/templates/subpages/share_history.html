@@ -2,16 +2,18 @@
 {% load static i18n %}
 
 {% block app_content %}
-<div class="max-w-5xl mx-auto">
-  <div class="bg-blockbg rounded-2xl p-6 shadow-sm mb-6">
-    <div class="bg-primaryDark p-6 rounded-3xl shadow-lg mb-8 text-white text-2xl font-bold">{% trans "История на споделянията" %}</div>
-    <div class="text-primaryDark opacity-70 mt-1">{% trans "Линкове, срокове и статус" %}</div>
-  </div>
+<main class="bg-site-background min-h-screen p-4 md:p-8">
+  <div class="max-w-5xl mx-auto">
+    <div class="bg-primaryDark p-6 rounded-3xl shadow-lg mb-8">
+      <h1 class="text-2xl font-bold text-blockbg mb-4">{% trans "История на споделянията" %}</h1>
+      <p class="mt-2 text-blockbg">{% trans "Линкове, срокове и статус" %}</p>
+    </div>
 
-  <div class="bg-blockbg rounded-2xl p-4 shadow-sm">
-    <div id="shareList" class="space-y-3"></div>
+    <div class="p-6 rounded-3xl shadow-lg" style="background:#FFFFF5">
+      <div id="shareList" class="space-y-3"></div>
+    </div>
   </div>
-</div>
+</main>
 {% endblock %}
 
 {% block scripts_extra %}
@@ -22,7 +24,7 @@
     const s=it.status||""; const e=it.expires_at||""; const u=it.url||"#";
     return '<div class="p-4 rounded-xl" style="background:#FFFFF5; box-shadow: 0 10px 14px rgba(10,30,74,.08);">'
       + '<div class="flex items-center justify-between"><div class="text-[#0A1E4A] font-semibold">'
-      + it.object_type + ' #' + it.object_id + '</div><div class="text-sm">' + s + ' · ' + e + '</div></div>'
+      + (it.object_type||'') + ' #' + (it.object_id||'') + '</div><div class="text-sm">' + s + ' · ' + e + '</div></div>'
       + '<div class="mt-2 break-all"><a href="'+u+'" class="underline" target="_blank">'+u+'</a></div>'
       + '<div class="mt-3 flex gap-2"><button data-token="'+(it.token||'')+'" class="btn-revoke px-3 h-10 rounded-lg text-white" style="background:#D84137">{{ _("Отмени") }}</button></div>'
       + '</div>';
