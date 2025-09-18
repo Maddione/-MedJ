@@ -117,11 +117,20 @@ class UploadFlowTests(TestCase):
         payload = b"duplicate-content"
         first = self._confirm_with_file(payload, summary="first")
         self.assertEqual(first.status_code, 200)
+        data_first = first.json()
+        self.assertIn("content_hash", data_first)
+        self.assertIn("redirect_url", data_first)
         self.assertEqual(Document.objects.count(), 1)
+        doc = Document.objects.get()
+        self.assertEqual(data_first["content_hash"], doc.content_hash)
+        self.assertTrue(data_first["redirect_url"].endswith(f"?q={doc.content_hash}"))
+
         again = self._confirm_with_file(payload, summary="second")
         self.assertEqual(again.status_code, 409)
         body = again.json()
         self.assertEqual(body.get("error"), "duplicate")
+        self.assertEqual(body.get("content_hash"), doc.content_hash)
+        self.assertIn("?q=", body.get("redirect_url", ""))
         self.assertEqual(Document.objects.count(), 1)
 
     def test_confirm_sets_creation_date_fallback(self):

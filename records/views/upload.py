@@ -19,6 +19,7 @@ import math
 import os, requests, json, re, time, hashlib, unicodedata
 from datetime import datetime
 from django.utils import timezone
+from django.db import IntegrityError
 
 __all__ = [
     "upload_ocr",
@@ -887,6 +888,9 @@ def upload_confirm(request):
     except Exception:
         pass
 
+    documents_url = reverse("medj:documents")
+    redirect_to_hash = f"{documents_url}?q={digest}" if digest else documents_url
+
     existing_doc = (
         Document.objects.filter(owner=request.user, content_hash=digest)
         .order_by("-id")
@@ -903,7 +907,8 @@ def upload_confirm(request):
             {
                 "error": "duplicate",
                 "document_id": existing_doc.id,
-                "redirect_url": reverse("medj:documents"),
+                "content_hash": digest,
+                "redirect_url": redirect_to_hash,
             },
             status=409,
         )
@@ -946,7 +951,25 @@ def upload_confirm(request):
         sha256=digest,
     )
     doc.file.save(upload_file.name, upload_file, save=False)
-    doc.save()
+    try:
+        doc.save()
+    except IntegrityError:
+        dupe = (
+            Document.objects.filter(owner=request.user, content_hash=digest)
+            .order_by("-id")
+            .first()
+        )
+        if dupe:
+            return JsonResponse(
+                {
+                    "error": "duplicate",
+                    "document_id": dupe.id,
+                    "content_hash": digest,
+                    "redirect_url": redirect_to_hash,
+                },
+                status=409,
+            )
+        raise
 
     if not doc.date_created and doc.uploaded_at:
         doc.date_created = doc.uploaded_at.date()
@@ -971,7 +994,8 @@ def upload_confirm(request):
             "event_id": event.id if event else None,
             "meta": meta,
             "file_url": doc.file.url if doc.file else "",
-            "redirect_url": reverse("medj:documents"),
+            "content_hash": digest,
+            "redirect_url": redirect_to_hash,
         }
     )
 

@@ -1101,8 +1101,8 @@ async function doConfirm() {
     try { data = await res.json(); } catch {}
     if (res.status === 409) {
       const docId = data?.document_id;
-      const historyUrl = CONFIG.history_url || CONFIG.documents_url || "";
-      const label = CONFIG.history_url ? "История" : "Документи";
+      const historyUrl = data?.redirect_url || CONFIG.history_url || CONFIG.documents_url || "";
+      const label = data?.redirect_url ? "Виж в историята" : (CONFIG.history_url ? "История" : "Документи");
       const linkHtml = historyUrl ? `<a class="underline font-semibold" href="${escapeHtml(historyUrl)}">${escapeHtml(label)}</a>` : "";
       const parts = [`Файлът вече е качен${docId ? ` (Документ №${docId})` : ""}.`];
       if (linkHtml) parts.push(linkHtml);

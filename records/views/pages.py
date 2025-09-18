@@ -8,6 +8,7 @@ def _user_documents(user):
     return (
         Document.objects.filter(owner=user)
         .select_related("medical_event", "doc_type")
+        .prefetch_related("tags")
         .order_by("-uploaded_at")
     )
 
@@ -15,4 +16,8 @@ def _user_documents(user):
 @login_required
 def documents_view(request):
     documents = _user_documents(request.user)
-    return render(request, "main/documents.html", {"documents": documents})
+    query = (request.GET.get("q") or "").strip()
+    if query:
+        documents = documents.filter(content_hash=query)
+    ctx = {"documents": documents, "query": query}
+    return render(request, "main/documents.html", ctx)
