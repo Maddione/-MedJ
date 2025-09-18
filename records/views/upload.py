@@ -13,6 +13,7 @@ from records.models import (
     LabIndicator,
 )
 
+import logging
 from decimal import Decimal
 import math
 import os, requests, json, re, time, hashlib, unicodedata
@@ -27,6 +28,8 @@ __all__ = [
     "upload_history",
     "events_suggest",
 ]
+
+logger = logging.getLogger(__name__)
 
 def _parse_date(value):
     s = (value or "").strip()
@@ -52,6 +55,7 @@ def _safe_name(o):
     if not n:
         n = getattr(o, "name", "") or getattr(o, "title", "") or getattr(o, "slug", "") or str(o)
     return n
+
 
 def _q_names(model):
     out = []
@@ -710,16 +714,19 @@ def upload_analyze(request):
     api_key = os.getenv("OPENAI_API_KEY", "").strip()
     model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
     started = time.monotonic()
+    fallback_reason = None
+
     if api_key:
         try:
             from openai import OpenAI
+
             client = OpenAI(api_key=api_key)
             sys = _build_system_prompt()
             resp = client.chat.completions.create(
                 model=model,
                 response_format={"type": "json_object"},
                 max_tokens=1200,
-                messages=[{"role": "system", "content": sys}, {"role": "user", "content": clean}]
+                messages=[{"role": "system", "content": sys}, {"role": "user", "content": clean}],
             )
             content = resp.choices[0].message.content or "{}"
             data = json.loads(content)
@@ -734,31 +741,51 @@ def upload_analyze(request):
             }
 
             return JsonResponse({"summary": summary, "data": enriched, "meta": meta})
+        except Exception:
+            logger.exception("OpenAI analysis failed")
+            fallback_reason = "openai_error"
+    else:
+        fallback_reason = "missing_api_key"
 
-    @login_required
-    @require_http_methods(["POST"])
-    def upload_confirm(request):
-        upload_file = request.FILES.get("file")
-        if not upload_file:
-            return HttpResponseBadRequest("Missing file")
+    summary, enriched = _enrich_analysis({}, txt, specialty_name, doc_type_name)
+    elapsed = int(max((time.monotonic() - started) * 1000, 0))
+    meta = {
+        "engine": "MedJ Analyzer",
+        "provider": "medj",
+        "duration_ms": elapsed,
+    }
+    if fallback_reason == "missing_api_key":
+        meta["detail"] = "OpenAI API key not configured"
+    elif fallback_reason == "openai_error":
+        meta["detail"] = "OpenAI analysis failed, fallback used"
 
-        def _obj_or_400(model, key):
-            value = request.POST.get(key) or request.POST.get(key.replace("_id", ""), "")
-            if not value or not str(value).isdigit():
-                return None
-            return model.objects.filter(id=int(value)).first()
+    return JsonResponse({"summary": summary, "data": enriched, "meta": meta})
 
-        category = _obj_or_400(MedicalCategory, "category_id")
-        specialty = _obj_or_400(MedicalSpecialty, "specialty_id")
-        doc_type = _obj_or_400(DocumentType, "doc_type_id")
-        if not (category and specialty and doc_type):
-            return HttpResponseBadRequest("Missing classification")
 
-        file_kind = (request.POST.get("file_kind") or "").strip().lower()
-        valid_kinds = {"image", "pdf", "other"}
+@login_required
+@require_http_methods(["POST"])
+def upload_confirm(request):
+    upload_file = request.FILES.get("file")
+    if not upload_file:
+        return HttpResponseBadRequest("Missing file")
 
-        def _guess_file_kind(f):
-            name = (getattr(f, "name", "") or "").lower()
+    def _obj_or_400(model, key):
+        value = request.POST.get(key) or request.POST.get(key.replace("_id", ""), "")
+        if not value or not str(value).isdigit():
+            return None
+        return model.objects.filter(id=int(value)).first()
+
+    category = _obj_or_400(MedicalCategory, "category_id")
+    specialty = _obj_or_400(MedicalSpecialty, "specialty_id")
+    doc_type = _obj_or_400(DocumentType, "doc_type_id")
+    if not (category and specialty and doc_type):
+        return HttpResponseBadRequest("Missing classification")
+
+    file_kind = (request.POST.get("file_kind") or "").strip().lower()
+    valid_kinds = {"image", "pdf", "other"}
+
+    def _guess_file_kind(f):
+        name = (getattr(f, "name", "") or "").lower()
         if name.endswith((".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tif", ".tiff", ".webp")):
             return "image"
         if name.endswith(".pdf"):
@@ -886,7 +913,6 @@ def upload_analyze(request):
             "event_id": event.id if event else None,
             "meta": meta,
             "file_url": doc.file.url if doc.file else "",
-
             "redirect_url": reverse("medj:documents"),
         }
     )

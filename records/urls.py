@@ -140,15 +140,16 @@ urlpatterns = [
     path("api/share/revoke/<str:token>/", login_required(share_revoke), name="share_revoke"),
     path("api/share/qr/<str:token>.png", login_required(share_qr_png), name="share_qr"),
 
-    path("api/upload/ocr/", login_required(upload_views.upload_ocr), name="upload_ocr"),
-    path("api/upload/analyze/", login_required(upload_views.upload_analyze), name="upload_analyze"),
-    path("api/upload/confirm/", login_required(upload_views.upload_confirm), name="upload_confirm"),
-    path("api/events/suggest/", login_required(upload_views.events_suggest), name="events_suggest"),
+    path("api/upload/ocr/", login_required(upload_ocr), name="upload_ocr"),
+    path("api/upload/analyze/", login_required(upload_analyze), name="upload_analyze"),
+    path("api/upload/confirm/", login_required(upload_confirm), name="upload_confirm"),
+    path("api/events/suggest/", login_required(events_suggest), name="events_suggest"),
     path("api/doctors/suggest/", login_required(doctors_suggest), name="doctors_suggest"),
 
-    path("api/personalcard/share/enable/", login_required(personalcard_share_enable_api), name="personalcard_share_enable_api"),
+    path("api/personalcard/share/enable/", login_required(personalcard_share_enable_api),
+         name="personalcard_share_enable_api"),
     path("api/personalcard/qr/<str:token>/", login_required(personalcard_qr), name="personalcard_qr"),
 
-    path("app/upload/", login_required(upload_views.upload_preview), name="upload_legacy"),
-    path("app/upload/history/", login_required(upload_views.upload_history), name="upload_history_legacy"),
+    path("app/upload/", login_required(upload_preview), name="upload_legacy"),
+    path("app/upload/history/", login_required(upload_history), name="upload_history_legacy"),
 ]
