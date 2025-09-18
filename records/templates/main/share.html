@@ -3,7 +3,7 @@
 {% block title %}{% trans "Споделяне / Експорт" %}{% endblock %}
 {% block app_content %}
 <main class="max-w-6xl mx-auto grid md:grid-cols-12 gap-6">
-  <section class="md:col-span-8 bg-[#FDFEE9] rounded-2xl shadow p-4">
+  <section class="md:col-span-8 bg-[#FFFFF5] rounded-2xl shadow p-4">
     <h1 class="text-2xl font-bold mb-3" style="color:#0A4E75">{% trans "Филтър" %}</h1>
     <form id="share-filters" class="space-y-4" data-create-links-url="{% url 'medj:create_download_links' %}" data-qr-for-url="{% url 'medj:qr_for_url' %}">
       {% csrf_token %}
