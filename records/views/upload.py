@@ -19,6 +19,14 @@ import os, requests, json, re, time, hashlib, unicodedata
 from datetime import datetime
 from django.utils import timezone
 
+__all__ = [
+    "upload_ocr",
+    "upload_analyze",
+    "upload_confirm",
+    "upload_preview",
+    "upload_history",
+    "events_suggest",
+]
 
 def _parse_date(value):
     s = (value or "").strip()
@@ -726,17 +734,6 @@ def upload_analyze(request):
             }
 
             return JsonResponse({"summary": summary, "data": enriched, "meta": meta})
-        except Exception:
-            pass
-        data = _fallback_extract(txt, specialty_name)
-        summary, enriched = _enrich_analysis(data, txt, specialty_name, doc_type_name)
-        elapsed = int(max((time.monotonic() - started) * 1000, 0))
-        meta = {
-            "engine": "MedJ Analyzer",
-            "provider": "internal",
-            "duration_ms": elapsed,
-        }
-        return JsonResponse({"summary": summary, "data": enriched, "meta": meta})
 
     @login_required
     @require_http_methods(["POST"])
