@@ -1,5 +1,3 @@
-// MedJ upload logic — aligned to backend contracts from README
-// Flow: Upload → OCR → Analyze → Confirm. Endpoints under /api/upload/*. :contentReference[oaicite:1]{index=1}
 const API = {
   ocr: "/api/upload/ocr/",
   analyze: "/api/upload/analyze/",
@@ -119,6 +117,7 @@ function formatNumber(value) {
   if (Number.isFinite(asNum)) return formatNumber(asNum);
   return String(value);
 }
+
 const clearStatus = () => {
   const box = $("statusBox");
   if (box) {
@@ -133,7 +132,6 @@ const getCSRF = () => {
   return m ? decodeURIComponent(m[1]) : "";
 };
 
-// runtime state
 let FILE = null;
 let FILE_KIND = "";
 let FILE_URL = null;
@@ -151,6 +149,14 @@ let TABLE_EDIT_MODE = false;
 const STEP_CONFIG = {
   1: { label: "Стъпка 1: OCR сканиране" },
   2: { label: "Стъпка 2: AI Анализ" },
+  3: { label: "Стъпка 3: Запазване" },
+};
+let CURRENT_STEP = 1;
+const STEP_META = { 1: null, 2: null, 3: null };
+
+const STEP_CONFIG = {
+  1: { label: "Стъпка 1: Екстракт на текст" },
+  2: { label: "Стъпка 2: Анализ" },
   3: { label: "Стъпка 3: Запазване" },
 };
 let CURRENT_STEP = 1;
@@ -232,6 +238,9 @@ function normalizeStepMeta(meta) {
   if (docId != null && docId !== "") info.document_id = docId;
   const eventId = meta.event_id ?? meta.eventId;
   if (eventId != null && eventId !== "") info.event_id = eventId;
+  if (meta.document_id != null) info.document_id = meta.document_id;
+  if (meta.event_id != null) info.event_id = meta.event_id;
+
   return info;
 }
 
@@ -248,15 +257,43 @@ function updateStepDisplay() {
     const parts = [];
     if (engineText) parts.push(engineText);
     if (meta.provider) parts.push(meta.provider);
+
+  const text = meta.engine ? `${baseLabel} : ${meta.engine}` : baseLabel;
+  if (labelNode) labelNode.textContent = text;
+  if (metaNode) {
+    const parts = [];
+
     if (meta.duration_ms != null && !Number.isNaN(meta.duration_ms)) {
       parts.push(`${meta.duration_ms} ms`);
     }
     if (meta.detail) parts.push(meta.detail);
     if (meta.document_id != null && meta.document_id !== "") {
       parts.push(`Документ №${meta.document_id}`);
+
     }
     if (meta.event_id != null && meta.event_id !== "") {
       parts.push(`Събитие №${meta.event_id}`);
+    }
+    if (meta.status_code) {
+      parts.push(`HTTP ${meta.status_code}`);
+    }
+    const unique = [...new Set(parts.filter(Boolean))];
+    if (!unique.length) {
+      metaNode.textContent = "—";
+      metaNode.classList?.remove("hidden");
+    } else {
+      metaNode.textContent = unique.join(" • ");
+      metaNode.classList?.remove("hidden");
+
+    }
+    if (meta.event_id != null && meta.event_id !== "") {
+      parts.push(`Събитие №${meta.event_id}`);
+    if (!parts.length) {
+      metaNode.textContent = "";
+      metaNode.classList?.add("hidden");
+    } else {
+      metaNode.textContent = parts.join(" • ");
+      metaNode.classList?.remove("hidden");
     }
     if (meta.status_code) {
       parts.push(`HTTP ${meta.status_code}`);
@@ -286,11 +323,36 @@ function applyStepMeta(step, meta, makeCurrent = false) {
   }
 }
 
+function applyStepMeta(step, meta, makeCurrent = false) {
+  const idx = Number(step);
+  if (![1, 2, 3].includes(idx)) return;
+  if (meta) {
+    STEP_META[idx] = normalizeStepMeta(meta);
+  }
+
+}
+
+function applyStepMeta(step, meta, makeCurrent = false) {
+  const idx = Number(step);
+  if (![1, 2, 3].includes(idx)) return;
+  if (meta) {
+    STEP_META[idx] = normalizeStepMeta(meta);
+  }
+
+  if (makeCurrent) {
+    CURRENT_STEP = idx;
+  }
+  if (makeCurrent || idx === CURRENT_STEP) {
+    updateStepDisplay();
+  }
+}
+
 function setCurrentStep(step) {
   const idx = Number(step);
   CURRENT_STEP = [1, 2, 3].includes(idx) ? idx : 1;
   updateStepDisplay();
 }
+
 
 function resetSteps() {
   STEP_META[1] = null;
@@ -386,6 +448,12 @@ function handleFileInputChange() {
   renderLabTable([]);
   renderSummary("");
   renderSuggestedTags([], "");
+  OCR_META = {};
+  ANALYSIS = { summary: "", data: { tables: [], blood_test_results: [], suggested_tags: [] }, meta: {} };
+  setWorkText("");
+  renderLabTable([]);
+  renderSummary("");
+
   clearStatus();
   clearError();
   resetSteps();
@@ -458,7 +526,6 @@ async function suggestIfReady() {
   }
 }
 
-// ---------- OCR parsing fixes ----------
 function cleanOCRText(text) {
   // Normalize dashes and fix OCR artifact where '%' is read as '96' after a '-'
   let s = String(text || "").replace(/\r\n/g, "\n");
@@ -505,11 +572,13 @@ function parseLabs(text) {
       ref_low: rlo != null ? rlo : canon.ref_low,
       ref_high: rhi != null ? rhi : canon.ref_high,
     };
+
     if (entry.ref_low != null || entry.ref_high != null) {
       const lowTxt = entry.ref_low != null ? formatNumber(entry.ref_low) : "—";
       const highTxt = entry.ref_high != null ? formatNumber(entry.ref_high) : "—";
       entry.reference_range = `${lowTxt}-${highTxt}`;
     }
+
     if (seen.has(keyName)) {
       const prev = seen.get(keyName);
       if ((prev.value === null || prev.value === "") && entry.value) prev.value = entry.value;
@@ -552,6 +621,7 @@ function normalizeRows(rows) {
     if (rh == null) rh = canon.ref_high;
     const finalName = canon.name || name;
     const unit = unitRaw || canon.unit || null;
+
     let reference = null;
     if (rl != null || rh != null) {
       const lowTxt = rl != null ? formatNumber(rl) : "—";
@@ -643,6 +713,7 @@ function renderLabTable(rows = null) {
   const wrap = $("labWrap");
   const slot = $("labTableSlot");
   const summary = $("labSummary");
+
   if (!wrap || !slot) return;
   if (rows !== null) {
     applyLabResults(rows);
@@ -652,10 +723,18 @@ function renderLabTable(rows = null) {
     seth(slot, "");
     hide(wrap);
     TABLE_EDIT_MODE = false;
+
+  if (!wrap || !slot) return;
+  const list = Array.isArray(items) ? items : [];
+  if (!list.length) {
+    seth(slot, "");
+    hide(wrap);
+
     if (summary) {
       summary.textContent = "";
       summary.classList.add("hidden");
     }
+
     syncTableEditButton();
     return;
   }
@@ -671,6 +750,7 @@ function renderLabTable(rows = null) {
     const rowClass = below || above ? " bg-red-50" : "";
     const valueClass = below || above ? "px-2 py-1 font-semibold text-red-600" : "px-2 py-1";
     const flag = below ? "↓" : above ? "↑" : "";
+
     const displayValue = typeof x.value === "number" ? formatNumber(x.value) : (x.value || "");
     const displayUnit = x.unit || "";
     const lowText = x.ref_low != null ? formatNumber(x.ref_low) : "";
@@ -685,6 +765,11 @@ function renderLabTable(rows = null) {
         <td class="px-2 py-1" data-field="ref_low"${editAttr}>${escapeHtml(lowText)}</td>
         <td class="px-2 py-1" data-field="ref_high"${editAttr}>${escapeHtml(highText)}</td>
       </tr>`;
+    const v = formatNumber(x.value);
+    const u = x.unit || "";
+    const rl = formatNumber(x.ref_low);
+    const rh = formatNumber(x.ref_high);
+    return `<tr data-idx="${i}" class="${rowClass.trim()}"><td class="px-2 py-1">${n}</td><td class="${valueClass}">${v}${flag ? ` <span class="text-xs">${flag}</span>` : ""}</td><td class="px-2 py-1">${u}</td><td class="px-2 py-1">${rl}</td><td class="px-2 py-1">${rh}</td></tr>`;
   }).join("");
   const tableClass = TABLE_EDIT_MODE ? "min-w-full text-sm table-fixed" : "min-w-full text-sm";
   const html = `
@@ -708,7 +793,9 @@ function renderLabTable(rows = null) {
     summary.textContent = bits.join(" • ");
     summary.classList.remove("hidden");
   }
+
   syncTableEditButton();
+
 }
 
 function renderSummary(text) {
@@ -867,6 +954,12 @@ async function doOCR() {
     OCR_TEXT_ORIG = normalizedText;
     setWorkText(normalizedText, { silent: true });
     markTextEdited();
+    renderOCRMeta(OCR_META);
+    const cleaned = cleanOCRText(text);
+    OCR_TEXT_ORIG = cleaned;
+    setWorkText(cleaned);
+    ANALYZED_READY = false;
+
     renderSummary("");
     updateButtons();
     renderSuggestedTags([], "");
@@ -960,6 +1053,16 @@ async function doAnalyze() {
     renderSuggestedTags(tags, specialtyText);
     ANALYSIS.normalized_text = normalizedTextApi;
     ANALYSIS.lab_overview = labOverview;
+    ANALYSIS = { ...(data || {}), meta };
+    const summary = (ANALYSIS.summary || ANALYSIS.result?.summary || ANALYSIS.data?.summary || ANALYSIS.summary_text || "").toString();
+    renderSummary(summary);
+    const rows = normalizeRows(
+      ANALYSIS.blood_test_results ||
+      ANALYSIS.result?.blood_test_results ||
+      ANALYSIS.data?.blood_test_results ||
+      []
+    );
+    renderLabTable(rows);
     ANALYZED_READY = true;
     applyStepMeta(2, meta, true);
     updateButtons();
@@ -981,6 +1084,7 @@ async function doConfirm() {
     TABLE_EDIT_MODE = false;
     renderLabTable(edited);
   }
+
   setBusy(true);
   try {
     const fd = new FormData();
@@ -999,10 +1103,12 @@ async function doConfirm() {
       fd.append("event_date", eventDate);
       fd.append("document_date", eventDate);
     }
+
     const labsPayload = getLabResults();
     if (labsPayload.length) {
       fd.append("blood_test_results", JSON.stringify(labsPayload));
     }
+
     if (OCR_META && Object.keys(OCR_META).length) fd.append("ocr_meta", JSON.stringify(OCR_META));
     if (ANALYSIS && Object.keys(ANALYSIS).length) fd.append("analysis", JSON.stringify(ANALYSIS));
     if (ANALYSIS?.meta && Object.keys(ANALYSIS.meta || {}).length) {
@@ -1027,12 +1133,14 @@ async function doConfirm() {
       if (btn) { btn.setAttribute("aria-disabled","true"); dis(btn, true); }
       showStatus("Документът е записан успешно.");
       applyStepMeta(3, { ...meta, document_id: data?.document_id, event_id: data?.event_id }, true);
+
       const redirectTarget = data?.redirect_url || CONFIG.documents_url || "";
       if (redirectTarget) {
         setTimeout(() => {
           window.location.href = redirectTarget;
         }, 800);
       }
+
     }
   } catch {
     showError("Записът е неуспешен.");
@@ -1075,7 +1183,17 @@ function bindEvents() {
 
   const ta = $("workText");
   ta && ta.addEventListener("input", () => {
+
     markTextEdited();
+
+    ANALYZED_READY = false;
+    STEP_META[2] = null;
+    STEP_META[3] = null;
+    setCurrentStep(1);
+    const btn = $("btnConfirm");
+    if (btn) { btn.removeAttribute("aria-disabled"); dis(btn, false); }
+    updateButtons();
+
   });
 }
 

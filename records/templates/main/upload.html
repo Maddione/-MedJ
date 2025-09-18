@@ -88,12 +88,14 @@
           <div id="detectedSpecialty" class="mt-2 text-xs text-primaryDark/70"></div>
         </div>
 
+        <div id="summaryBox" class="hidden mb-4 rounded-2xl border border-primary/30 bg-white px-4 py-3 text-sm text-primaryDark"></div>
+
         <div id="labWrap" class="hidden">
           <div class="text-sm text-primaryDark font-semibold mb-2">
             {% trans "Извлечени лабораторни резултати" %}
             <span id="labSummary" class="text-xs text-primaryDark/60 ml-2"></span>
           </div>
-          <div id="labTableSlot"></div>
+          <div id="labTable"></div>
         </div>
 
         <div class="mt-4 flex flex-wrap gap-3" id="textActions">
@@ -132,5 +134,6 @@
 {{ block.super }}
 {{ lab_index|json_script:"labIndexData" }}
 {{ upload_config|json_script:"uploadConfigData" }}
+
 <script src="{% static 'js/upload_logic.js' %}?v={{ now|date:"U" }}"></script>
 {% endblock %}

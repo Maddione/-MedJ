@@ -12,6 +12,7 @@ from records.models import (
     PatientProfile,
     LabIndicator,
 )
+
 from decimal import Decimal
 import math
 import os, requests, json, re, time, hashlib, unicodedata
@@ -65,6 +66,7 @@ def _merge_lines(a, b):
             if s and s not in seen:
                 seen.add(s); out.append(s)
     return "\n".join(out).strip()
+
 
 
 LAB_INDEX_CACHE = None
@@ -467,7 +469,6 @@ def _enrich_analysis(raw_data, text, specialty_name, doc_type_name):
     analysis_data.setdefault("doctors", [])
     return summary_text, analysis_data
 
-
 def _lab_index_payload():
     try:
         indicators = (
@@ -644,8 +645,8 @@ def upload_ocr(request):
         merged = _merge_lines(merged, txt)
         if meta:
             meta_list.append(meta)
-
     resp = {"ocr_text": merged, "normalized_text": _normalize_ocr_text(merged)}
+
     if meta_list:
         if len(meta_list) == 1:
             resp["meta"] = meta_list[0]
@@ -666,11 +667,13 @@ def upload_ocr(request):
                 meta_combined["duration_ms"] = total
             if meta_combined:
                 resp["meta"] = meta_combined
+                
     meta = resp.get("meta") or {}
     if not meta.get("engine"):
         meta["engine"] = "OCR Service"
         resp["meta"] = meta
     resp["source"] = meta.get("engine") or "ocr"
+
     return JsonResponse(resp)
 
 @login_required
@@ -713,12 +716,15 @@ def upload_analyze(request):
             content = resp.choices[0].message.content or "{}"
             data = json.loads(content)
             summary, enriched = _enrich_analysis(data, txt, specialty_name, doc_type_name)
+            summary = (data.get("summary") or "").strip()
+
             elapsed = int(max((time.monotonic() - started) * 1000, 0))
             meta = {
                 "engine": f"OpenAI {model}",
                 "provider": "openai",
                 "duration_ms": elapsed,
             }
+
             return JsonResponse({"summary": summary, "data": enriched, "meta": meta})
         except Exception:
             pass
@@ -731,6 +737,18 @@ def upload_analyze(request):
         "duration_ms": elapsed,
     }
     return JsonResponse({"summary": summary, "data": enriched, "meta": meta})
+            return JsonResponse({"summary": summary, "data": data, "meta": meta})
+        except Exception:
+            pass
+    data = _fallback_extract(clean, specialty_name)
+    summary = data.get("summary","")
+    elapsed = int(max((time.monotonic() - started) * 1000, 0))
+    meta = {
+        "engine": "Правила (fallback)",
+        "provider": "fallback",
+        "duration_ms": elapsed,
+    }
+    return JsonResponse({"summary": summary, "data": data, "meta": meta})
 
 @login_required
 @require_http_methods(["POST"])
@@ -883,6 +901,7 @@ def upload_confirm(request):
             "event_id": event.id if event else None,
             "meta": meta,
             "file_url": doc.file.url if doc.file else "",
+
             "redirect_url": reverse("medj:documents"),
         }
     )
@@ -896,6 +915,7 @@ def upload_preview(request):
         "doc_types": DocumentType.objects.order_by("id"),
         "lab_index": _lab_index_payload(),
         "upload_config": {"documents_url": reverse("medj:documents")},
+
     }
     return render(request, "main/upload.html", ctx)
 
@@ -903,6 +923,12 @@ def upload_preview(request):
 @require_http_methods(["GET"])
 def upload_history(request):
     return redirect("medj:documents")
+    documents = (
+        Document.objects.filter(owner=request.user)
+        .select_related("medical_event", "doc_type")
+        .order_by("-uploaded_at"))
+    return render(request, "main/history.html", {"documents": documents})
+
 
 @login_required
 @require_http_methods(["GET"])
