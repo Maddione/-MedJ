@@ -6,6 +6,7 @@ from django.views import View
 from django.urls import reverse
 from django.http import HttpResponse, Http404, JsonResponse
 from django.views.decorators.http import require_POST
+from django.template.loader import render_to_string
 from io import BytesIO
 import qrcode
 from records.forms import PatientProfileForm
@@ -109,12 +110,16 @@ def personalcard_share_enable_api(request):
     share_url = request.build_absolute_uri(
         reverse("medj:personalcard_public", args=[profile.share_token])
     )
+    image_url = request.build_absolute_uri(
+        reverse("medj:personalcard_public_png", args=[profile.share_token])
+    )
     return JsonResponse(
         {
             "ok": True,
             "token": profile.share_token,
             "qr_png_url": qr_url,
             "share_url": share_url,
+            "image_png_url": image_url,
         }
     )
 
@@ -145,3 +150,17 @@ def personalcard_qr(request, token):
 def public_personalcard(request, token):
     profile = get_object_or_404(PatientProfile, share_token=token, share_enabled=True)
     return render(request, "subpages/personalcard_public.html", {"p": profile})
+
+
+def personalcard_public_png(request, token):
+    profile = get_object_or_404(PatientProfile, share_token=token, share_enabled=True)
+    html = render_to_string("subpages/personalcard_public.html", {"p": profile})
+    try:
+        from weasyprint import HTML
+
+        png_bytes = HTML(string=html, base_url=request.build_absolute_uri("/")).write_png()
+        response = HttpResponse(png_bytes, content_type="image/png")
+        response["Content-Disposition"] = 'attachment; filename="personal_card.png"'
+        return response
+    except Exception:
+        return HttpResponse(html, content_type="text/html", status=200)

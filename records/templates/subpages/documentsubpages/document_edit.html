@@ -2,31 +2,63 @@
 {% load i18n %}
 {% block app_content %}
 <main class="bg-site-background min-h-screen p-4 md:p-8">
-  <div class="container mx-auto max-w-xl">
+  <div class="container mx-auto max-w-3xl">
     <div class="bg-block-background p-6 rounded-3xl shadow-lg mb-8">
       <h1 class="text-3xl font-bold text-gray-800">{% trans "Редакция на документ" %}</h1>
-      <p class="mt-2 text-gray-600">{{ document.file.name|cut:"documents/" }}</p>
+      <p class="mt-2 text-gray-600">{{ document.display_title }}</p>
     </div>
     <div class="bg-block-background p-6 rounded-3xl shadow-lg">
       <form method="post" class="space-y-6">
         {% csrf_token %}
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Вид документ" %}</label>
-          {{ form.doc_type }}
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Дата на документа" %}</label>
-          {{ form.document_date }}
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">{% trans "Лекар" %}</label>
-          {{ form.practitioner }}
-        </div>
-        {% if form.errors %}
-          <div class="bg-light-red-bg border border-error-red text-dark-red-text px-4 py-3 rounded-lg">
-            {% for field, errors in form.errors.items %}{% for error in errors %}<p>{{ error }}</p>{% endfor %}{% endfor %}
+        {% if form.non_field_errors %}
+          <div class="bg-red-100 text-red-700 px-4 py-3 rounded-lg">
+            {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
           </div>
         {% endif %}
+        <div class="grid gap-6 md:grid-cols-2">
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2" for="id_title">{% trans "Заглавие" %}</label>
+            {{ form.title }}
+            {% if form.title.errors %}
+              <div class="text-sm text-red-600 mt-1">{% for error in form.title.errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</div>
+            {% endif %}
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2" for="id_doc_type">{% trans "Вид документ" %}</label>
+            {{ form.doc_type }}
+            {% if form.doc_type.errors %}
+              <div class="text-sm text-red-600 mt-1">{% for error in form.doc_type.errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</div>
+            {% endif %}
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2" for="id_category">{% trans "Категория" %}</label>
+            {{ form.category }}
+            {% if form.category.errors %}
+              <div class="text-sm text-red-600 mt-1">{% for error in form.category.errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</div>
+            {% endif %}
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2" for="id_document_date">{% trans "Дата на документа" %}</label>
+            {{ form.document_date }}
+            {% if form.document_date.errors %}
+              <div class="text-sm text-red-600 mt-1">{% for error in form.document_date.errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</div>
+            {% endif %}
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2" for="id_analysis_text">{% trans "Анализ – текст" %}</label>
+          {{ form.analysis_text }}
+          {% if form.analysis_text.errors %}
+            <div class="text-sm text-red-600 mt-1">{% for error in form.analysis_text.errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</div>
+          {% endif %}
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2" for="id_analysis_html">{% trans "Анализ – HTML" %}</label>
+          {{ form.analysis_html }}
+          {% if form.analysis_html.errors %}
+            <div class="text-sm text-red-600 mt-1">{% for error in form.analysis_html.errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</div>
+          {% endif %}
+        </div>
         <div class="pt-2 flex gap-3">
           <button class="px-6 py-3 bg-button-blue text-white rounded-lg">{% trans "Запази" %}</button>
           <a href="{% url 'medj:document_detail' pk=document.id %}" class="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg">{% trans "Отказ" %}</a>
