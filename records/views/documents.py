@@ -24,13 +24,17 @@ def documents(request: HttpRequest) -> HttpResponse:
 
 @login_required
 def document_detail(request: HttpRequest, pk: int) -> HttpResponse:
-    patient = require_patient_profile(request.user)
-    doc = get_object_or_404(
-        Document.objects.select_related("medical_event", "doc_type"),
-        pk=pk,
-        medical_event__patient=patient,
+    document_qs = (
+        Document.objects.select_related("doc_type", "medical_event", "owner")
+        .prefetch_related("tags")
+        .filter(owner=request.user)
     )
-    return render(request, "subpages/documentsubpages/document_detail.html", {"document": doc, "event": doc.medical_event})
+    doc = get_object_or_404(document_qs, pk=pk)
+    return render(
+        request,
+        "subpages/documentsubpages/document_detail.html",
+        {"document": doc, "event": doc.medical_event},
+    )
 
 @login_required
 def document_edit(request: HttpRequest, pk: int) -> HttpResponse:

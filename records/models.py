@@ -1,3 +1,5 @@
+import secrets
+
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
@@ -26,6 +28,28 @@ class PatientProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.username}"
+
+    @property
+    def onboarding_complete(self) -> bool:
+        """Return whether the profile contains the mandatory onboarding data."""
+
+        return bool(self.first_name_bg and self.last_name_bg and self.date_of_birth)
+
+    def ensure_share_token(self, save: bool = True) -> str:
+        """Generate a persistent share token if missing and optionally save the profile."""
+
+        if self.share_token:
+            return self.share_token
+
+        token = secrets.token_urlsafe(16)
+        profile_model = type(self)
+        while profile_model.objects.filter(share_token=token).exists():  # pragma: no cover - extremely rare
+            token = secrets.token_urlsafe(16)
+
+        self.share_token = token
+        if save:
+            self.save(update_fields=["share_token"])
+        return token
 
 
 class MedicalCategory(TranslatableModel):

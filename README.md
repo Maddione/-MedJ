@@ -105,6 +105,41 @@ Upload → OCR → Analyze → Confirm → History/Casefiles → Share/Export.
 * `/casefiles/`
 * Публично споделяне: `/s/<token>/`
 
+## Подстраници
+
+### Documents
+
+* `records/templates/subpages/documentsubpages/document_detail.html` — детайлен изглед на единичен документ, достъпен през `/documents/<id>/`. Свързани шаблони: `document_edit.html`, `document_edit_tags.html`, `document_export_pdf.html`, `document_move.html`.
+* `records/templates/subpages/documentsubpages/document_edit.html` — редакция на метаданните (тип, дата, заглавие) от бутона „Редакция“ в детайла.
+* `records/templates/subpages/documentsubpages/document_edit_tags.html` — управление на таговете на документа от детайлния изглед.
+* `records/templates/subpages/documentsubpages/document_export_pdf.html` — експорт на документа или summary в PDF формат от детайла.
+* `records/templates/subpages/documentsubpages/document_move.html` — преместване на документ към друго събитие, достъпно от детайлния изглед.
+
+### Events
+
+* `records/templates/subpages/eventsubpages/event_detail.html` — детайл на `MedicalEvent`, достъпен от документите или историята на събитията.
+* `records/templates/subpages/eventsubpages/event_edit_tags.html` — управление на тагове за събитие.
+* `records/templates/subpages/eventsubpages/event_export_pdf.html` — експорт на събитие в PDF.
+* `records/templates/subpages/eventsubpages/event_history.html` — история на промените за дадено събитие.
+* `records/templates/subpages/eventsubpages/medical_event_form.html` — форма за създаване/редакция на събитие.
+* `records/templates/subpages/eventsubpages/medical_event_confirm_delete.html` — потвърждение за изтриване на събитие.
+
+### Lab tests
+
+* `records/templates/subpages/labtestssubpages/labtests.html` — списък с лабораторни панели и резултати.
+* `records/templates/subpages/labtestssubpages/labtest_edit.html` — редакция на конкретен лабораторен тест.
+* `records/templates/subpages/labtestssubpages/labtests_export_csv.html` — експорт на лабораторни данни в CSV.
+
+### Други
+
+* `records/templates/subpages/doctors.html` — списък и управление на лекари.
+* `records/templates/subpages/personalcard_public.html` — публичен read-only изглед на личния картон за споделяне.
+* `records/templates/subpages/profile_settings.html` — настройки на профила.
+* `records/templates/subpages/share_history.html` — история на споделянията.
+* `records/templates/subpages/share_public.html` — публична страница за споделен ресурс.
+* `records/templates/subpages/share_view.html` — визуализация на споделените данни.
+* `records/templates/subpages/csv_print.html` — помощник за печат и експорт в CSV.
+
 ## API ендпойнти
 
 ### Upload/Analyze/Confirm

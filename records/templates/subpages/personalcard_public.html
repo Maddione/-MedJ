@@ -13,7 +13,7 @@
       <h1 class="text-3xl font-extrabold text-[var(--color-primaryDark)] mb-4">{% trans "Личен картон" %}</h1>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div><div class="text-sm text-gray-500">{% trans "Име" %}</div><div class="text-xl font-semibold">{{ p.first_name_bg }} {{ p.middle_name_bg }} {{ p.last_name_bg }}</div></div>
-        <div><div class="text-sm text-gray-500">{% trans "Телефон" %}</div><div class="text-xl font-semibold">{{ p.phone_number }}</div></div>
+        <div><div class="text-sm text-gray-500">{% trans "Телефон" %}</div><div class="text-xl font-semibold">{{ p.phone }}</div></div>
         <div><div class="text-sm text-gray-500">{% trans "Кръвна група" %}</div><div class="text-xl font-semibold">{{ p.blood_type }}</div></div>
         <div class="md:col-span-2"><div class="text-sm text-gray-500">{% trans "Адрес" %}</div><div class="text-xl font-semibold">{{ p.address }}</div></div>
       </div>
