@@ -12,6 +12,13 @@ from records.models import (
     PatientProfile,
     LabIndicator,
 )
+from records.utils.analysis import (
+    compose_analysis_text,
+    ensure_minimum_summary,
+    normalize_analysis_payload,
+    render_analysis_tables,
+    word_count,
+)
 
 import logging
 from decimal import Decimal
@@ -753,17 +760,30 @@ def upload_analyze(request):
             )
             content = resp.choices[0].message.content or "{}"
             data = json.loads(content)
-            summary, enriched = _enrich_analysis(data, txt, specialty_name, doc_type_name)
-            summary = (data.get("summary") or "").strip()
+            summary_text, enriched = _enrich_analysis(data, txt, specialty_name, doc_type_name)
+            llm_summary = (data.get("summary") or "").strip()
+            if llm_summary:
+                summary_text = llm_summary
+                enriched["summary"] = llm_summary
+            summary_info = ensure_minimum_summary(summary_text, txt)
+            enriched["summary"] = summary_info.text
+            enriched["summary_word_count"] = summary_info.word_count
 
             elapsed = int(max((time.monotonic() - started) * 1000, 0))
             meta = {
                 "engine": f"OpenAI {model}",
                 "provider": "openai",
                 "duration_ms": elapsed,
+                "word_count": summary_info.word_count,
             }
+            if summary_info.notice:
+                meta["notice"] = summary_info.notice
+            if summary_info.fallback_used:
+                meta["fallback_reason"] = summary_info.fallback_reason or "fallback"
+            if summary_info.retry_suggested:
+                meta["retry_suggested"] = True
 
-            return JsonResponse({"summary": summary, "data": enriched, "meta": meta})
+            return JsonResponse({"summary": summary_info.text, "data": enriched, "meta": meta})
         except Exception:
             logger.exception("OpenAI analysis failed")
             fallback_reason = "openai_error"
@@ -772,17 +792,27 @@ def upload_analyze(request):
 
     summary, enriched = _enrich_analysis({}, txt, specialty_name, doc_type_name)
     elapsed = int(max((time.monotonic() - started) * 1000, 0))
+    summary_info = ensure_minimum_summary(summary, txt)
+    enriched["summary"] = summary_info.text
+    enriched["summary_word_count"] = summary_info.word_count
     meta = {
         "engine": "MedJ Analyzer",
         "provider": "medj",
         "duration_ms": elapsed,
+        "word_count": summary_info.word_count,
     }
     if fallback_reason == "missing_api_key":
         meta["detail"] = "OpenAI API key not configured"
     elif fallback_reason == "openai_error":
         meta["detail"] = "OpenAI analysis failed, fallback used"
+    if summary_info.notice:
+        meta["notice"] = summary_info.notice
+    if summary_info.fallback_used:
+        meta["fallback_reason"] = summary_info.fallback_reason or "fallback"
+    if summary_info.retry_suggested:
+        meta["retry_suggested"] = True
 
-    return JsonResponse({"summary": summary, "data": enriched, "meta": meta})
+    return JsonResponse({"summary": summary_info.text, "data": enriched, "meta": meta})
 
 
 @login_required
@@ -846,9 +876,7 @@ def upload_confirm(request):
     ocr_meta = _json_load(ocr_meta_raw)
     if not isinstance(ocr_meta, dict):
         ocr_meta = {}
-    analysis_payload = _json_load(analysis_raw)
-    if not isinstance(analysis_payload, dict):
-        analysis_payload = {}
+    analysis_payload = normalize_analysis_payload(_json_load(analysis_raw))
     analysis_meta = _json_load(analysis_meta_raw)
     if not isinstance(analysis_meta, dict):
         analysis_meta = {}
@@ -858,6 +886,14 @@ def upload_confirm(request):
         analysis_payload["summary"] = summary
         if isinstance(analysis_payload.get("data"), dict):
             analysis_payload["data"]["summary"] = summary
+
+    final_summary = (analysis_payload.get("summary") or summary or "").strip()
+    if final_summary:
+        analysis_payload["summary"] = final_summary
+    summary_word_count = word_count(final_summary)
+    analysis_payload["summary_word_count"] = summary_word_count
+    analysis_html = render_analysis_tables(analysis_payload)
+    analysis_text_compiled = compose_analysis_text(analysis_payload, final_summary)
 
     event_date = (
         _parse_date(request.POST.get("event_date"))
@@ -939,7 +975,9 @@ def upload_confirm(request):
         file_size=getattr(upload_file, "size", None) or None,
         file_mime=getattr(upload_file, "content_type", None) or None,
         original_ocr_text=ocr_text,
-        summary=summary or str(analysis_payload.get("summary") or ""),
+        summary=final_summary,
+        analysis_html=analysis_html or None,
+        analysis_text=analysis_text_compiled or None,
         notes=json.dumps(
             {
                 "analysis": analysis_payload,

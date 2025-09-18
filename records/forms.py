@@ -211,10 +211,18 @@ class DocumentEditForm(forms.ModelForm):
 
 class DocumentTagForm(forms.ModelForm):
     tags = forms.ModelMultipleChoiceField(
+        label=_("Етикети"),
         queryset=Tag.objects.filter(is_active=True).order_by("translations__name"),
         required=False,
-        widget=forms.SelectMultiple(attrs={"class": "w-full"}),
+        widget=forms.CheckboxSelectMultiple(attrs={"class": "grid gap-2 sm:grid-cols-2"}),
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        field = self.fields.get("tags")
+        if field:
+            field.help_text = _("Изберете един или повече тагове, които описват документа.")
+            field.widget.attrs.setdefault("aria-label", str(field.label or ""))
 
     class Meta:
         model = Document

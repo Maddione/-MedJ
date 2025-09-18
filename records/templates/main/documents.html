@@ -56,9 +56,15 @@
                   </div>
                 </div>
                 <div class="col-span-2 flex items-center justify-center gap-3">
-                  <a href="{{ doc.file.url }}" target="_blank" class="text-checkmark-green hover:underline" title="{% trans 'Изтегли' %}">
-                    <i class="fa-solid fa-download"></i>
-                  </a>
+                  {% if doc.file and doc.has_file %}
+                    <a href="{{ doc.file.url }}" target="_blank" class="text-checkmark-green hover:underline" title="{% trans 'Изтегли' %}">
+                      <i class="fa-solid fa-download"></i>
+                    </a>
+                  {% else %}
+                    <span class="text-gray-400" title="{% trans 'Файлът липсва' %}">
+                      <i class="fa-solid fa-download"></i>
+                    </span>
+                  {% endif %}
                   <a href="{% url 'medj:document_detail' pk=doc.id %}" class="text-button-blue hover:underline" title="{% trans 'Преглед' %}">
                     <i class="fa-solid fa-eye"></i>
                   </a>

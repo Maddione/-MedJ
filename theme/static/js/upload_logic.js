@@ -743,6 +743,49 @@ function setSummaryNotice(text) {
   node.textContent = value;
   node.classList.remove("hidden");
 }
+
+function getAnalysisNoticeBox() { return $("analysisNotice"); }
+function showAnalysisNotice(message) {
+  const node = getAnalysisNoticeBox();
+  if (!node) return;
+  const value = (message || "").toString().trim();
+  if (!value) {
+    node.textContent = "";
+    node.classList.add("hidden");
+    return;
+  }
+  node.textContent = value;
+  node.classList.remove("hidden");
+}
+function hideAnalysisNotice() {
+  const node = getAnalysisNoticeBox();
+  if (!node) return;
+  node.textContent = "";
+  node.classList.add("hidden");
+  setRetryAnalyzeVisible(false);
+}
+function setRetryAnalyzeVisible(flag) {
+  const btn = $("btnRetryAnalyze");
+  if (!btn) return;
+  if (flag) {
+    btn.classList.remove("hidden");
+  } else {
+    btn.classList.add("hidden");
+  }
+}
+function updateAnalysisStatus(meta = {}) {
+  const notice = meta.notice || meta.detail || meta.message || "";
+  if (notice) {
+    showAnalysisNotice(notice);
+  } else {
+    hideAnalysisNotice();
+  }
+  const needsRetry = !!meta.retry_suggested;
+  setRetryAnalyzeVisible(needsRetry);
+  if (needsRetry) {
+    ANALYZED_READY = false;
+  }
+}
 function syncSummaryState(value) {
   const val = (value || "").toString();
   ANALYSIS.summary = val;
@@ -955,6 +998,7 @@ async function doOCR() {
 
 async function doAnalyze() {
   clearError();
+  hideAnalysisNotice();
   const text = getWorkText();
   const p = picksPayload();
   if (!text.trim() || !requiredTagsReady()) { showError("Липсват данни за анализ."); return; }
@@ -979,6 +1023,7 @@ async function doAnalyze() {
     const meta = data?.meta || {};
     const payloadData = data && typeof data.data === "object" && data.data ? { ...data.data } : {};
     ANALYSIS = { ...data, data: payloadData, meta };
+    updateAnalysisStatus(meta);
     const normalizedTextApi = (payloadData.normalized_text || data.normalized_text || "").toString();
     if (normalizedTextApi && normalizedTextApi !== text) {
       setWorkText(normalizedTextApi, { silent: true });
@@ -1042,7 +1087,7 @@ async function doAnalyze() {
     renderSuggestedTags(tags, specialtyText);
     ANALYSIS.normalized_text = normalizedTextApi;
     ANALYSIS.lab_overview = labOverview;
-    ANALYZED_READY = true;
+    ANALYZED_READY = !meta.retry_suggested;
     applyStepMeta(2, meta, true);
     updateButtons();
   } catch {
@@ -1158,6 +1203,7 @@ function bindEvents() {
   const btnToggleTableEdit = $("btnToggleTableEdit");
   const btnNormalizeText = $("btnNormalizeText");
   const btnRestoreText = $("btnRestoreText");
+  const btnRetryAnalyze = $("btnRetryAnalyze");
 
   cat && cat.addEventListener("change", () => { updateDropdownFlow(); wireSuggest(); updateButtons(); });
   spc && spc.addEventListener("change", () => { updateDropdownFlow(); wireSuggest(); updateButtons(); });
@@ -1167,6 +1213,7 @@ function bindEvents() {
   btnChoose && btnChoose.addEventListener("click", () => { if (file && !file.disabled) file.click(); });
   btnOCR && btnOCR.addEventListener("click", doOCR);
   btnAnalyze && btnAnalyze.addEventListener("click", doAnalyze);
+  btnRetryAnalyze && btnRetryAnalyze.addEventListener("click", doAnalyze);
   btnConfirm && btnConfirm.addEventListener("click", doConfirm);
   btnRefreshTable && btnRefreshTable.addEventListener("click", refreshTableFromText);
   btnToggleTableEdit && btnToggleTableEdit.addEventListener("click", toggleTableEditMode);
