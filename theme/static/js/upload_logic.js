@@ -18,6 +18,13 @@ const dis = (x, f) => {
   x.classList.toggle("opacity-50", !!f);
   x.classList.toggle("cursor-not-allowed", !!f);
 };
+const clearStatus = () => {
+  const box = $("statusBox");
+  if (box) {
+    box.textContent = "";
+    hide(box);
+  }
+};
 const getCSRF = () => {
   const t = document.querySelector('input[name="csrfmiddlewaretoken"]');
   if (t && t.value) return t.value;
@@ -118,6 +125,7 @@ function setBusy(on) {
   if (o) (on ? show(o) : hide(o));
 }
 function showError(msg) {
+  clearStatus();
   const box = $("errorBox");
   if (box) {
     box.textContent = msg || "Грешка.";
@@ -129,6 +137,18 @@ function clearError() {
   if (box) {
     box.textContent = "";
     hide(box);
+  }
+}
+
+function showStatus(msg) {
+  const box = $("statusBox");
+  if (box) {
+    if (msg) {
+      box.textContent = msg;
+      show(box);
+    } else {
+      clearStatus();
+    }
   }
 }
 
@@ -249,6 +269,8 @@ function cleanOCRText(text) {
   s = s.replace(/[‐‒–—−]/g, "-");
   // If we see "... -96 1.93", that should be "... % 1.93"
   s = s.replace(/-\s*96(?=\s*\d)/g, " %");
+  // Also handle "...-96" directly following a word
+  s = s.replace(/([\p{L}])\s*-\s*96\b/gu, "$1 %");
   // If we see "... -% 54.10", fix spacing
   s = s.replace(/-\s*%(?=\s*\d)/g, " %");
   // Vertical bars from tables
@@ -302,9 +324,15 @@ function normalizeRows(rows) {
 
 function renderLabTable(items) {
   const wrap = $("labWrap");
-  const slot = $("labTable");
+  const slot = $("labTableSlot");
   if (!wrap || !slot) return;
-  const rows = (items || []).map((x, i) => {
+  const list = Array.isArray(items) ? items : [];
+  if (!list.length) {
+    seth(slot, "");
+    hide(wrap);
+    return;
+  }
+  const rows = list.map((x, i) => {
     const n = x.name || "";
     const v = x.value != null ? String(x.value) : "";
     const u = x.unit || "";
@@ -319,7 +347,15 @@ function renderLabTable(items) {
 
 function renderSummary(text) {
   const box = $("summaryBox");
-  if (box) { box.textContent = text || ""; show(box); }
+  if (!box) return;
+  const value = (text || "").toString().trim();
+  if (!value) {
+    box.textContent = "";
+    hide(box);
+    return;
+  }
+  box.textContent = value;
+  show(box);
 }
 
 function renderOCRMeta(meta) {
@@ -339,6 +375,7 @@ function setWorkText(t) { const ta = $("workText"); if (ta) ta.value = t || ""; 
 
 async function doOCR() {
   clearError();
+  clearStatus();
   const p = picks();
   if (!p.file || !pipelineReady()) { showError("Липсват задължителни полета."); return; }
   const fd = new FormData();
@@ -357,12 +394,13 @@ async function doOCR() {
     const meta = data?.meta || data?.ocr_meta || {};
     OCR_META = meta || {};
     renderOCRMeta(OCR_META);
-    OCR_TEXT_ORIG = text || "";
-    setWorkText(OCR_TEXT_ORIG);
+    const cleaned = cleanOCRText(text);
+    OCR_TEXT_ORIG = cleaned;
+    setWorkText(cleaned);
     ANALYZED_READY = false;
     updateButtons();
     const labs = parseLabs(OCR_TEXT_ORIG);
-    if (labs.length) renderLabTable(labs);
+    renderLabTable(labs);
   } catch {
     showError("OCR неуспешен.");
   } finally { setBusy(false); }
@@ -394,7 +432,7 @@ async function doAnalyze() {
       ANALYSIS.data?.blood_test_results ||
       []
     );
-    if (rows.length) renderLabTable(rows);
+    renderLabTable(rows);
     ANALYZED_READY = true;
     updateButtons();
   } catch {
@@ -404,6 +442,7 @@ async function doAnalyze() {
 
 async function doConfirm() {
   clearError();
+  clearStatus();
   const text = getWorkText();
   const p = picksPayload();
   if (!ANALYZED_READY || !requiredTagsReady()) { showError("Анализът не е завършен."); return; }
@@ -425,6 +464,7 @@ async function doConfirm() {
     if (ok) {
       const btn = $("btnConfirm");
       if (btn) { btn.setAttribute("aria-disabled","true"); dis(btn, true); }
+      showStatus("Документът е записан успешно.");
     }
   } catch {
     showError("Записът е неуспешен.");
