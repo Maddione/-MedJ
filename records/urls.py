@@ -12,7 +12,14 @@ from django.urls import path
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView
 
-from .views import upload as upload_views
+from .views.upload import (
+    events_suggest,
+    upload_analyze,
+    upload_confirm,
+    upload_history,
+    upload_ocr,
+    upload_preview,
+)
 from .views.auth import RememberLoginView, RegisterView
 from .views.casefiles import casefiles
 from .views.dashboard import dashboard
@@ -98,8 +105,8 @@ urlpatterns = [
 
     path("dashboard/", login_required(dashboard), name="dashboard"),
 
-    path("upload/", login_required(upload_views.upload_preview), name="upload"),
-    path("upload/history/", login_required(upload_views.upload_history), name="upload_history"),
+    path("upload/", login_required(upload_preview), name="upload"),
+    path("upload/history/", login_required(upload_history), name="upload_history"),
 
     path("documents/", login_required(documents_view), name="documents"),
     path("casefiles/", login_required(casefiles), name="casefiles"),
