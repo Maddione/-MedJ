@@ -18,6 +18,13 @@ const dis = (x, f) => {
   x.classList.toggle("opacity-50", !!f);
   x.classList.toggle("cursor-not-allowed", !!f);
 };
+const clearStatus = () => {
+  const box = $("statusBox");
+  if (box) {
+    box.textContent = "";
+    hide(box);
+  }
+};
 const getCSRF = () => {
   const t = document.querySelector('input[name="csrfmiddlewaretoken"]');
   if (t && t.value) return t.value;
@@ -31,11 +38,19 @@ let FILE_KIND = "";
 let FILE_URL = null;
 let OCR_TEXT_ORIG = "";
 let OCR_META = {};
-let ANALYSIS = { summary: "", data: { tables: [], blood_test_results: [], suggested_tags: [] } };
+let ANALYSIS = { summary: "", data: { tables: [], blood_test_results: [], suggested_tags: [] }, meta: {} };
 let ANALYZED_READY = false;
 let CLASS_LOCK = false;
 let DOC_LOCK = false;
 let FILE_KIND_LOCK = false;
+
+const STEP_CONFIG = {
+  1: { label: "Стъпка 1: Екстракт на текст" },
+  2: { label: "Стъпка 2: Анализ" },
+  3: { label: "Стъпка 3: Запазване" },
+};
+let CURRENT_STEP = 1;
+const STEP_META = { 1: null, 2: null, 3: null };
 
 function ensureStyles() {
   if ($("uxUploadInject")) return;
@@ -94,23 +109,72 @@ function updateButtons() {
   bCfm ? (ANALYZED_READY && requiredTagsReady() ? show(bCfm) : hide(bCfm)) : null;
 }
 
-function stepMetaNode() {
-  let n = document.querySelector('label[for="workText"]');
-  if (!n) n = $("workMeta");
-  if (!n) {
-    const ta = $("workText");
-    if (ta?.parentElement) {
-      n = document.createElement("div");
-      n.id = "workMeta";
-      n.className = "text-xs text-gray-600 mb-1";
-      ta.parentElement.insertBefore(n, ta);
+function normalizeStepMeta(meta) {
+  if (!meta || typeof meta !== "object") return {};
+  const engine = meta.engine || meta.ocr_engine || meta.provider || meta.name || meta.used || "";
+  const duration = meta.duration_ms ?? meta.duration ?? meta.time_ms ?? meta.dt_ms ?? meta.elapsed_ms;
+  const detail = meta.detail || meta.note || meta.status || meta.message || "";
+  const info = {};
+  if (engine) info.engine = String(engine);
+  if (duration != null && !Number.isNaN(Number(duration))) {
+    info.duration_ms = Number(duration);
+  }
+  if (detail) info.detail = String(detail);
+  if (meta.document_id != null) info.document_id = meta.document_id;
+  if (meta.event_id != null) info.event_id = meta.event_id;
+  return info;
+}
+
+function updateStepDisplay() {
+  const labelNode = $("workLabel");
+  const metaNode = $("workMeta");
+  const info = STEP_CONFIG[CURRENT_STEP] || STEP_CONFIG[1];
+  const meta = STEP_META[CURRENT_STEP] || {};
+  const baseLabel = info?.label || "";
+  const text = meta.engine ? `${baseLabel} : ${meta.engine}` : baseLabel;
+  if (labelNode) labelNode.textContent = text;
+  if (metaNode) {
+    const parts = [];
+    if (meta.duration_ms != null && !Number.isNaN(meta.duration_ms)) {
+      parts.push(`${meta.duration_ms} ms`);
+    }
+    if (meta.detail) parts.push(meta.detail);
+    if (!parts.length) {
+      metaNode.textContent = "";
+      metaNode.classList?.add("hidden");
+    } else {
+      metaNode.textContent = parts.join(" • ");
+      metaNode.classList?.remove("hidden");
     }
   }
-  return n;
 }
-function setStepLabel(text) {
-  const n = stepMetaNode();
-  if (n) n.textContent = text || "";
+
+function applyStepMeta(step, meta, makeCurrent = false) {
+  const idx = Number(step);
+  if (![1, 2, 3].includes(idx)) return;
+  if (meta) {
+    STEP_META[idx] = normalizeStepMeta(meta);
+  }
+  if (makeCurrent) {
+    CURRENT_STEP = idx;
+  }
+  if (makeCurrent || idx === CURRENT_STEP) {
+    updateStepDisplay();
+  }
+}
+
+function setCurrentStep(step) {
+  const idx = Number(step);
+  CURRENT_STEP = [1, 2, 3].includes(idx) ? idx : 1;
+  updateStepDisplay();
+}
+
+function resetSteps() {
+  STEP_META[1] = null;
+  STEP_META[2] = null;
+  STEP_META[3] = null;
+  CURRENT_STEP = 1;
+  updateStepDisplay();
 }
 
 function setBusy(on) {
@@ -118,6 +182,7 @@ function setBusy(on) {
   if (o) (on ? show(o) : hide(o));
 }
 function showError(msg) {
+  clearStatus();
   const box = $("errorBox");
   if (box) {
     box.textContent = msg || "Грешка.";
@@ -129,6 +194,18 @@ function clearError() {
   if (box) {
     box.textContent = "";
     hide(box);
+  }
+}
+
+function showStatus(msg) {
+  const box = $("statusBox");
+  if (box) {
+    if (msg) {
+      box.textContent = msg;
+      show(box);
+    } else {
+      clearStatus();
+    }
   }
 }
 
@@ -178,7 +255,21 @@ function handleFileInputChange() {
   FILE_KIND_LOCK = true;
   dis(kind, true);
   ANALYZED_READY = false;
+  OCR_TEXT_ORIG = "";
+  OCR_META = {};
+  ANALYSIS = { summary: "", data: { tables: [], blood_test_results: [], suggested_tags: [] }, meta: {} };
+  setWorkText("");
+  renderLabTable([]);
+  renderSummary("");
+  clearStatus();
+  clearError();
+  resetSteps();
   renderPreview();
+  const btnConfirm = $("btnConfirm");
+  if (btnConfirm) {
+    btnConfirm.removeAttribute("aria-disabled");
+    dis(btnConfirm, false);
+  }
   lockDocType();
   updateDropdownFlow();
   updateButtons();
@@ -249,6 +340,8 @@ function cleanOCRText(text) {
   s = s.replace(/[‐‒–—−]/g, "-");
   // If we see "... -96 1.93", that should be "... % 1.93"
   s = s.replace(/-\s*96(?=\s*\d)/g, " %");
+  // Also handle "...-96" directly following a word
+  s = s.replace(/([\p{L}])\s*-\s*96\b/gu, "$1 %");
   // If we see "... -% 54.10", fix spacing
   s = s.replace(/-\s*%(?=\s*\d)/g, " %");
   // Vertical bars from tables
@@ -302,9 +395,15 @@ function normalizeRows(rows) {
 
 function renderLabTable(items) {
   const wrap = $("labWrap");
-  const slot = $("labTable");
+  const slot = $("labTableSlot");
   if (!wrap || !slot) return;
-  const rows = (items || []).map((x, i) => {
+  const list = Array.isArray(items) ? items : [];
+  if (!list.length) {
+    seth(slot, "");
+    hide(wrap);
+    return;
+  }
+  const rows = list.map((x, i) => {
     const n = x.name || "";
     const v = x.value != null ? String(x.value) : "";
     const u = x.unit || "";
@@ -319,19 +418,19 @@ function renderLabTable(items) {
 
 function renderSummary(text) {
   const box = $("summaryBox");
-  if (box) { box.textContent = text || ""; show(box); }
+  if (!box) return;
+  const value = (text || "").toString().trim();
+  if (!value) {
+    box.textContent = "";
+    hide(box);
+    return;
+  }
+  box.textContent = value;
+  show(box);
 }
 
 function renderOCRMeta(meta) {
-  const n = stepMetaNode();
-  let s = "";
-  if (meta && typeof meta === "object") {
-    const eng = meta.engine || meta.ocr_engine || meta.provider || meta.name || meta.used || "";
-    const dur = meta.duration_ms || meta.dt_ms || meta.time_ms || meta.elapsed_ms || meta.duration || "";
-    s = eng ? `OCR: ${eng}` : "";
-    if (dur) s = s ? `${s} • ${dur} ms` : `${dur} ms`;
-  }
-  if (n) n.textContent = s;
+  applyStepMeta(1, meta, CURRENT_STEP === 1);
 }
 
 function getWorkText() { return $("workText")?.value || ""; }
@@ -339,8 +438,12 @@ function setWorkText(t) { const ta = $("workText"); if (ta) ta.value = t || ""; 
 
 async function doOCR() {
   clearError();
+  clearStatus();
   const p = picks();
   if (!p.file || !pipelineReady()) { showError("Липсват задължителни полета."); return; }
+  STEP_META[2] = null;
+  STEP_META[3] = null;
+  setCurrentStep(1);
   const fd = new FormData();
   fd.append("file", p.file);
   fd.append("file_kind", p.fileKind);
@@ -356,13 +459,15 @@ async function doOCR() {
     const text = data?.text || data?.ocr_text || "";
     const meta = data?.meta || data?.ocr_meta || {};
     OCR_META = meta || {};
-    renderOCRMeta(OCR_META);
-    OCR_TEXT_ORIG = text || "";
-    setWorkText(OCR_TEXT_ORIG);
+    applyStepMeta(1, OCR_META, true);
+    const cleaned = cleanOCRText(text);
+    OCR_TEXT_ORIG = cleaned;
+    setWorkText(cleaned);
     ANALYZED_READY = false;
+    renderSummary("");
     updateButtons();
     const labs = parseLabs(OCR_TEXT_ORIG);
-    if (labs.length) renderLabTable(labs);
+    renderLabTable(labs);
   } catch {
     showError("OCR неуспешен.");
   } finally { setBusy(false); }
@@ -385,7 +490,8 @@ async function doAnalyze() {
     if (!res.ok) throw new Error("analyze_failed");
     let data = {};
     try { data = await res.json(); } catch {}
-    ANALYSIS = data || {};
+    const meta = data?.meta || {};
+    ANALYSIS = { ...(data || {}), meta };
     const summary = (ANALYSIS.summary || ANALYSIS.result?.summary || ANALYSIS.data?.summary || ANALYSIS.summary_text || "").toString();
     renderSummary(summary);
     const rows = normalizeRows(
@@ -394,8 +500,9 @@ async function doAnalyze() {
       ANALYSIS.data?.blood_test_results ||
       []
     );
-    if (rows.length) renderLabTable(rows);
+    renderLabTable(rows);
     ANALYZED_READY = true;
+    applyStepMeta(2, meta, true);
     updateButtons();
   } catch {
     showError("Анализът неуспешен.");
@@ -404,27 +511,54 @@ async function doAnalyze() {
 
 async function doConfirm() {
   clearError();
+  clearStatus();
   const text = getWorkText();
   const p = picksPayload();
+  const raw = picks();
   if (!ANALYZED_READY || !requiredTagsReady()) { showError("Анализът не е завършен."); return; }
+  if (!raw.file) { showError("Липсва файл за запис."); return; }
   setBusy(true);
   try {
-    const payload = { text, ...p, analysis: ANALYSIS || {} };
+    const fd = new FormData();
+    fd.append("file", raw.file);
+    fd.append("file_kind", raw.fileKind || FILE_KIND || "");
+    fd.append("category_id", p.category_id || "");
+    fd.append("specialty_id", p.specialty_id || "");
+    fd.append("doc_type_id", p.doc_type_id || "");
+    fd.append("ocr_text", OCR_TEXT_ORIG || text || "");
+    fd.append("text", text || "");
+    if (p.event_id) fd.append("event_id", p.event_id);
+    const summary = (ANALYSIS.summary || ANALYSIS.result?.summary || ANALYSIS.data?.summary || ANALYSIS.summary_text || "").toString();
+    if (summary) fd.append("summary", summary);
+    const eventDate = ANALYSIS.data?.event_date || ANALYSIS.event_date || "";
+    if (eventDate) {
+      fd.append("event_date", eventDate);
+      fd.append("document_date", eventDate);
+    }
+    if (OCR_META && Object.keys(OCR_META).length) fd.append("ocr_meta", JSON.stringify(OCR_META));
+    if (ANALYSIS && Object.keys(ANALYSIS).length) fd.append("analysis", JSON.stringify(ANALYSIS));
+    if (ANALYSIS?.meta && Object.keys(ANALYSIS.meta || {}).length) {
+      fd.append("analysis_meta", JSON.stringify(ANALYSIS.meta));
+    }
     const res = await fetch(API.confirm, {
       method: "POST",
       credentials: "same-origin",
-      headers: { "Content-Type": "application/json", "X-CSRFToken": getCSRF() },
-      body: JSON.stringify(payload),
+      headers: { "X-CSRFToken": getCSRF() },
+      body: fd,
     });
     if (!res.ok) throw new Error("confirm_failed");
     let ok = res.ok;
-    try {
-      const j = await res.json();
-      ok = ok || !!(j && (j.ok || j.success || j.saved || j.id));
-    } catch {} // 204 No Content fallback
+    let data = {};
+    try { data = await res.json(); } catch {}
+    const meta = data?.meta || {};
+    if (res.ok && (data?.ok || data?.success || data?.saved || data?.id || data?.document_id)) {
+      ok = true;
+    }
     if (ok) {
       const btn = $("btnConfirm");
       if (btn) { btn.setAttribute("aria-disabled","true"); dis(btn, true); }
+      showStatus("Документът е записан успешно.");
+      applyStepMeta(3, { ...meta, document_id: data?.document_id, event_id: data?.event_id }, true);
     }
   } catch {
     showError("Записът е неуспешен.");
@@ -458,50 +592,22 @@ function bindEvents() {
   btnConfirm && btnConfirm.addEventListener("click", doConfirm);
 
   const ta = $("workText");
-  ta && ta.addEventListener("input", () => { ANALYZED_READY = false; updateButtons(); });
-}
-
-function updateDropdownFlow() {
-  const p = picks();
-  const cat = $("sel_category");
-  const spc = $("sel_specialty");
-  const doc = $("sel_doc_type");
-  const kind = $("file_kind");
-  const file = $("file_input");
-  const choose = $("chooseFileBtn");
-
-  if (CLASS_LOCK) {
-    dis(cat, true); dis(spc, true); dis(doc, true); dis(kind, true); dis(file, false);
-    if (choose) { choose.setAttribute("aria-disabled","true"); choose.classList.remove("btn-armed"); }
-    updateButtons(); return;
-  }
-
-  const readySpc = !!p.category;
-  const readyDoc = readySpc && !!p.specialty;
-  const readyKind = readyDoc && !!p.docType;
-  const readyFile = readyKind && !!p.fileKind;
-
-  dis(cat, false);
-  dis(spc, !readySpc); if (!readySpc) setv(spc, "");
-  dis(doc, !readyDoc || DOC_LOCK); if (!readyDoc && !DOC_LOCK) setv(doc, "");
-  if (FILE_KIND_LOCK) dis(kind, true);
-  else {
-    dis(kind, !readyKind);
-    if (!readyKind) { setv(kind, ""); FILE_KIND = ""; }
-  }
-  dis(file, !readyFile);
-
-  if (choose) {
-    if (readyFile) { choose.removeAttribute("aria-disabled"); choose.classList.add("btn-armed"); }
-    else { choose.setAttribute("aria-disabled","true"); choose.classList.remove("btn-armed"); }
-  }
-  updateButtons();
+  ta && ta.addEventListener("input", () => {
+    ANALYZED_READY = false;
+    STEP_META[2] = null;
+    STEP_META[3] = null;
+    setCurrentStep(1);
+    const btn = $("btnConfirm");
+    if (btn) { btn.removeAttribute("aria-disabled"); dis(btn, false); }
+    updateButtons();
+  });
 }
 
 function init() {
   bindEvents();
   updateDropdownFlow();
   updateButtons();
+  resetSteps();
   renderOCRMeta(OCR_META || {});
 }
 
