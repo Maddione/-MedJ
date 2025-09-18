@@ -1,34 +1,75 @@
 {% extends "basetemplates/base_app.html" %}
 {% load i18n %}
 {% block app_content %}
-<h1 class="text-2xl font-semibold mb-3">{% trans "Документ" %} #{{ document.id }}</h1>
-<div class="bg-blockbg p-4 rounded-xl shadow mb-4">
-  <div class="grid md:grid-cols-2 gap-4">
+<div class="space-y-6">
+  <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
     <div>
-      <div class="font-medium">{% trans "Заглавие" %}</div>
-      <div>{{ document.title|default_if_none:"" }}</div>
+      <h1 class="text-3xl font-bold text-primaryDark">{{ document.display_title }}</h1>
+      <p class="text-sm text-gray-500">{% trans "Документ" %} #{{ document.id }}</p>
     </div>
-    <div>
-      <div class="font-medium">{% trans "Дата" %}</div>
-      <div>{{ document.document_date|default_if_none:"" }}</div>
-    </div>
-    <div>
-      <div class="font-medium">{% trans "Тип" %}</div>
-      <div>{{ document.doc_type|default_if_none:"" }}</div>
-    </div>
-    <div>
-      <div class="font-medium">{% trans "Събитие" %}</div>
-      <div>{{ document.medical_event|default_if_none:"" }}</div>
+    <div class="flex flex-wrap gap-2">
+      <a href="{% url 'medj:document_edit' document.id %}" class="px-4 py-2 rounded-lg bg-primary text-white">{% trans "Редакция" %}</a>
+      <a href="{% url 'medj:document_edit_tags' document.id %}" class="px-4 py-2 rounded-lg bg-primaryDark text-white">{% trans "Тагове" %}</a>
+      <a href="{% url 'medj:document_export_pdf' document.id %}" class="px-4 py-2 rounded-lg bg-success text-white">{% trans "Експорт PDF" %}</a>
     </div>
   </div>
+
+  <div class="bg-blockbg p-5 rounded-2xl shadow">
+    <div class="grid gap-4 md:grid-cols-2">
+      <div>
+        <div class="text-sm font-semibold text-gray-600">{% trans "Дата на документа" %}</div>
+        <div class="text-lg text-primaryDark">{{ document.document_date|default_if_none:"—" }}</div>
+      </div>
+      <div>
+        <div class="text-sm font-semibold text-gray-600">{% trans "Вид документ" %}</div>
+        <div class="text-lg text-primaryDark">{{ document.doc_type }}</div>
+      </div>
+      <div>
+        <div class="text-sm font-semibold text-gray-600">{% trans "Категория" %}</div>
+        <div class="text-lg text-primaryDark">{{ document.category }}</div>
+      </div>
+      <div>
+        <div class="text-sm font-semibold text-gray-600">{% trans "Събитие" %}</div>
+        <div class="text-lg text-primaryDark">{{ document.medical_event|default_if_none:"—" }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white p-5 rounded-2xl shadow space-y-6">
+    <div>
+      <h2 class="text-xl font-semibold text-primaryDark mb-3">{% trans "Анализ – таблица" %}</h2>
+      {% if document.analysis_html %}
+        <div class="rounded-2xl p-4 bg-white border">{{ document.analysis_html|safe }}</div>
+      {% else %}
+        <div class="text-gray-500">Няма данни от анализ.</div>
+      {% endif %}
+    </div>
+
+    {% if document.analysis_text %}
+      <div>
+        <h2 class="text-xl font-semibold text-primaryDark mb-3">{% trans "Анализ – текст" %}</h2>
+        <pre class="whitespace-pre-wrap">{{ document.analysis_text }}</pre>
+      </div>
+    {% endif %}
+
+    {% if document.ocr_text %}
+      <div>
+        <h2 class="text-xl font-semibold text-primaryDark mb-3">{% trans "OCR" %}</h2>
+        <button id="toggle-ocr" class="px-4 py-2 rounded-lg bg-primary text-white">Виж оригинален OCR текст</button>
+        <pre id="ocr-box" class="whitespace-pre-wrap hidden mt-3">{{ document.ocr_text }}</pre>
+      </div>
+    {% endif %}
+  </div>
 </div>
-<div class="flex gap-3 mb-6">
-  <a href="/documents/{{ document.id }}/edit/" class="px-4 py-2 rounded-md bg-primary text-blockbg">{% trans "Редакция" %}</a>
-  <a href="/documents/{{ document.id }}/edit-tags/" class="px-4 py-2 rounded-md bg-primaryDark text-blockbg">{% trans "Тагове" %}</a>
-  <a href="/documents/{{ document.id }}/export/pdf/" class="px-4 py-2 rounded-md bg-success text-white">{% trans "PDF" %}</a>
-</div>
-<div class="bg-blockbg p-4 rounded-xl shadow">
-  <h2 class="font-semibold mb-2">{% trans "OCR текст" %}</h2>
-  <pre class="whitespace-pre-wrap">{{ document.original_ocr_text|default_if_none:"" }}</pre>
-</div>
+<script>
+  (function(){
+    var btn=document.getElementById('toggle-ocr');
+    if(!btn){return;}
+    btn.addEventListener('click',function(){
+      var box=document.getElementById('ocr-box');
+      if(!box){return;}
+      box.classList.toggle('hidden');
+    });
+  })();
+</script>
 {% endblock %}

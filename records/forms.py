@@ -196,51 +196,29 @@ class DocumentUploadForm(forms.ModelForm):
 
 
 class DocumentEditForm(forms.ModelForm):
+    class Meta:
+        model = Document
+        fields = ["title", "doc_type", "category", "document_date", "analysis_text", "analysis_html"]
+        widgets = {
+            "title": forms.TextInput(attrs={"class": "w-full rounded-xl px-4"}),
+            "doc_type": forms.Select(attrs={"class": "w-full rounded-xl px-4"}),
+            "category": forms.Select(attrs={"class": "w-full rounded-xl px-4"}),
+            "document_date": forms.DateInput(attrs={"type": "date", "class": "w-full rounded-xl px-4"}),
+            "analysis_text": forms.Textarea(attrs={"rows": 6, "class": "w-full rounded-xl px-4"}),
+            "analysis_html": forms.Textarea(attrs={"rows": 10, "class": "w-full rounded-xl px-4"}),
+        }
+
+
+class DocumentTagForm(forms.ModelForm):
     tags = forms.ModelMultipleChoiceField(
-        queryset=Tag.objects.none(),
+        queryset=Tag.objects.filter(is_active=True).order_by("translations__name"),
         required=False,
-        widget=forms.SelectMultiple(attrs={"class": "min-w-64"})
+        widget=forms.SelectMultiple(attrs={"class": "w-full"}),
     )
 
     class Meta:
         model = Document
-        fields = [
-            "specialty",
-            "category",
-            "doc_type",
-            "document_date",
-            "summary",
-            "notes",
-            "tags",
-        ]
-        widgets = {
-            "document_date": forms.DateInput(attrs={"type": "date"}),
-            "summary": forms.TextInput(),
-            "notes": forms.Textarea(attrs={"rows": 4}),
-        }
-        labels = {
-            "specialty": _("Специалност"),
-            "category": _("Категория"),
-            "doc_type": _("Вид документ"),
-            "document_date": _("Дата на документа"),
-            "summary": _("Кратко описание"),
-            "notes": _("Бележки"),
-            "tags": _("Етикети"),
-        }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["tags"].queryset = Tag.objects.filter(is_active=True).order_by("translations__name")
-
-    def clean(self):
-        cleaned = super().clean()
-        if not cleaned.get("specialty"):
-            self.add_error("specialty", _("Задължително поле"))
-        if not cleaned.get("category"):
-            self.add_error("category", _("Задължително поле"))
-        if not cleaned.get("doc_type"):
-            self.add_error("doc_type", _("Задължително поле"))
-        return cleaned
+        fields = ["tags"]
 
 
 class LabTestMeasurementForm(forms.ModelForm):
