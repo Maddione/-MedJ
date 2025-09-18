@@ -96,3 +96,42 @@ class UploadFlowTests(TestCase):
         data = res.json()
         self.assertIn("events", data)
         self.assertTrue(any(str(it.get("id")) == str(ev.id) for it in data["events"]))
+
+    def _confirm_with_file(self, payload_bytes, summary="sum", extra=None):
+        file_obj = SimpleUploadedFile("sample.pdf", payload_bytes, content_type="application/pdf")
+        data = {
+            "file": file_obj,
+            "file_kind": "pdf",
+            "category_id": self.cat.id,
+            "specialty_id": self.spc.id,
+            "doc_type_id": self.dtype.id,
+            "ocr_text": "ocr",
+            "text": "ocr",
+            "summary": summary,
+        }
+        if extra:
+            data.update(extra)
+        return self.client.post("/api/upload/confirm/", data=data)
+
+    def test_confirm_duplicate_conflict(self):
+        payload = b"duplicate-content"
+        first = self._confirm_with_file(payload, summary="first")
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(Document.objects.count(), 1)
+        again = self._confirm_with_file(payload, summary="second")
+        self.assertEqual(again.status_code, 409)
+        body = again.json()
+        self.assertEqual(body.get("error"), "duplicate")
+        self.assertEqual(Document.objects.count(), 1)
+
+    def test_confirm_sets_creation_date_fallback(self):
+        payload = b"date-check"
+        res = self._confirm_with_file(payload, summary="custom summary")
+        self.assertEqual(res.status_code, 200)
+        doc = Document.objects.order_by("-id").first()
+        self.assertIsNotNone(doc)
+        self.assertIsNotNone(doc.date_created)
+        self.assertIsNotNone(doc.uploaded_at)
+        self.assertEqual(doc.date_created, doc.uploaded_at.date())
+        self.assertEqual(doc.summary, "custom summary")
+        self.assertTrue(doc.content_hash)

@@ -147,6 +147,9 @@ let DOC_LOCK = false;
 let FILE_KIND_LOCK = false;
 let LAB_RESULTS = [];
 let TABLE_EDIT_MODE = false;
+let SUMMARY_MANUAL = false;
+let SUMMARY_LOCKED = false;
+let DUPLICATE_DETECTED = false;
 
 const STEP_CONFIG = {
   1: { label: "Стъпка 1: OCR сканиране" },
@@ -208,6 +211,11 @@ function updateButtons() {
   const bOCR = $("btnOCR");
   const bAna = $("btnAnalyze");
   const bCfm = $("btnConfirm");
+  if (DUPLICATE_DETECTED) {
+    bAna ? hide(bAna) : null;
+    bCfm ? hide(bCfm) : null;
+    return;
+  }
   bOCR ? (s === "ocr" && pipelineReady() ? show(bOCR) : hide(bOCR)) : null;
   bAna ? (s === "analyze" && requiredTagsReady() && !ANALYZED_READY ? show(bAna) : hide(bAna)) : null;
   bCfm ? (ANALYZED_READY && requiredTagsReady() ? show(bCfm) : hide(bCfm)) : null;
@@ -304,18 +312,22 @@ function setBusy(on) {
   const o = $("loadingOverlay");
   if (o) (on ? show(o) : hide(o));
 }
-function showError(msg) {
+function showError(msg, opts = {}) {
   clearStatus();
   const box = $("errorBox");
-  if (box) {
+  if (!box) return;
+  if (opts.allowHTML) {
+    box.innerHTML = msg || "Грешка.";
+  } else {
     box.textContent = msg || "Грешка.";
-    show(box);
   }
+  show(box);
 }
 function clearError() {
   const box = $("errorBox");
   if (box) {
     box.textContent = "";
+    box.innerHTML = "";
     hide(box);
   }
 }
@@ -382,6 +394,10 @@ function handleFileInputChange() {
   OCR_TEXT_RAW = "";
   OCR_META = {};
   ANALYSIS = { summary: "", data: { tables: [], blood_test_results: [], suggested_tags: [] }, meta: {} };
+  SUMMARY_MANUAL = false;
+  setSummaryLocked(false);
+  setSummaryNotice("");
+  DUPLICATE_DETECTED = false;
   setWorkText("", { silent: true });
   renderLabTable([]);
   renderSummary("");
@@ -584,7 +600,7 @@ function applyLabResults(rows) {
 }
 
 function collectTableEdits() {
-  const slot = $("labTableSlot");
+  const slot = $("labTable");
   if (!slot) return getLabResults();
   const rows = [];
   slot.querySelectorAll("tbody tr").forEach((tr) => {
@@ -641,7 +657,7 @@ function syncTableEditButton() {
 
 function renderLabTable(rows = null) {
   const wrap = $("labWrap");
-  const slot = $("labTableSlot");
+  const slot = $("labTable");
   const summary = $("labSummary");
   if (!wrap || !slot) return;
   if (rows !== null) {
@@ -711,17 +727,74 @@ function renderLabTable(rows = null) {
   syncTableEditButton();
 }
 
-function renderSummary(text) {
-  const box = $("summaryBox");
-  if (!box) return;
+function getSummaryWrap() { return $("summaryWrap"); }
+function getSummaryField() { return $("summaryBox"); }
+function getSummaryNotice() { return $("summaryNotice"); }
+function getSummaryText() { return getSummaryField()?.value || ""; }
+function setSummaryNotice(text) {
+  const node = getSummaryNotice();
+  if (!node) return;
   const value = (text || "").toString().trim();
   if (!value) {
-    box.textContent = "";
-    hide(box);
+    node.textContent = "";
+    node.classList.add("hidden");
     return;
   }
-  box.textContent = value;
-  show(box);
+  node.textContent = value;
+  node.classList.remove("hidden");
+}
+function syncSummaryState(value) {
+  const val = (value || "").toString();
+  ANALYSIS.summary = val;
+  ANALYSIS.summary_text = val;
+  if (!ANALYSIS.data || typeof ANALYSIS.data !== "object") {
+    ANALYSIS.data = { tables: [], blood_test_results: [], suggested_tags: [] };
+  }
+  ANALYSIS.data.summary = val;
+}
+function setSummaryLocked(flag) {
+  SUMMARY_LOCKED = !!flag;
+  const field = getSummaryField();
+  if (field) {
+    field.readOnly = SUMMARY_LOCKED;
+    field.setAttribute("aria-readonly", SUMMARY_LOCKED ? "true" : "false");
+    field.classList.toggle("bg-gray-100", SUMMARY_LOCKED);
+    field.classList.toggle("text-primaryDark/70", SUMMARY_LOCKED);
+  }
+}
+function renderSummary(text, opts = {}) {
+  const wrap = getSummaryWrap();
+  const field = getSummaryField();
+  if (!wrap || !field) return;
+  const value = (text || "").toString();
+  if (!value.trim()) {
+    field.value = "";
+    hide(wrap);
+    if (!opts.preserveManual) {
+      SUMMARY_MANUAL = false;
+    }
+    syncSummaryState("");
+    setSummaryNotice("");
+    if (!SUMMARY_LOCKED) {
+      field.readOnly = false;
+      field.setAttribute("aria-readonly", "false");
+    }
+    return;
+  }
+  show(wrap);
+  field.value = value;
+  syncSummaryState(value);
+  if (opts.fromAnalysis) {
+    SUMMARY_MANUAL = false;
+    setSummaryLocked(false);
+    setSummaryNotice("Можете да редактирате резюмето преди запазване.");
+  } else if (!SUMMARY_MANUAL) {
+    setSummaryNotice("");
+  }
+  if (!SUMMARY_LOCKED) {
+    field.readOnly = false;
+    field.setAttribute("aria-readonly", "false");
+  }
 }
 
 function renderSuggestedTags(tags, specialty) {
@@ -819,6 +892,9 @@ function markTextEdited() {
   ANALYSIS.suggested_tags = [];
   ANALYSIS.detected_specialty = "";
   ANALYSIS.lab_overview = "";
+  SUMMARY_MANUAL = false;
+  setSummaryLocked(false);
+  setSummaryNotice("");
   renderSummary("");
   renderSuggestedTags([], "");
   const btn = $("btnConfirm");
@@ -882,6 +958,12 @@ async function doAnalyze() {
   const text = getWorkText();
   const p = picksPayload();
   if (!text.trim() || !requiredTagsReady()) { showError("Липсват данни за анализ."); return; }
+  if (SUMMARY_MANUAL) {
+    const ok = window.confirm("Резюмето е редактирано ръчно. Новият анализ ще го замени. Желаете ли да продължите?");
+    if (!ok) {
+      return;
+    }
+  }
   setBusy(true);
   try {
     const body = { text, ...p };
@@ -923,7 +1005,7 @@ async function doAnalyze() {
     ANALYSIS.data.summary = combinedSummary;
     ANALYSIS.data.lab_overview = labOverview;
     if (normalizedTextApi) ANALYSIS.data.normalized_text = normalizedTextApi;
-    renderSummary(combinedSummary);
+    renderSummary(combinedSummary, { fromAnalysis: true });
     const baseRows = Array.isArray(payloadData.blood_test_results)
       ? payloadData.blood_test_results
       : Array.isArray(data.blood_test_results)
@@ -983,6 +1065,8 @@ async function doConfirm() {
   }
   setBusy(true);
   try {
+    const summaryText = getSummaryText().trim();
+    syncSummaryState(summaryText);
     const fd = new FormData();
     fd.append("file", raw.file);
     fd.append("file_kind", raw.fileKind || FILE_KIND || "");
@@ -992,8 +1076,7 @@ async function doConfirm() {
     fd.append("ocr_text", OCR_TEXT_ORIG || text || "");
     fd.append("text", text || "");
     if (p.event_id) fd.append("event_id", p.event_id);
-    const summary = (ANALYSIS.summary || ANALYSIS.result?.summary || ANALYSIS.data?.summary || ANALYSIS.summary_text || "").toString();
-    if (summary) fd.append("summary", summary);
+    if (summaryText) fd.append("summary", summaryText);
     const eventDate = ANALYSIS.data?.event_date || ANALYSIS.event_date || "";
     if (eventDate) {
       fd.append("event_date", eventDate);
@@ -1014,10 +1097,23 @@ async function doConfirm() {
       headers: { "X-CSRFToken": getCSRF() },
       body: fd,
     });
-    if (!res.ok) throw new Error("confirm_failed");
-    let ok = res.ok;
     let data = {};
     try { data = await res.json(); } catch {}
+    if (res.status === 409) {
+      const docId = data?.document_id;
+      const historyUrl = CONFIG.history_url || CONFIG.documents_url || "";
+      const label = CONFIG.history_url ? "История" : "Документи";
+      const linkHtml = historyUrl ? `<a class="underline font-semibold" href="${escapeHtml(historyUrl)}">${escapeHtml(label)}</a>` : "";
+      const parts = [`Файлът вече е качен${docId ? ` (Документ №${docId})` : ""}.`];
+      if (linkHtml) parts.push(linkHtml);
+      showError(parts.join(" "), { allowHTML: true });
+      DUPLICATE_DETECTED = true;
+      ANALYZED_READY = false;
+      updateButtons();
+      return;
+    }
+    if (!res.ok) throw new Error("confirm_failed");
+    let ok = res.ok;
     const meta = data?.meta || {};
     if (res.ok && (data?.ok || data?.success || data?.saved || data?.id || data?.document_id)) {
       ok = true;
@@ -1027,6 +1123,10 @@ async function doConfirm() {
       if (btn) { btn.setAttribute("aria-disabled","true"); dis(btn, true); }
       showStatus("Документът е записан успешно.");
       applyStepMeta(3, { ...meta, document_id: data?.document_id, event_id: data?.event_id }, true);
+      setSummaryLocked(true);
+      SUMMARY_MANUAL = false;
+      setSummaryNotice("Документът е записан успешно.");
+      DUPLICATE_DETECTED = false;
       const redirectTarget = data?.redirect_url || CONFIG.documents_url || "";
       if (redirectTarget) {
         setTimeout(() => {
@@ -1076,6 +1176,20 @@ function bindEvents() {
   const ta = $("workText");
   ta && ta.addEventListener("input", () => {
     markTextEdited();
+  });
+  const summaryField = getSummaryField();
+  summaryField && summaryField.addEventListener("input", () => {
+    SUMMARY_MANUAL = true;
+    if (SUMMARY_LOCKED) {
+      setSummaryLocked(false);
+    }
+    const value = summaryField.value || "";
+    syncSummaryState(value);
+    if (value.trim()) {
+      setSummaryNotice("Резюмето е редактирано ръчно. Нов анализ ще го замени.");
+    } else {
+      setSummaryNotice("");
+    }
   });
 }
 

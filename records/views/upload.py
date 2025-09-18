@@ -320,6 +320,34 @@ def _build_lab_summary(rows):
     return {"abnormal": abnormal, "text": " ".join(summary_bits)}
 
 
+def _compose_verbal_summary(abnormal_rows):
+    if not abnormal_rows:
+        return "Не са открити отклонения. Останалите показатели са в референтни граници."
+
+    sentences = []
+    for item in abnormal_rows:
+        row = item.get("row", {})
+        status = item.get("status")
+        direction = "под" if status == "low" else "над"
+        indicator = row.get("indicator_name") or "Показател"
+        value_txt = _format_number(row.get("value")) or "—"
+        unit = row.get("unit") or ""
+        unit_txt = f" {unit}" if unit else ""
+        low = _format_number(row.get("ref_low")) or "—"
+        high = _format_number(row.get("ref_high")) or "—"
+        sentences.append(
+            f"{indicator} е {direction} референтните стойности ({value_txt}{unit_txt}; реф. граници {low} – {high})."
+        )
+
+    if len(sentences) == 1:
+        prefix = "Установено е отклонение при показателя: "
+    else:
+        prefix = "Установени са отклонения при следните показатели: "
+
+    body = " ".join(sentences)
+    return f"{prefix}{body} Останалите показатели са в референтни граници."
+
+
 def _suggest_tags(rows, specialty_name, doc_type_name):
     tags = []
     if doc_type_name:
@@ -425,13 +453,7 @@ def _enrich_analysis(raw_data, text, specialty_name, doc_type_name):
         combined_rows.append(normalized)
 
     lab_summary = _build_lab_summary(combined_rows)
-    summary_text = (data.get("summary") or "").strip()
-    if not summary_text:
-        base_summary = text.strip().split("\n")[:4]
-        summary_text = " ".join(base_summary).strip()[:800]
-    summary_text = summary_text or "Няма генерирано резюме."
-    if lab_summary["text"] and lab_summary["text"] not in summary_text:
-        summary_text = (summary_text + " " + lab_summary["text"]).strip()
+    summary_text = _compose_verbal_summary(lab_summary["abnormal"]) or "Няма генерирано резюме."
     combined_tags = data.get("suggested_tags") or []
     suggested = _suggest_tags(combined_rows, specialty_name, doc_type_name)
     for tag in suggested:
@@ -831,6 +853,10 @@ def upload_confirm(request):
         analysis_meta = {}
     if analysis_meta:
         analysis_payload.setdefault("meta", analysis_meta)
+    if summary:
+        analysis_payload["summary"] = summary
+        if isinstance(analysis_payload.get("data"), dict):
+            analysis_payload["data"]["summary"] = summary
 
     event_date = (
         _parse_date(request.POST.get("event_date"))
@@ -841,6 +867,46 @@ def upload_confirm(request):
 
     if not document_date and event_date:
         document_date = event_date
+
+    creation_date = (
+        _parse_date(request.POST.get("date_created"))
+        or _parse_date(analysis_payload.get("date_created"))
+        or _parse_date((analysis_payload.get("data") or {}).get("date_created"))
+    )
+
+    hasher = hashlib.sha256()
+    try:
+        for chunk in upload_file.chunks():
+            hasher.update(chunk)
+    except Exception:
+        data = upload_file.read()
+        hasher.update(data)
+    digest = hasher.hexdigest()
+    try:
+        upload_file.seek(0)
+    except Exception:
+        pass
+
+    existing_doc = (
+        Document.objects.filter(owner=request.user, content_hash=digest)
+        .order_by("-id")
+        .first()
+    )
+    if not existing_doc:
+        existing_doc = (
+            Document.objects.filter(owner=request.user, content_hash__isnull=True, sha256=digest)
+            .order_by("-id")
+            .first()
+        )
+    if existing_doc:
+        return JsonResponse(
+            {
+                "error": "duplicate",
+                "document_id": existing_doc.id,
+                "redirect_url": reverse("medj:documents"),
+            },
+            status=409,
+        )
 
     patient, _ = PatientProfile.objects.get_or_create(user=request.user)
 
@@ -856,19 +922,6 @@ def upload_confirm(request):
             summary=event_summary,
         )
 
-    hasher = hashlib.sha256()
-    try:
-        for chunk in upload_file.chunks():
-            hasher.update(chunk)
-    except Exception:
-        data = upload_file.read()
-        hasher.update(data)
-    digest = hasher.hexdigest()
-    try:
-        upload_file.seek(0)
-    except Exception:
-        pass
-
     doc = Document(
         owner=request.user,
         medical_event=event,
@@ -876,7 +929,7 @@ def upload_confirm(request):
         category=category,
         doc_type=doc_type,
         document_date=document_date,
-        date_created=timezone.now().date(),
+        date_created=creation_date,
         doc_kind=file_kind or _guess_file_kind(upload_file),
         file_size=getattr(upload_file, "size", None) or None,
         file_mime=getattr(upload_file, "content_type", None) or None,
@@ -889,10 +942,15 @@ def upload_confirm(request):
             },
             ensure_ascii=False,
         ),
+        content_hash=digest,
         sha256=digest,
     )
     doc.file.save(upload_file.name, upload_file, save=False)
     doc.save()
+
+    if not doc.date_created and doc.uploaded_at:
+        doc.date_created = doc.uploaded_at.date()
+        doc.save(update_fields=["date_created"])
 
     detail_bits = [f"Документ №{doc.id}"]
     if event:
@@ -925,7 +983,10 @@ def upload_preview(request):
         "specialties": MedicalSpecialty.objects.order_by("id"),
         "doc_types": DocumentType.objects.order_by("id"),
         "lab_index": _lab_index_payload(),
-        "upload_config": {"documents_url": reverse("medj:documents")},
+        "upload_config": {
+            "documents_url": reverse("medj:documents"),
+            "history_url": reverse("medj:upload_history"),
+        },
 
     }
     return render(request, "main/upload.html", ctx)

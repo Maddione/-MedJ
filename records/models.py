@@ -143,11 +143,20 @@ class Document(models.Model):
     file_size = models.BigIntegerField(blank=True, null=True)
     file_mime = models.CharField(max_length=120, blank=True, null=True)
     doc_kind = models.CharField(max_length=16, choices=DOC_KIND_CHOICES, default="other")
+    content_hash = models.CharField(max_length=64, blank=True, null=True)
     sha256 = models.CharField(max_length=64, blank=True, null=True, db_index=True)
     original_ocr_text = models.TextField(blank=True, null=True)
     summary = models.TextField(blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
     tags = models.ManyToManyField("records.Tag", through="records.DocumentTag", related_name="documents", blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["owner", "content_hash"],
+                name="document_owner_content_hash_unique",
+            )
+        ]
 
     def __str__(self):
         return f"{self.id}"
