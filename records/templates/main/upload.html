@@ -80,7 +80,11 @@
           <textarea id="workText" class="w-full h-72 rounded-xl px-4 py-3 border border-gray-300 bg-white" placeholder="{% trans 'Тук ще се визуализира OCR или Анализ в зависимост от етапа.' %}"></textarea>
         </div>
 
-        <div id="summaryBox" class="hidden mb-4 rounded-2xl border border-primary/30 bg-white px-4 py-3 text-sm text-primaryDark"></div>
+        <div id="summaryWrap" class="hidden mb-4">
+          <label for="summaryBox" class="block text-sm text-primaryDark font-semibold mb-2">{% trans "Обобщение от анализа" %}</label>
+          <textarea id="summaryBox" class="w-full min-h-[140px] rounded-2xl border border-primary/30 bg-white px-4 py-3 text-sm text-primaryDark focus:outline-none focus:ring-2 focus:ring-primary/40" placeholder="{% trans 'Може да редактирате текста преди запазване.' %}"></textarea>
+          <div id="summaryNotice" class="mt-2 text-xs text-primaryDark/70 hidden"></div>
+        </div>
 
         <div id="suggestedTagsWrap" class="hidden mb-4 rounded-2xl border border-primary/20 bg-white px-4 py-3">
           <div class="text-sm text-primaryDark font-semibold mb-2">{% trans "Предложени тагове" %}</div>
@@ -88,7 +92,6 @@
           <div id="detectedSpecialty" class="mt-2 text-xs text-primaryDark/70"></div>
         </div>
 
-        <div id="summaryBox" class="hidden mb-4 rounded-2xl border border-primary/30 bg-white px-4 py-3 text-sm text-primaryDark"></div>
 
         <div id="labWrap" class="hidden">
           <div class="text-sm text-primaryDark font-semibold mb-2">
@@ -135,5 +138,5 @@
 {{ lab_index|json_script:"labIndexData" }}
 {{ upload_config|json_script:"uploadConfigData" }}
 
-<script src="{% static 'js/upload_logic.js' %}?v=2"></script>
+<script src="{% static 'js/upload_logic.js' %}?v=3"></script>
 {% endblock %}
