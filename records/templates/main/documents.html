@@ -28,60 +28,48 @@
             </div>
             {% endif %}
 
-            <div class="overflow-x-auto">
-                <table class="min-w-full text-sm text-gray-700">
-                    <thead>
-                        <tr class="bg-creamy-main-content">
-                            <th class="bg-primaryDark  text-white py-1 px-auto rounded-2xl text-center font-semibold">
-                                {% trans "Дата на качване" %} <i class="fa-solid fa-sort ml-1"></i>
-                            </th>
-                            <th class="bg-primaryDark  text-white py-1 px-auto rounded-2xl gap-1 text-center font-semibold">{% trans "Име на файл" %}</th>
-                            <th class="bg-primaryDark  text-white py-1 px-auto rounded-2xl text-center font-semibold">{% trans "Тип документ" %}</th>
-                            <th class="bg-primaryDark  text-white py-1 px-auto rounded-2xl text-center font-semibold">{% trans "Тагове" %}</th>
-                            <th class="bg-primaryDark  text-white py-1 px-auto rounded-2xl text-center font-semibold">{% trans "Действия" %}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if documents %}
-                            {% for doc in documents %}
-                                <tr class="bg-creamy-main-content border-b border-button-blue hover:bg-gray-50">
-                                    <td class="py-3 px-4 whitespace-nowrap">{{ doc.uploaded_at|date:"d.m.Y H:i" }}</td>
-                                    <td class="py-3 px-4">{{ doc.file.name|cut:"documents/" }}</td>
-                                    <td class="py-3 px-4">{{ doc.get_doc_kind_display }}</td>
-                                    <td class="py-3 px-4">
-                                        {% for tag in doc.tags.all %}
-                                            <span class="bg-button-blue text-white text-xs font-semibold px-2.5 py-0.5 rounded-full mr-1">{{ tag.name }}</span>
-                                        {% empty %}
-                                            <span class="text-gray-500">{% trans "Няма тагове" %}</span>
-                                        {% endfor %}
-                                    </td>
-                                    <td class="py-3 px-4">
-                                        <a href="{{ doc.file.url }}" target="_blank" class="text-checkmark-green hover:underline mr-2">
-                                            <i class="fa-solid fa-download"></i> {% trans "Изтегли" %}
-                                        </a>
-                                        <a href="{% url 'medj:document_detail' pk=doc.id %}" class="text-button-blue hover:underline">
-                                            <i class="fa-solid fa-eye"></i> {% trans "Преглед" %}
-                                        </a>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr class="bg-creamy-main-content">
-                                <td colspan="5" class="py-4 px-4 text-center text-gray-500">
-                                    {% if query %}
-                                        {% blocktrans with hash=query %}Няма документи с хеш {{ hash }}.{% endblocktrans %}
-                                    {% else %}
-                                        {% trans "Все още нямате качени документи." %} <a href="{% url 'medj:upload' %}" class="font-bold hover:underline text-button-blue">{% trans "Качете първия си документ от тук" %}</a>.
-                                    {% endif %}
-                                </td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
+            <div class="rounded-2xl p-3" style="background:#EBEDE0">
+      <div class="grid grid-cols-12 items-center gap-2 px-2 py-2 rounded-xl"
+           style="background:#0A4E75;color:#fff">
+        <div class="col-span-3 font-semibold text-center">{% trans "Дата на качване" %}</div>
+        <div class="col-span-3 font-semibold text-center">{% trans "Име на файл" %}</div>
+        <div class="col-span-2 font-semibold text-center">{% trans "Тип документ" %}</div>
+        <div class="col-span-2 font-semibold text-center">{% trans "Тагове" %}</div>
+        <div class="col-span-2 font-semibold text-center">{% trans "Действия" %}</div>
+      </div>
+      <div class="bg-creamy-main-content rounded-b-2xl divide-y divide-button-blue">
+        {% if documents %}
+          {% for doc in documents %}
+            <div class="grid grid-cols-12 items-center gap-2 px-3 py-3 hover:bg-gray-50">
+              <div class="col-span-3 whitespace-nowrap text-center">
+                {{ doc.uploaded_at|date:"d.m.Y H:i" }}
+              </div>
+
+              <div class="col-span-3 truncate text-center">
+                {{ doc.file.name|cut:"documents/" }}
+              </div>
+
+              <div class="col-span-2 text-center">
+                {{ doc.get_doc_kind_display }}
+              </div>
+
+              <div class="col-span-2 text-center">
+                <div class="inline-flex flex-wrap gap-1 justify-center">
+                  {% for tag in doc.tags.all %}
+                    <span class="bg-button-blue text-white text-xs font-semibold px-2.5 py-0.5 rounded-full">{{ tag.name }}</span>
+                  {% empty %}
+                    <span class="text-gray-500">{% trans "Няма тагове" %}</span>
+                  {% endfor %}
+                </div>
+              </div>
+
+              <div class="col-span-2 flex items-center justify-center gap-3">
+                <a href="{{ doc.file.url }}" target="_blank" class="text-checkmark-green hover:underline">
+                  <i class="fa-solid fa-download"><
+
             </div>
         </div>
-    </div>
-</main>
+    </main>
 
 <div id="ob_history" class="hidden fixed inset-0 z-50 bg-black/50 p-4">
   <div class="bg-white rounded-2xl w-full max-w-lg mx-auto p-6">
