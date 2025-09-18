@@ -8,6 +8,7 @@
   --color-primaryDark: #0A4E75;
   --color-success: #15BC11;
   --color-danger: #D84137;
+
 }
 .bg-sitebg{background:var(--color-sitebg)}
 .bg-blockbg{background:var(--color-blockbg)}
