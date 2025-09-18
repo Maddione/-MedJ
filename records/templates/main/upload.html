@@ -51,6 +51,7 @@
 
   <div class="rounded-2xl p-8" style="background:#FFFFF5;box-shadow:0 10px 14px rgba(10,30,74,.10),inset 0 0 0 1px rgba(10,30,74,.08)">
     <div id="errorBox" class="hidden mb-4 rounded-2xl p-4 bg-white border border-danger text-danger"></div>
+    <div id="statusBox" class="hidden mb-4 rounded-2xl p-4 bg-white border border-success text-success"></div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div>
@@ -73,10 +74,18 @@
       <div>
         <div class="mb-3">
           <div class="text-sm text-primaryDark font-semibold mb-2">
-            <span id="workLabel">{% trans "OCR Текст" %}</span>
-            <span id="workMeta" class="ml-2 inline-flex items-center px-2 py-0.5 rounded border border-primary text-xs text-primaryDark" aria-live="polite"></span>
+            <span id="workLabel">{% trans "Стъпка 1: Екстракт на текст" %}</span>
+            <span id="workMeta" class="ml-2 inline-flex items-center px-2 py-0.5 rounded border border-primary text-xs text-primaryDark hidden" aria-live="polite"></span>
           </div>
-          <textarea id="workText" class="w-full h-72 rounded-xl px-4 py-3 border border-gray-300 bg-white" placeholder="{% trans 'Тук ще се визуализира OCR или Анализ в зависимост от етапа.' %}" disabled></textarea>
+          <textarea id="workText" class="w-full h-72 rounded-xl px-4 py-3 border border-gray-300 bg-white" placeholder="{% trans 'Тук ще се визуализира OCR или Анализ в зависимост от етапа.' %}"></textarea>
+        </div>
+
+        <div id="summaryBox" class="hidden mb-4 rounded-2xl border border-primary/30 bg-white px-4 py-3 text-sm text-primaryDark"></div>
+
+        <div id="suggestedTagsWrap" class="hidden mb-4 rounded-2xl border border-primary/20 bg-white px-4 py-3">
+          <div class="text-sm text-primaryDark font-semibold mb-2">{% trans "Предложени тагове" %}</div>
+          <div id="suggestedTagsList" class="flex flex-wrap gap-2"></div>
+          <div id="detectedSpecialty" class="mt-2 text-xs text-primaryDark/70"></div>
         </div>
 
         <div id="labWrap" class="hidden">
@@ -85,6 +94,21 @@
             <span id="labSummary" class="text-xs text-primaryDark/60 ml-2"></span>
           </div>
           <div id="labTableSlot"></div>
+        </div>
+
+        <div class="mt-4 flex flex-wrap gap-3" id="textActions">
+          <button id="btnRefreshTable" type="button" class="px-4 py-2 rounded-xl border border-primary text-primaryDark bg-white whitespace-normal break-words text-center leading-tight hover:bg-primary/5">
+            {% trans "Обнови таблица" %}
+          </button>
+          <button id="btnToggleTableEdit" type="button" class="px-4 py-2 rounded-xl border border-primary text-primaryDark bg-white whitespace-normal break-words text-center leading-tight hover:bg-primary/5" aria-pressed="false" data-active-label="{% trans 'Запази редакциите' %}">
+            {% trans "Редактирай таблица" %}
+          </button>
+          <button id="btnNormalizeText" type="button" class="px-4 py-2 rounded-xl border border-primary text-primaryDark bg-white whitespace-normal break-words text-center leading-tight hover:bg-primary/5">
+            {% trans "Обнови текст" %}
+          </button>
+          <button id="btnRestoreText" type="button" class="px-4 py-2 rounded-xl border border-primary text-primaryDark bg-white whitespace-normal break-words text-center leading-tight hover:bg-primary/5">
+            {% trans "Върни първоначалния OCR текст" %}
+          </button>
         </div>
 
         <div class="mt-5 flex gap-3 items-center">
@@ -106,5 +130,7 @@
 
 {% block scripts_extra %}
 {{ block.super }}
+{{ lab_index|json_script:"labIndexData" }}
+{{ upload_config|json_script:"uploadConfigData" }}
 <script src="{% static 'js/upload_logic.js' %}?v={{ now|date:"U" }}"></script>
 {% endblock %}
