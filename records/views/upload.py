@@ -11,6 +11,7 @@ from records.models import (
     PatientProfile,
     LabIndicator,
 )
+
 import os, requests, json, re, time, hashlib
 from datetime import datetime
 from django.utils import timezone
@@ -493,6 +494,12 @@ def upload_preview(request):
 @require_http_methods(["GET"])
 def upload_history(request):
     return redirect("medj:documents")
+  
+    documents = (
+        Document.objects.filter(owner=request.user)
+        .select_related("medical_event", "doc_type")
+        .order_by("-uploaded_at"))
+    return render(request, "main/history.html", {"documents": documents})
 
 @login_required
 @require_http_methods(["GET"])

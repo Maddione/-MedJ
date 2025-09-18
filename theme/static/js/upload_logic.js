@@ -1,5 +1,3 @@
-// MedJ upload logic — aligned to backend contracts from README
-// Flow: Upload → OCR → Analyze → Confirm. Endpoints under /api/upload/*. :contentReference[oaicite:1]{index=1}
 const API = {
   ocr: "/api/upload/ocr/",
   analyze: "/api/upload/analyze/",
@@ -108,6 +106,7 @@ function formatNumber(value) {
   if (Number.isFinite(asNum)) return formatNumber(asNum);
   return String(value);
 }
+
 const clearStatus = () => {
   const box = $("statusBox");
   if (box) {
@@ -122,7 +121,6 @@ const getCSRF = () => {
   return m ? decodeURIComponent(m[1]) : "";
 };
 
-// runtime state
 let FILE = null;
 let FILE_KIND = "";
 let FILE_URL = null;
@@ -135,8 +133,8 @@ let DOC_LOCK = false;
 let FILE_KIND_LOCK = false;
 
 const STEP_CONFIG = {
-  1: { label: "Стъпка 1: OCR сканиране" },
-  2: { label: "Стъпка 2: AI Анализ" },
+  1: { label: "Стъпка 1: Екстракт на текст" },
+  2: { label: "Стъпка 2: Анализ" },
   3: { label: "Стъпка 3: Запазване" },
 };
 let CURRENT_STEP = 1;
@@ -206,6 +204,7 @@ function normalizeStepMeta(meta) {
   const detail = meta.detail || meta.note || meta.status || meta.message || "";
   const provider = meta.provider || meta.source || meta.vendor || meta.service || "";
   const status = meta.status_code ?? meta.statusCode ?? meta.http_status ?? null;
+
   const info = {};
   if (engine) info.engine = String(engine);
   if (duration != null && !Number.isNaN(Number(duration))) {
@@ -218,6 +217,9 @@ function normalizeStepMeta(meta) {
   if (docId != null && docId !== "") info.document_id = docId;
   const eventId = meta.event_id ?? meta.eventId;
   if (eventId != null && eventId !== "") info.event_id = eventId;
+  if (meta.document_id != null) info.document_id = meta.document_id;
+  if (meta.event_id != null) info.event_id = meta.event_id;
+
   return info;
 }
 
@@ -234,6 +236,10 @@ function updateStepDisplay() {
     const parts = [];
     if (engineText) parts.push(engineText);
     if (meta.provider) parts.push(meta.provider);
+  const text = meta.engine ? `${baseLabel} : ${meta.engine}` : baseLabel;
+  if (labelNode) labelNode.textContent = text;
+  if (metaNode) {
+    const parts = [];
     if (meta.duration_ms != null && !Number.isNaN(meta.duration_ms)) {
       parts.push(`${meta.duration_ms} ms`);
     }
@@ -243,6 +249,12 @@ function updateStepDisplay() {
     }
     if (meta.event_id != null && meta.event_id !== "") {
       parts.push(`Събитие №${meta.event_id}`);
+    if (!parts.length) {
+      metaNode.textContent = "";
+      metaNode.classList?.add("hidden");
+    } else {
+      metaNode.textContent = parts.join(" • ");
+      metaNode.classList?.remove("hidden");
     }
     if (meta.status_code) {
       parts.push(`HTTP ${meta.status_code}`);
@@ -255,6 +267,20 @@ function updateStepDisplay() {
       metaNode.textContent = unique.join(" • ");
       metaNode.classList?.remove("hidden");
     }
+  }
+}
+
+function applyStepMeta(step, meta, makeCurrent = false) {
+  const idx = Number(step);
+  if (![1, 2, 3].includes(idx)) return;
+  if (meta) {
+    STEP_META[idx] = normalizeStepMeta(meta);
+  }
+  if (makeCurrent) {
+    CURRENT_STEP = idx;
+  }
+  if (makeCurrent || idx === CURRENT_STEP) {
+    updateStepDisplay();
   }
 }
 
@@ -442,7 +468,6 @@ async function suggestIfReady() {
   }
 }
 
-// ---------- OCR parsing fixes ----------
 function cleanOCRText(text) {
   // Normalize dashes and fix OCR artifact where '%' is read as '96' after a '-'
   let s = String(text || "").replace(/\r\n/g, "\n");
@@ -540,11 +565,13 @@ function renderLabTable(items) {
   const wrap = $("labWrap");
   const slot = $("labTableSlot");
   const summary = $("labSummary");
+
   if (!wrap || !slot) return;
   const list = Array.isArray(items) ? items : [];
   if (!list.length) {
     seth(slot, "");
     hide(wrap);
+
     if (summary) {
       summary.textContent = "";
       summary.classList.add("hidden");
@@ -552,6 +579,9 @@ function renderLabTable(items) {
     return;
   }
   let abnormal = 0;
+    return;
+  }
+
   const rows = list.map((x, i) => {
     const n = x.name || "";
     const valueNum = typeof x.value === "number" ? x.value : Number(x.value);
@@ -624,6 +654,7 @@ async function doOCR() {
     const meta = data?.meta || data?.ocr_meta || {};
     OCR_META = meta || {};
     applyStepMeta(1, OCR_META, true);
+    renderOCRMeta(OCR_META);
     const cleaned = cleanOCRText(text);
     OCR_TEXT_ORIG = cleaned;
     setWorkText(cleaned);
