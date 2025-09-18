@@ -28,6 +28,17 @@ function parseJSONScript(id) {
   }
 }
 
+const CONFIG = parseJSONScript("uploadConfigData") || {};
+
+function escapeHtml(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function normalizeNameKey(name) {
   if (!name) return "";
   let s = String(name).trim();
@@ -125,12 +136,23 @@ let FILE = null;
 let FILE_KIND = "";
 let FILE_URL = null;
 let OCR_TEXT_ORIG = "";
+let OCR_TEXT_RAW = "";
 let OCR_META = {};
 let ANALYSIS = { summary: "", data: { tables: [], blood_test_results: [], suggested_tags: [] }, meta: {} };
 let ANALYZED_READY = false;
 let CLASS_LOCK = false;
 let DOC_LOCK = false;
 let FILE_KIND_LOCK = false;
+let LAB_RESULTS = [];
+let TABLE_EDIT_MODE = false;
+
+const STEP_CONFIG = {
+  1: { label: "Стъпка 1: OCR сканиране" },
+  2: { label: "Стъпка 2: AI Анализ" },
+  3: { label: "Стъпка 3: Запазване" },
+};
+let CURRENT_STEP = 1;
+const STEP_META = { 1: null, 2: null, 3: null };
 
 const STEP_CONFIG = {
   1: { label: "Стъпка 1: Екстракт на текст" },
@@ -204,7 +226,6 @@ function normalizeStepMeta(meta) {
   const detail = meta.detail || meta.note || meta.status || meta.message || "";
   const provider = meta.provider || meta.source || meta.vendor || meta.service || "";
   const status = meta.status_code ?? meta.statusCode ?? meta.http_status ?? null;
-
   const info = {};
   if (engine) info.engine = String(engine);
   if (duration != null && !Number.isNaN(Number(duration))) {
@@ -236,16 +257,34 @@ function updateStepDisplay() {
     const parts = [];
     if (engineText) parts.push(engineText);
     if (meta.provider) parts.push(meta.provider);
+
   const text = meta.engine ? `${baseLabel} : ${meta.engine}` : baseLabel;
   if (labelNode) labelNode.textContent = text;
   if (metaNode) {
     const parts = [];
+
     if (meta.duration_ms != null && !Number.isNaN(meta.duration_ms)) {
       parts.push(`${meta.duration_ms} ms`);
     }
     if (meta.detail) parts.push(meta.detail);
     if (meta.document_id != null && meta.document_id !== "") {
       parts.push(`Документ №${meta.document_id}`);
+
+    }
+    if (meta.event_id != null && meta.event_id !== "") {
+      parts.push(`Събитие №${meta.event_id}`);
+    }
+    if (meta.status_code) {
+      parts.push(`HTTP ${meta.status_code}`);
+    }
+    const unique = [...new Set(parts.filter(Boolean))];
+    if (!unique.length) {
+      metaNode.textContent = "—";
+      metaNode.classList?.remove("hidden");
+    } else {
+      metaNode.textContent = unique.join(" • ");
+      metaNode.classList?.remove("hidden");
+
     }
     if (meta.event_id != null && meta.event_id !== "") {
       parts.push(`Събитие №${meta.event_id}`);
@@ -290,6 +329,16 @@ function applyStepMeta(step, meta, makeCurrent = false) {
   if (meta) {
     STEP_META[idx] = normalizeStepMeta(meta);
   }
+
+}
+
+function applyStepMeta(step, meta, makeCurrent = false) {
+  const idx = Number(step);
+  if (![1, 2, 3].includes(idx)) return;
+  if (meta) {
+    STEP_META[idx] = normalizeStepMeta(meta);
+  }
+
   if (makeCurrent) {
     CURRENT_STEP = idx;
   }
@@ -303,6 +352,7 @@ function setCurrentStep(step) {
   CURRENT_STEP = [1, 2, 3].includes(idx) ? idx : 1;
   updateStepDisplay();
 }
+
 
 function resetSteps() {
   STEP_META[1] = null;
@@ -391,11 +441,19 @@ function handleFileInputChange() {
   dis(kind, true);
   ANALYZED_READY = false;
   OCR_TEXT_ORIG = "";
+  OCR_TEXT_RAW = "";
+  OCR_META = {};
+  ANALYSIS = { summary: "", data: { tables: [], blood_test_results: [], suggested_tags: [] }, meta: {} };
+  setWorkText("", { silent: true });
+  renderLabTable([]);
+  renderSummary("");
+  renderSuggestedTags([], "");
   OCR_META = {};
   ANALYSIS = { summary: "", data: { tables: [], blood_test_results: [], suggested_tags: [] }, meta: {} };
   setWorkText("");
   renderLabTable([]);
   renderSummary("");
+
   clearStatus();
   clearError();
   resetSteps();
@@ -514,6 +572,13 @@ function parseLabs(text) {
       ref_low: rlo != null ? rlo : canon.ref_low,
       ref_high: rhi != null ? rhi : canon.ref_high,
     };
+
+    if (entry.ref_low != null || entry.ref_high != null) {
+      const lowTxt = entry.ref_low != null ? formatNumber(entry.ref_low) : "—";
+      const highTxt = entry.ref_high != null ? formatNumber(entry.ref_high) : "—";
+      entry.reference_range = `${lowTxt}-${highTxt}`;
+    }
+
     if (seen.has(keyName)) {
       const prev = seen.get(keyName);
       if ((prev.value === null || prev.value === "") && entry.value) prev.value = entry.value;
@@ -556,15 +621,108 @@ function normalizeRows(rows) {
     if (rh == null) rh = canon.ref_high;
     const finalName = canon.name || name;
     const unit = unitRaw || canon.unit || null;
-    out.push({ name: finalName, value, unit, ref_low: rl ?? null, ref_high: rh ?? null });
+
+    let reference = null;
+    if (rl != null || rh != null) {
+      const lowTxt = rl != null ? formatNumber(rl) : "—";
+      const highTxt = rh != null ? formatNumber(rh) : "—";
+      reference = `${lowTxt}-${highTxt}`;
+    }
+    out.push({ name: finalName, value, unit, ref_low: rl ?? null, ref_high: rh ?? null, reference_range: reference });
   });
   return out;
 }
 
-function renderLabTable(items) {
+function getLabResults() {
+  return Array.isArray(LAB_RESULTS) ? LAB_RESULTS : [];
+}
+
+function applyLabResults(rows) {
+  const normalized = normalizeRows(rows || []);
+  LAB_RESULTS = normalized;
+  if (!ANALYSIS.data) ANALYSIS.data = {};
+  ANALYSIS.data.blood_test_results = normalized.map(row => ({
+    indicator_name: row.name,
+    value: row.value,
+    unit: row.unit || "",
+    ref_low: row.ref_low,
+    ref_high: row.ref_high,
+    reference_range: row.reference_range || "",
+  }));
+  ANALYSIS.blood_test_results = ANALYSIS.data.blood_test_results;
+  return normalized;
+}
+
+function collectTableEdits() {
+  const slot = $("labTableSlot");
+  if (!slot) return getLabResults();
+  const rows = [];
+  slot.querySelectorAll("tbody tr").forEach((tr) => {
+    const grab = (field) => {
+      const el = tr.querySelector(`[data-field="${field}"]`);
+      return el ? el.textContent || "" : "";
+    };
+    const name = grab("name").trim();
+    if (!name) return;
+    const valueText = grab("value").trim();
+    const unitText = grab("unit").trim();
+    const lowText = grab("ref_low").trim();
+    const highText = grab("ref_high").trim();
+    const valueNum = safeNumber(valueText.replace(",", "."));
+    const lowNum = safeNumber(lowText.replace(",", "."));
+    const highNum = safeNumber(highText.replace(",", "."));
+    rows.push({
+      name,
+      value: valueNum !== null ? valueNum : valueText,
+      unit: unitText || null,
+      ref_low: lowNum !== null ? lowNum : (lowText || null),
+      ref_high: highNum !== null ? highNum : (highText || null),
+    });
+  });
+  return rows;
+}
+
+function syncTableEditButton() {
+  const btn = $("btnToggleTableEdit");
+  if (!btn) return;
+  const hasRows = getLabResults().length > 0;
+  btn.disabled = !hasRows;
+  btn.classList.toggle("opacity-50", !hasRows);
+  btn.classList.toggle("cursor-not-allowed", !hasRows);
+  if (!hasRows) {
+    btn.setAttribute("aria-disabled", "true");
+    btn.setAttribute("aria-pressed", "false");
+  } else {
+    btn.removeAttribute("aria-disabled");
+  }
+  const defaultLabel = btn.dataset.labelDefault || btn.textContent.trim();
+  if (!btn.dataset.labelDefault) btn.dataset.labelDefault = defaultLabel;
+  const activeLabel = btn.dataset.activeLabel || defaultLabel;
+  if (TABLE_EDIT_MODE && hasRows) {
+    btn.textContent = activeLabel;
+    btn.setAttribute("aria-pressed", "true");
+    btn.classList.add("bg-primary/10");
+  } else {
+    btn.textContent = btn.dataset.labelDefault;
+    btn.setAttribute("aria-pressed", "false");
+    btn.classList.remove("bg-primary/10");
+  }
+}
+
+function renderLabTable(rows = null) {
   const wrap = $("labWrap");
   const slot = $("labTableSlot");
   const summary = $("labSummary");
+
+  if (!wrap || !slot) return;
+  if (rows !== null) {
+    applyLabResults(rows);
+  }
+  const list = getLabResults();
+  if (!list.length) {
+    seth(slot, "");
+    hide(wrap);
+    TABLE_EDIT_MODE = false;
 
   if (!wrap || !slot) return;
   const list = Array.isArray(items) ? items : [];
@@ -576,13 +734,12 @@ function renderLabTable(items) {
       summary.textContent = "";
       summary.classList.add("hidden");
     }
+
+    syncTableEditButton();
     return;
   }
   let abnormal = 0;
-    return;
-  }
-
-  const rows = list.map((x, i) => {
+  const bodyRows = list.map((x, i) => {
     const n = x.name || "";
     const valueNum = typeof x.value === "number" ? x.value : Number(x.value);
     const rlNum = typeof x.ref_low === "number" ? x.ref_low : Number(x.ref_low);
@@ -593,13 +750,41 @@ function renderLabTable(items) {
     const rowClass = below || above ? " bg-red-50" : "";
     const valueClass = below || above ? "px-2 py-1 font-semibold text-red-600" : "px-2 py-1";
     const flag = below ? "↓" : above ? "↑" : "";
+
+    const displayValue = typeof x.value === "number" ? formatNumber(x.value) : (x.value || "");
+    const displayUnit = x.unit || "";
+    const lowText = x.ref_low != null ? formatNumber(x.ref_low) : "";
+    const highText = x.ref_high != null ? formatNumber(x.ref_high) : "";
+    const editAttr = TABLE_EDIT_MODE ? " contenteditable=\"true\"" : "";
+    const flagHtml = !TABLE_EDIT_MODE && flag ? ` <span class="text-xs">${flag}</span>` : "";
+    return `
+      <tr data-idx="${i}" class="${rowClass.trim()}">
+        <td class="px-2 py-1" data-field="name"${editAttr}>${escapeHtml(n)}</td>
+        <td class="${valueClass}" data-field="value"${editAttr}>${escapeHtml(displayValue)}${flagHtml}</td>
+        <td class="px-2 py-1" data-field="unit"${editAttr}>${escapeHtml(displayUnit)}</td>
+        <td class="px-2 py-1" data-field="ref_low"${editAttr}>${escapeHtml(lowText)}</td>
+        <td class="px-2 py-1" data-field="ref_high"${editAttr}>${escapeHtml(highText)}</td>
+      </tr>`;
     const v = formatNumber(x.value);
     const u = x.unit || "";
     const rl = formatNumber(x.ref_low);
     const rh = formatNumber(x.ref_high);
     return `<tr data-idx="${i}" class="${rowClass.trim()}"><td class="px-2 py-1">${n}</td><td class="${valueClass}">${v}${flag ? ` <span class="text-xs">${flag}</span>` : ""}</td><td class="px-2 py-1">${u}</td><td class="px-2 py-1">${rl}</td><td class="px-2 py-1">${rh}</td></tr>`;
   }).join("");
-  const html = `<table class="min-w-full text-sm"><thead><tr><th class="px-2 py-1 text-left">Показател</th><th class="px-2 py-1 text-left">Стойност</th><th class="px-2 py-1 text-left">Единици</th><th class="px-2 py-1 text-left">Мин</th><th class="px-2 py-1 text-left">Макс</th></tr></thead><tbody>${rows}</tbody></table>`;
+  const tableClass = TABLE_EDIT_MODE ? "min-w-full text-sm table-fixed" : "min-w-full text-sm";
+  const html = `
+    <table class="${tableClass}" data-editing="${TABLE_EDIT_MODE ? "true" : "false"}">
+      <thead>
+        <tr>
+          <th class="px-2 py-1 text-left">Показател</th>
+          <th class="px-2 py-1 text-left">Стойност</th>
+          <th class="px-2 py-1 text-left">Единици</th>
+          <th class="px-2 py-1 text-left">Мин</th>
+          <th class="px-2 py-1 text-left">Макс</th>
+        </tr>
+      </thead>
+      <tbody>${bodyRows}</tbody>
+    </table>`;
   seth(slot, html);
   show(wrap);
   if (summary) {
@@ -608,6 +793,9 @@ function renderLabTable(items) {
     summary.textContent = bits.join(" • ");
     summary.classList.remove("hidden");
   }
+
+  syncTableEditButton();
+
 }
 
 function renderSummary(text) {
@@ -623,12 +811,118 @@ function renderSummary(text) {
   show(box);
 }
 
+function renderSuggestedTags(tags, specialty) {
+  const wrap = $("suggestedTagsWrap");
+  const listNode = $("suggestedTagsList");
+  const specialtyNode = $("detectedSpecialty");
+  if (!wrap || !listNode || !specialtyNode) return;
+  const arr = Array.isArray(tags) ? tags.map(t => (t == null ? "" : String(t))).filter(Boolean) : [];
+  const specialtyText = (specialty || "").toString().trim();
+  if (!arr.length && !specialtyText) {
+    seth(listNode, "");
+    specialtyNode.textContent = "";
+    specialtyNode.classList.add("hidden");
+    hide(wrap);
+    return;
+  }
+  const chips = arr.map((tag) => `<span class="inline-flex items-center px-3 py-1 text-xs font-semibold bg-primary/10 text-primaryDark rounded-full">${escapeHtml(tag)}</span>`).join("");
+  seth(listNode, chips);
+  if (specialtyText) {
+    specialtyNode.textContent = `Детектирана специалност: ${specialtyText}`;
+    specialtyNode.classList.remove("hidden");
+  } else {
+    specialtyNode.textContent = "";
+    specialtyNode.classList.add("hidden");
+  }
+  show(wrap);
+}
+
+function refreshTableFromText() {
+  const text = getWorkText();
+  TABLE_EDIT_MODE = false;
+  const rows = parseLabs(text);
+  renderLabTable(rows);
+}
+
+function toggleTableEditMode() {
+  if (!getLabResults().length) {
+    TABLE_EDIT_MODE = false;
+    syncTableEditButton();
+    return;
+  }
+  if (!TABLE_EDIT_MODE) {
+    TABLE_EDIT_MODE = true;
+    renderLabTable();
+    return;
+  }
+  const rows = collectTableEdits();
+  TABLE_EDIT_MODE = false;
+  renderLabTable(rows);
+}
+
+function normalizeCurrentText() {
+  const text = getWorkText();
+  const normalized = cleanOCRText(text);
+  if (normalized === text) {
+    return;
+  }
+  setWorkText(normalized);
+}
+
+function restoreOriginalOCRText() {
+  const original = OCR_TEXT_ORIG || OCR_TEXT_RAW || "";
+  const current = getWorkText();
+  if (!original && !current) {
+    return;
+  }
+  if (original === current) {
+    TABLE_EDIT_MODE = false;
+    renderLabTable(parseLabs(original));
+    return;
+  }
+  setWorkText(original);
+  TABLE_EDIT_MODE = false;
+  renderLabTable(parseLabs(original));
+}
+
 function renderOCRMeta(meta) {
   applyStepMeta(1, meta, CURRENT_STEP === 1);
 }
 
 function getWorkText() { return $("workText")?.value || ""; }
-function setWorkText(t) { const ta = $("workText"); if (ta) ta.value = t || ""; }
+function markTextEdited() {
+  ANALYZED_READY = false;
+  STEP_META[2] = null;
+  STEP_META[3] = null;
+  setCurrentStep(1);
+  ANALYSIS.summary = "";
+  if (!ANALYSIS.data) {
+    ANALYSIS.data = { tables: [], blood_test_results: [], suggested_tags: [] };
+  }
+  ANALYSIS.data.summary = "";
+  ANALYSIS.data.suggested_tags = [];
+  ANALYSIS.data.detected_specialty = "";
+  ANALYSIS.data.lab_overview = "";
+  ANALYSIS.suggested_tags = [];
+  ANALYSIS.detected_specialty = "";
+  ANALYSIS.lab_overview = "";
+  renderSummary("");
+  renderSuggestedTags([], "");
+  const btn = $("btnConfirm");
+  if (btn) {
+    btn.removeAttribute("aria-disabled");
+    dis(btn, false);
+  }
+  updateButtons();
+}
+function setWorkText(t, opts = {}) {
+  const ta = $("workText");
+  if (!ta) return;
+  ta.value = t || "";
+  if (!opts.silent) {
+    markTextEdited();
+  }
+}
 
 async function doOCR() {
   clearError();
@@ -650,17 +944,25 @@ async function doOCR() {
     const res = await fetch(API.ocr, { method: "POST", body: fd, credentials: "same-origin", headers: { "X-CSRFToken": getCSRF() } });
     if (!res.ok) throw new Error("ocr_failed");
     const data = await res.json();
-    const text = data?.text || data?.ocr_text || "";
-    const meta = data?.meta || data?.ocr_meta || {};
+    const rawText = data?.ocr_text ?? data?.text ?? "";
+    const normalizedText = data?.normalized_text || cleanOCRText(rawText);
+    const meta = { ...(data?.meta || data?.ocr_meta || {}) };
+    if (!meta.engine) meta.engine = data?.source || data?.engine || "OCR Service";
     OCR_META = meta || {};
     applyStepMeta(1, OCR_META, true);
+    OCR_TEXT_RAW = rawText;
+    OCR_TEXT_ORIG = normalizedText;
+    setWorkText(normalizedText, { silent: true });
+    markTextEdited();
     renderOCRMeta(OCR_META);
     const cleaned = cleanOCRText(text);
     OCR_TEXT_ORIG = cleaned;
     setWorkText(cleaned);
     ANALYZED_READY = false;
+
     renderSummary("");
     updateButtons();
+    renderSuggestedTags([], "");
     const labs = parseLabs(OCR_TEXT_ORIG);
     renderLabTable(labs);
   } catch {
@@ -686,6 +988,71 @@ async function doAnalyze() {
     let data = {};
     try { data = await res.json(); } catch {}
     const meta = data?.meta || {};
+    const payloadData = data && typeof data.data === "object" && data.data ? { ...data.data } : {};
+    ANALYSIS = { ...data, data: payloadData, meta };
+    const normalizedTextApi = (payloadData.normalized_text || data.normalized_text || "").toString();
+    if (normalizedTextApi && normalizedTextApi !== text) {
+      setWorkText(normalizedTextApi, { silent: true });
+    }
+    const summaryText = (
+      data.summary ??
+      payloadData.summary ??
+      data.result?.summary ??
+      data.summary_text ??
+      ""
+    ).toString();
+    const labOverview = (
+      payloadData.lab_overview ??
+      data.lab_overview ??
+      ""
+    ).toString().trim();
+    const summaryPieces = [];
+    if (summaryText.trim()) summaryPieces.push(summaryText.trim());
+    if (labOverview) summaryPieces.push(labOverview);
+    const combinedSummary = summaryPieces.join("\n\n");
+    ANALYSIS.summary = combinedSummary;
+    ANALYSIS.summary_text = combinedSummary;
+    if (!ANALYSIS.data) ANALYSIS.data = {};
+    ANALYSIS.data.summary = combinedSummary;
+    ANALYSIS.data.lab_overview = labOverview;
+    if (normalizedTextApi) ANALYSIS.data.normalized_text = normalizedTextApi;
+    renderSummary(combinedSummary);
+    const baseRows = Array.isArray(payloadData.blood_test_results)
+      ? payloadData.blood_test_results
+      : Array.isArray(data.blood_test_results)
+        ? data.blood_test_results
+        : Array.isArray(data.result?.blood_test_results)
+          ? data.result.blood_test_results
+          : [];
+    let rows = normalizeRows(baseRows);
+    if (!rows.length) {
+      const fallbackText = normalizedTextApi || text;
+      rows = parseLabs(fallbackText);
+    }
+    TABLE_EDIT_MODE = false;
+    renderLabTable(rows);
+    const rawTags = (
+      payloadData.suggested_tags ??
+      data.suggested_tags ??
+      data.result?.suggested_tags ??
+      []
+    );
+    const tags = Array.isArray(rawTags)
+      ? Array.from(new Set(rawTags.map((t) => (t == null ? "" : String(t).trim())).filter(Boolean)))
+      : [];
+    const specialtyText = (
+      payloadData.detected_specialty ??
+      data.detected_specialty ??
+      data.result?.detected_specialty ??
+      ""
+    ).toString();
+    ANALYSIS.suggested_tags = tags;
+    ANALYSIS.data.suggested_tags = tags;
+    ANALYSIS.data.detected_specialty = specialtyText;
+    ANALYSIS.detected_specialty = specialtyText;
+    renderSuggestedTags(tags, specialtyText);
+    ANALYSIS.normalized_text = normalizedTextApi;
+    ANALYSIS.lab_overview = labOverview;
     ANALYSIS = { ...(data || {}), meta };
     const summary = (ANALYSIS.summary || ANALYSIS.result?.summary || ANALYSIS.data?.summary || ANALYSIS.summary_text || "").toString();
     renderSummary(summary);
@@ -712,6 +1079,12 @@ async function doConfirm() {
   const raw = picks();
   if (!ANALYZED_READY || !requiredTagsReady()) { showError("Анализът не е завършен."); return; }
   if (!raw.file) { showError("Липсва файл за запис."); return; }
+  if (TABLE_EDIT_MODE) {
+    const edited = collectTableEdits();
+    TABLE_EDIT_MODE = false;
+    renderLabTable(edited);
+  }
+
   setBusy(true);
   try {
     const fd = new FormData();
@@ -730,6 +1103,12 @@ async function doConfirm() {
       fd.append("event_date", eventDate);
       fd.append("document_date", eventDate);
     }
+
+    const labsPayload = getLabResults();
+    if (labsPayload.length) {
+      fd.append("blood_test_results", JSON.stringify(labsPayload));
+    }
+
     if (OCR_META && Object.keys(OCR_META).length) fd.append("ocr_meta", JSON.stringify(OCR_META));
     if (ANALYSIS && Object.keys(ANALYSIS).length) fd.append("analysis", JSON.stringify(ANALYSIS));
     if (ANALYSIS?.meta && Object.keys(ANALYSIS.meta || {}).length) {
@@ -754,6 +1133,14 @@ async function doConfirm() {
       if (btn) { btn.setAttribute("aria-disabled","true"); dis(btn, true); }
       showStatus("Документът е записан успешно.");
       applyStepMeta(3, { ...meta, document_id: data?.document_id, event_id: data?.event_id }, true);
+
+      const redirectTarget = data?.redirect_url || CONFIG.documents_url || "";
+      if (redirectTarget) {
+        setTimeout(() => {
+          window.location.href = redirectTarget;
+        }, 800);
+      }
+
     }
   } catch {
     showError("Записът е неуспешен.");
@@ -775,6 +1162,10 @@ function bindEvents() {
   const btnOCR = $("btnOCR");
   const btnAnalyze = $("btnAnalyze");
   const btnConfirm = $("btnConfirm");
+  const btnRefreshTable = $("btnRefreshTable");
+  const btnToggleTableEdit = $("btnToggleTableEdit");
+  const btnNormalizeText = $("btnNormalizeText");
+  const btnRestoreText = $("btnRestoreText");
 
   cat && cat.addEventListener("change", () => { updateDropdownFlow(); wireSuggest(); updateButtons(); });
   spc && spc.addEventListener("change", () => { updateDropdownFlow(); wireSuggest(); updateButtons(); });
@@ -785,9 +1176,16 @@ function bindEvents() {
   btnOCR && btnOCR.addEventListener("click", doOCR);
   btnAnalyze && btnAnalyze.addEventListener("click", doAnalyze);
   btnConfirm && btnConfirm.addEventListener("click", doConfirm);
+  btnRefreshTable && btnRefreshTable.addEventListener("click", refreshTableFromText);
+  btnToggleTableEdit && btnToggleTableEdit.addEventListener("click", toggleTableEditMode);
+  btnNormalizeText && btnNormalizeText.addEventListener("click", normalizeCurrentText);
+  btnRestoreText && btnRestoreText.addEventListener("click", restoreOriginalOCRText);
 
   const ta = $("workText");
   ta && ta.addEventListener("input", () => {
+
+    markTextEdited();
+
     ANALYZED_READY = false;
     STEP_META[2] = null;
     STEP_META[3] = null;
@@ -795,6 +1193,7 @@ function bindEvents() {
     const btn = $("btnConfirm");
     if (btn) { btn.removeAttribute("aria-disabled"); dis(btn, false); }
     updateButtons();
+
   });
 }
 
