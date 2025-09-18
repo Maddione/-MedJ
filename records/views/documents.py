@@ -4,9 +4,11 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django import forms
+from django.template.loader import render_to_string
+from django.utils.html import escape
 
-from ..models import Document, MedicalEvent, Tag, DocumentTag
-from ..forms import DocumentEditForm
+from ..models import Document, MedicalEvent
+from ..forms import DocumentEditForm, DocumentTagForm
 from .utils import require_patient_profile
 
 class MoveDocumentForm(forms.Form):
@@ -38,8 +40,8 @@ def document_detail(request: HttpRequest, pk: int) -> HttpResponse:
 
 @login_required
 def document_edit(request: HttpRequest, pk: int) -> HttpResponse:
-    patient = require_patient_profile(request.user)
-    doc = get_object_or_404(Document, pk=pk, medical_event__patient=patient)
+    require_patient_profile(request.user)
+    doc = get_object_or_404(Document.objects.filter(owner=request.user), pk=pk)
     if request.method == "POST":
         form = DocumentEditForm(request.POST, instance=doc)
         if form.is_valid():
@@ -55,16 +57,34 @@ def document_edit_tags(request: HttpRequest, pk: int) -> HttpResponse:
     patient = require_patient_profile(request.user)
     doc = get_object_or_404(Document, pk=pk, medical_event__patient=patient)
     if request.method == "POST":
-        from ..forms import DocumentTagForm
         form = DocumentTagForm(request.POST, instance=doc)
         if form.is_valid():
             form.save()
             messages.success(request, "Таговете са обновени.")
             return redirect("medj:document_detail", pk=doc.pk)
     else:
-        from ..forms import DocumentTagForm
         form = DocumentTagForm(instance=doc)
     return render(request, "subpages/documentsubpages/document_edit_tags.html", {"form": form, "document": doc})
+
+
+@login_required
+def document_export_pdf(request: HttpRequest, pk: int) -> HttpResponse:
+    doc = get_object_or_404(
+        Document.objects.select_related("doc_type", "category", "medical_event"),
+        pk=pk,
+        owner=request.user,
+    )
+    body = doc.analysis_html or f"<pre>{escape((doc.analysis_text or doc.ocr_text or '').strip())}</pre>"
+    html = render_to_string("subpages/documentsubpages/document_pdf.html", {"document": doc, "html": body})
+    try:
+        from weasyprint import HTML
+
+        pdf = HTML(string=html, base_url=request.build_absolute_uri("/")).write_pdf()
+        response = HttpResponse(pdf, content_type="application/pdf")
+        response["Content-Disposition"] = f'attachment; filename="document_{doc.pk}.pdf"'
+        return response
+    except Exception:
+        return HttpResponse(html, content_type="text/html")
 
 @login_required
 def document_move(request: HttpRequest, pk: int) -> HttpResponse:

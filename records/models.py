@@ -161,6 +161,7 @@ class Document(models.Model):
     specialty = models.ForeignKey("records.MedicalSpecialty", on_delete=models.PROTECT, related_name="documents")
     category = models.ForeignKey("records.MedicalCategory", on_delete=models.PROTECT, related_name="documents")
     doc_type = models.ForeignKey("records.DocumentType", on_delete=models.PROTECT, related_name="documents")
+    title = models.CharField(max_length=255, blank=True, null=True)
     document_date = models.DateField(blank=True, null=True)
     date_created = models.DateField(blank=True, null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
@@ -171,6 +172,8 @@ class Document(models.Model):
     content_hash = models.CharField(max_length=64, blank=True, null=True, db_index=True)
     sha256 = models.CharField(max_length=64, blank=True, null=True, db_index=True)
     original_ocr_text = models.TextField(blank=True, null=True)
+    analysis_html = models.TextField(blank=True, null=True)
+    analysis_text = models.TextField(blank=True, null=True)
     summary = models.TextField(blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
     tags = models.ManyToManyField("records.Tag", through="records.DocumentTag", related_name="documents", blank=True)
@@ -185,7 +188,38 @@ class Document(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.id}"
+        return self.title or f"{self.id}"
+
+    @property
+    def ocr_text(self):
+        return self.original_ocr_text
+
+    @property
+    def display_title(self):
+        base = self.title or self.default_title()
+        return base or "Документ"
+
+    def default_title(self):
+        doc_type_name = None
+        if getattr(self, "doc_type", None):
+            try:
+                doc_type_name = self.doc_type.safe_translation_getter("name", any_language=True) or None
+            except Exception:
+                doc_type_name = None
+        category_name = None
+        if getattr(self, "category", None):
+            try:
+                category_name = self.category.safe_translation_getter("name", any_language=True) or None
+            except Exception:
+                category_name = None
+        if doc_type_name and category_name:
+            return f"{doc_type_name} от {category_name}"
+        return None
+
+    def save(self, *args, **kwargs):
+        if not self.title:
+            self.title = self.default_title() or "Документ"
+        super().save(*args, **kwargs)
 
 
 class DocumentTag(models.Model):

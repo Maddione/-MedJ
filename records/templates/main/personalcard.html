@@ -125,9 +125,13 @@
         </div>
       </div>
       <div class="flex items-center justify-center"><div id="qrCodeContainer" class="p-2 border rounded-lg bg-gray-50"></div></div>
+      <div id="cardPreviewContainer" class="hidden text-center">
+        <div class="text-sm font-medium text-gray-700 mb-2">{% trans "Преглед на картата" %}</div>
+        <img id="cardPreviewImage" class="mx-auto rounded-2xl shadow-lg max-h-80" alt="{% trans 'PNG изображение на личния картон' %}">
+      </div>
       <div class="flex items-center justify-end gap-3 mt-6">
-        <button id="downloadQrButton" type="button" class="px-4 py-2 rounded-lg font-semibold text-white" style="background:#15BC11">{% trans "Сподели PNG" %}</button>
-        <button id="viewQrButton" type="button" class="px-4 py-2 rounded-lg font-semibold text-white" style="background:#0A4E75">{% trans "Генерирай QR" %}</button>
+        <button id="downloadPngButton" type="button" class="px-4 py-2 rounded-lg font-semibold text-white" style="background:#15BC11">{% trans "Сподели PNG" %}</button>
+        <button id="viewQrButton" type="button" class="px-4 py-2 rounded-lg font-semibold text-white" style="background:#0A4E75">{% trans "Генерирай/Виж QR" %}</button>
         <button id="closeShareModal" type="button" class="px-4 py-2 rounded-lg font-semibold bg-gray-200 text-gray-800 hover:bg-gray-300">{% trans "Затвори" %}</button>
       </div>
     </div>
@@ -289,12 +293,16 @@ document.addEventListener('DOMContentLoaded', function() {
   const errorEl = document.getElementById('shareError');
   const shareDetails = document.getElementById('shareDetails');
   const viewQrBtn = document.getElementById('viewQrButton');
-  const downloadQrBtn = document.getElementById('downloadQrButton');
+  const downloadPngBtn = document.getElementById('downloadPngButton');
+  const cardPreviewContainer = document.getElementById('cardPreviewContainer');
+  const cardPreviewImage = document.getElementById('cardPreviewImage');
   const genericError = "{% trans 'Възникна грешка при генерирането на линк. Моля, опитайте отново.' %}";
   const missingQrError = "{% trans 'Няма наличен QR код. Моля, опитайте отново.' %}";
+  const missingPngError = "{% trans 'Няма налично изображение. Моля, опитайте отново.' %}";
 
   let latestQrUrl = '';
   let latestShareUrl = '';
+  let latestPngUrl = '';
 
   function getCSRFToken() {
     const el = document.querySelector('input[name="csrfmiddlewaretoken"]');
@@ -336,9 +344,16 @@ document.addEventListener('DOMContentLoaded', function() {
     if (viewQrBtn) {
       viewQrBtn.disabled = true;
     }
-    if (downloadQrBtn) {
-      downloadQrBtn.disabled = true;
+    if (downloadPngBtn) {
+      downloadPngBtn.disabled = true;
     }
+    if (cardPreviewContainer) {
+      cardPreviewContainer.classList.add('hidden');
+    }
+    if (cardPreviewImage) {
+      cardPreviewImage.removeAttribute('src');
+    }
+    latestPngUrl = '';
     try {
       const res = await fetch("{% url 'medj:personalcard_share_enable_api' %}", {
         method: 'POST',
@@ -368,14 +383,26 @@ document.addEventListener('DOMContentLoaded', function() {
           img.style.maxHeight = '18rem';
           qrContainer.appendChild(img);
         }
+        latestPngUrl = data.image_png_url || '';
+        if (cardPreviewContainer) {
+          if (latestPngUrl && cardPreviewImage) {
+            cardPreviewImage.src = latestPngUrl + '?v=' + Date.now();
+            cardPreviewContainer.classList.remove('hidden');
+          } else {
+            cardPreviewContainer.classList.add('hidden');
+            if (cardPreviewImage) {
+              cardPreviewImage.removeAttribute('src');
+            }
+          }
+        }
         if (shareDetails) {
           shareDetails.classList.remove('hidden');
         }
         if (viewQrBtn) {
           viewQrBtn.disabled = false;
         }
-        if (downloadQrBtn) {
-          downloadQrBtn.disabled = false;
+        if (downloadPngBtn) {
+          downloadPngBtn.disabled = !latestPngUrl;
         }
       } else {
         throw new Error('invalid payload');
@@ -436,14 +463,14 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  if (downloadQrBtn) {
-    downloadQrBtn.addEventListener('click', async function() {
-      if (!latestQrUrl) {
-        showShareError(missingQrError);
+  if (downloadPngBtn) {
+    downloadPngBtn.addEventListener('click', async function() {
+      if (!latestPngUrl) {
+        showShareError(missingPngError);
         return;
       }
       try {
-        const res = await fetch(latestQrUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        const res = await fetch(latestPngUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
         if (!res.ok) {
           throw new Error('download failed');
         }

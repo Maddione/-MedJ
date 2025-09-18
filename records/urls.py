@@ -29,6 +29,7 @@ from .views.documents import (
     document_detail,
     document_edit,
     document_edit_tags,
+    document_export_pdf,
     document_move,
 )
 from .views.events import event_list, event_detail, events_by_specialty, tags_autocomplete
@@ -38,6 +39,7 @@ from .views.personalcard import (
     PersonalCardView,
     personalcard_share_enable_api,
     personalcard_qr,
+    personalcard_public_png,
     public_personalcard,
 )
 from .views.settings import SettingsView
@@ -116,6 +118,7 @@ urlpatterns = [
 
     path("personalcard/", login_required(PersonalCardView.as_view()), name="personalcard"),
     path("personalcard/share/<str:token>/", public_personalcard, name="personalcard_public"),
+    path("personalcard/share/<str:token>/image.png", personalcard_public_png, name="personalcard_public_png"),
     path("profile/", login_required(SettingsView.as_view()), name="profile"),
     path("doctors/", login_required(doctors_list), name="doctors"),
     path("labtests/", login_required(labtests), name="labtests"),
@@ -131,6 +134,7 @@ urlpatterns = [
     path("documents/<int:pk>/", login_required(document_detail), name="document_detail"),
     path("documents/<int:pk>/edit/", login_required(document_edit), name="document_edit"),
     path("documents/<int:pk>/edit-tags/", login_required(document_edit_tags), name="document_edit_tags"),
+    path("documents/<int:pk>/export/pdf/", login_required(document_export_pdf), name="document_export_pdf"),
     path("documents/<int:pk>/move/", login_required(document_move), name="document_move"),
 
     path("events/by-specialty/", login_required(events_by_specialty), name="events_by_specialty"),
