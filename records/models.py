@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.text import slugify
 from parler.models import TranslatableModel, TranslatedFields
@@ -143,7 +144,7 @@ class Document(models.Model):
     file_size = models.BigIntegerField(blank=True, null=True)
     file_mime = models.CharField(max_length=120, blank=True, null=True)
     doc_kind = models.CharField(max_length=16, choices=DOC_KIND_CHOICES, default="other")
-    content_hash = models.CharField(max_length=64, blank=True, null=True)
+    content_hash = models.CharField(max_length=64, blank=True, null=True, db_index=True)
     sha256 = models.CharField(max_length=64, blank=True, null=True, db_index=True)
     original_ocr_text = models.TextField(blank=True, null=True)
     summary = models.TextField(blank=True, null=True)
@@ -154,6 +155,7 @@ class Document(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["owner", "content_hash"],
+                condition=Q(content_hash__isnull=False),
                 name="document_owner_content_hash_unique",
             )
         ]

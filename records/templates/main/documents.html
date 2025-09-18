@@ -15,12 +15,18 @@
         </div>
 
         <div class="bg-#FFFF5 p-6 rounded-3xl shadow-lg">
-            <div class="flex items-center mb-6">
-                <input type="text" placeholder="{% trans 'Търсене по име на документ или таг...' %}" class="flex-grow p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-button-blue focus:border-button-blue">
-                <button class="ml-3 px-4 py-3 bg-button-blue text-white rounded-lg shadow-sm hover:bg-navbar-button-blue transition-colors">
+            <form method="get" class="flex items-center mb-6 gap-3">
+                <input type="text" name="q" value="{{ query }}" placeholder="{% trans 'Търсене по име на документ или таг...' %}" class="flex-grow p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-button-blue focus:border-button-blue" aria-label="{% trans 'Търсене по хеш или име' %}">
+                <button type="submit" class="px-4 py-3 bg-button-blue text-white rounded-lg shadow-sm hover:bg-navbar-button-blue transition-colors">
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </button>
+            </form>
+
+            {% if query %}
+            <div class="mb-4 px-4 py-3 rounded-2xl bg-white border border-button-blue/40 text-sm text-primaryDark" role="status">
+                {% blocktrans with hash=query %}Филтриране по съдържателен хеш: {{ hash }}{% endblocktrans %}
             </div>
+            {% endif %}
 
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm text-gray-700">
@@ -62,7 +68,11 @@
                         {% else %}
                             <tr class="bg-creamy-main-content">
                                 <td colspan="5" class="py-4 px-4 text-center text-gray-500">
-                                    {% trans "Все още нямате качени документи." %} <a href="{% url 'medj:upload' %}" class="font-bold hover:underline text-button-blue">{% trans "Качете първия си документ от тук" %}</a>.
+                                    {% if query %}
+                                        {% blocktrans with hash=query %}Няма документи с хеш {{ hash }}.{% endblocktrans %}
+                                    {% else %}
+                                        {% trans "Все още нямате качени документи." %} <a href="{% url 'medj:upload' %}" class="font-bold hover:underline text-button-blue">{% trans "Качете първия си документ от тук" %}</a>.
+                                    {% endif %}
                                 </td>
                             </tr>
                         {% endif %}
