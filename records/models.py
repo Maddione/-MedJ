@@ -221,6 +221,22 @@ class Document(models.Model):
             self.title = self.default_title() or "Документ"
         super().save(*args, **kwargs)
 
+    @property
+    def has_file(self) -> bool:
+        file_field = getattr(self, "file", None)
+        if not file_field:
+            return False
+        name = getattr(file_field, "name", "") or ""
+        if not name.strip():
+            return False
+        storage = getattr(file_field, "storage", None)
+        if storage is None:
+            return False
+        try:
+            return storage.exists(name)
+        except Exception:
+            return False
+
 
 class DocumentTag(models.Model):
     document = models.ForeignKey("records.Document", on_delete=models.CASCADE)

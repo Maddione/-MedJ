@@ -41,14 +41,15 @@
       {% if document.analysis_html %}
         <div class="rounded-2xl p-4 bg-white border">{{ document.analysis_html|safe }}</div>
       {% else %}
-        <div class="text-gray-500">Няма данни от анализ.</div>
+        <div class="text-gray-500">{% trans "Няма налична таблица от анализа." %}</div>
       {% endif %}
     </div>
 
     {% if document.analysis_text %}
       <div>
         <h2 class="text-xl font-semibold text-primaryDark mb-3">{% trans "Анализ – текст" %}</h2>
-        <pre class="whitespace-pre-wrap">{{ document.analysis_text }}</pre>
+        <button id="toggle-analysis" class="px-4 py-2 rounded-lg bg-primary text-white">{% trans "Виж анализа в текстов вид" %}</button>
+        <pre id="analysis-box" class="whitespace-pre-wrap hidden mt-3">{{ document.analysis_text }}</pre>
       </div>
     {% endif %}
 
@@ -64,12 +65,21 @@
 <script>
   (function(){
     var btn=document.getElementById('toggle-ocr');
-    if(!btn){return;}
-    btn.addEventListener('click',function(){
-      var box=document.getElementById('ocr-box');
-      if(!box){return;}
-      box.classList.toggle('hidden');
-    });
+    if(btn){
+      btn.addEventListener('click',function(){
+        var box=document.getElementById('ocr-box');
+        if(!box){return;}
+        box.classList.toggle('hidden');
+      });
+    }
+    var abtn=document.getElementById('toggle-analysis');
+    if(abtn){
+      abtn.addEventListener('click',function(){
+        var abox=document.getElementById('analysis-box');
+        if(!abox){return;}
+        abox.classList.toggle('hidden');
+      });
+    }
   })();
 </script>
 {% endblock %}

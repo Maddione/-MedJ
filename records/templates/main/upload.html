@@ -101,6 +101,8 @@
           <div id="labTable"></div>
         </div>
 
+        <div id="analysisNotice" class="hidden mt-4 rounded-2xl border border-yellow-300 bg-yellow-50 px-4 py-3 text-sm text-primaryDark"></div>
+
         <div class="mt-4 flex flex-wrap gap-3" id="textActions">
           <button id="btnRefreshTable" type="button" class="px-4 py-2 rounded-xl border border-primary text-primaryDark bg-white whitespace-normal break-words text-center leading-tight hover:bg-primary/5">
             {% trans "Обнови таблица" %}
@@ -116,9 +118,10 @@
           </button>
         </div>
 
-        <div class="mt-5 flex gap-3 items-center">
+        <div class="mt-5 flex gap-3 items-center flex-wrap">
           <button id="btnOCR" type="button" class="px-6 h-12 rounded-xl text-white bg-primaryDark hover:brightness-105 hidden">{% trans "Изпрати за OCR" %}</button>
           <button id="btnAnalyze" type="button" class="px-6 h-12 rounded-xl text-white bg-primary hover:brightness-105 hidden">{% trans "Анализ" %}</button>
+          <button id="btnRetryAnalyze" type="button" class="px-6 h-12 rounded-xl text-white bg-primary hover:brightness-105 hidden">{% trans "Повтори анализа" %}</button>
           <button id="btnConfirm" type="button" class="px-6 h-12 rounded-xl text-white bg-success hover:brightness-105 hidden">{% trans "Запази" %}</button>
         </div>
       </div>

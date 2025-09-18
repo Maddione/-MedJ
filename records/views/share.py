@@ -1,15 +1,21 @@
 from __future__ import annotations
-import json, time
+
+import json
+import time
 from io import BytesIO
 from urllib.parse import urlencode
 
 import qrcode
 from django.contrib.auth.decorators import login_required
+from django.core import signing
 from django.http import HttpRequest, JsonResponse, HttpResponseBadRequest, HttpResponse
 from django.shortcuts import render
 from django.urls import reverse
-from django.core import signing
+from django.utils import timezone
 from django.views.decorators.http import require_POST
+
+from records.models import Document, LabTestMeasurement, MedicalEvent
+from .utils import require_patient_profile, parse_date
 
 _SIGNER_SALT = "medj.share"
 
@@ -44,64 +50,188 @@ def create_download_links(request: HttpRequest) -> JsonResponse:
     except Exception:
         return HttpResponseBadRequest("bad json")
 
-    start_date = (data.get("start_date") or "").strip()
-    end_date = (data.get("end_date") or "").strip()
-    filters = data.get("filters") or {}
+    def as_bool(value, default=True):
+        if value in (None, "", []):
+            return default
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, (int, float)):
+            return bool(value)
+        return str(value).strip().lower() in {"1", "true", "yes", "on"}
 
-    def norm_hours(x, default):
+    generate_events = as_bool(data.get("generate_events"), True)
+    generate_labs = as_bool(data.get("generate_labs"), True)
+    generate_csv = as_bool(data.get("generate_csv"), True)
+
+    def clamp_hours(value, default):
         try:
-            v = int(x)
+            val = int(value)
         except Exception:
-            v = default
-        if v < 1:
-            v = 1
-        if v > 8760:
-            v = 8760
-        return v
+            val = default
+        if val < 1:
+            val = 1
+        if val > 8760:
+            val = 8760
+        return val
 
-    hours_events = norm_hours(data.get("hours_events", 24), 24)
-    hours_labs = norm_hours(data.get("hours_labs", 24), 24)
-    hours_csv = norm_hours(data.get("hours_csv", 24), 24)
+    hours_events = clamp_hours(data.get("hours_events", 24), 24)
+    hours_labs = clamp_hours(data.get("hours_labs", 24), 24)
+    hours_csv = clamp_hours(data.get("hours_csv", 24), 24)
+
+    filters = data.get("filters") or {}
+    start_raw = (data.get("start_date") or "").strip()
+    end_raw = (data.get("end_date") or "").strip()
+    start_dt = parse_date(start_raw) if start_raw else None
+    end_dt = parse_date(end_raw) if end_raw else None
+
+    patient = require_patient_profile(request.user)
+
+    def as_int_list(value):
+        if isinstance(value, (list, tuple)):
+            items = value
+        elif value in (None, ""):
+            items = []
+        else:
+            items = [value]
+        out = []
+        for item in items:
+            try:
+                out.append(int(item))
+            except (TypeError, ValueError):
+                continue
+        return out
+
+    category_ids = as_int_list(filters.get("category"))
+    specialty_ids = as_int_list(filters.get("specialty"))
+    event_ids = as_int_list(filters.get("event"))
+    indicator_raw = filters.get("indicator")
+    if isinstance(indicator_raw, (list, tuple)):
+        indicator_slugs = [str(v).strip() for v in indicator_raw if str(v).strip()]
+    elif indicator_raw:
+        indicator_slugs = [str(indicator_raw).strip()]
+    else:
+        indicator_slugs = []
+
+    docs_qs = (
+        Document.objects.filter(owner=request.user)
+        .select_related("doc_type")
+        .prefetch_related("tags")
+        .order_by("-uploaded_at")
+    )
+    if category_ids:
+        docs_qs = docs_qs.filter(category_id__in=category_ids)
+    if specialty_ids:
+        docs_qs = docs_qs.filter(specialty_id__in=specialty_ids)
+    if event_ids:
+        docs_qs = docs_qs.filter(medical_event_id__in=event_ids)
+    if start_dt:
+        docs_qs = docs_qs.filter(uploaded_at__date__gte=start_dt)
+    if end_dt:
+        docs_qs = docs_qs.filter(uploaded_at__date__lte=end_dt)
+
+    docs_total = docs_qs.count()
+    doc_items = []
+    for doc in docs_qs[:25]:
+        doc_items.append(
+            {
+                "id": doc.id,
+                "title": doc.display_title,
+                "uploaded_at": timezone.localtime(doc.uploaded_at).strftime("%d.%m.%Y %H:%M") if doc.uploaded_at else "",
+                "document_date": doc.document_date.isoformat() if doc.document_date else "",
+                "detail_url": request.build_absolute_uri(reverse("medj:document_detail", args=[doc.id])),
+                "tags": [
+                    t.safe_translation_getter("name", any_language=True) or getattr(t, "name", "")
+                    for t in doc.tags.all()
+                ],
+            }
+        )
+
+    lab_qs = LabTestMeasurement.objects.filter(medical_event__patient=patient)
+    if event_ids:
+        lab_qs = lab_qs.filter(medical_event_id__in=event_ids)
+    if indicator_slugs:
+        lab_qs = lab_qs.filter(indicator__slug__in=indicator_slugs)
+    if start_dt:
+        lab_qs = lab_qs.filter(measured_at__date__gte=start_dt)
+    if end_dt:
+        lab_qs = lab_qs.filter(measured_at__date__lte=end_dt)
+    labs_total = lab_qs.count()
+
+    events_qs = MedicalEvent.objects.filter(patient=patient)
+    if event_ids:
+        events_qs = events_qs.filter(id__in=event_ids)
+    if start_dt:
+        events_qs = events_qs.filter(event_date__gte=start_dt)
+    if end_dt:
+        events_qs = events_qs.filter(event_date__lte=end_dt)
+    events_total = events_qs.count()
 
     base_params = {}
-    if start_date:
-        base_params["start_date"] = start_date
-    if end_date:
-        base_params["end_date"] = end_date
-    for key in ("specialty", "category", "event", "indicator"):
-        val = filters.get(key)
-        if not val:
-            continue
-        base_params[key] = list(val) if isinstance(val, (list, tuple)) else [val]
+    if start_dt:
+        base_params["start_date"] = start_dt.isoformat()
+    if end_dt:
+        base_params["end_date"] = end_dt.isoformat()
+    if specialty_ids:
+        base_params["specialty"] = [str(s) for s in specialty_ids]
+    if category_ids:
+        base_params["category"] = [str(c) for c in category_ids]
+    if event_ids:
+        base_params["event"] = [str(e) for e in event_ids]
+    if indicator_slugs:
+        base_params["indicator"] = indicator_slugs
 
     now = int(time.time())
+    urls = {"pdf_events_url": "", "pdf_labs_url": "", "csv_url": ""}
+    if generate_events:
+        pdf_events_path = reverse("medj:print_pdf")
+        payload_events = {"k": "print_pdf", "exp": now + hours_events * 3600, "labs": 0}
+        token_events = _make_token(payload_events)
+        qs_events = dict(base_params)
+        qs_events["t"] = token_events
+        events_url = request.build_absolute_uri(pdf_events_path) + "?" + urlencode(qs_events, doseq=True)
+        urls["pdf_events_url"] = events_url
+    if generate_labs:
+        pdf_labs_path = reverse("medj:print_pdf")
+        payload_labs = {"k": "print_pdf", "exp": now + hours_labs * 3600, "labs": 1}
+        token_labs = _make_token(payload_labs)
+        qs_labs = dict(base_params)
+        qs_labs["labs"] = 1
+        qs_labs["t"] = token_labs
+        labs_url = request.build_absolute_uri(pdf_labs_path) + "?" + urlencode(qs_labs, doseq=True)
+        urls["pdf_labs_url"] = labs_url
+    if generate_csv:
+        csv_path = reverse("medj:print_csv")
+        payload_csv = {"k": "print_csv", "exp": now + hours_csv * 3600}
+        token_csv = _make_token(payload_csv)
+        qs_csv = dict(base_params)
+        qs_csv["t"] = token_csv
+        csv_url = request.build_absolute_uri(csv_path) + "?" + urlencode(qs_csv, doseq=True)
+        urls["csv_url"] = csv_url
 
-    pdf_events_path = reverse("medj:print_pdf")
-    pdf_labs_path = reverse("medj:print_pdf")
-    csv_path = reverse("medj:print_csv")
+    pieces = []
+    if docs_total:
+        pieces.append(f"{docs_total} документа")
+    if events_total:
+        pieces.append(f"{events_total} събития")
+    if labs_total:
+        pieces.append(f"{labs_total} лабораторни показателя")
+    if pieces:
+        notice = "Намерени: " + ", ".join(pieces) + "."
+    else:
+        notice = "Няма резултати за избраните филтри."
 
-    payload_events = {"k": "print_pdf", "exp": now + hours_events * 3600, "labs": 0}
-    payload_labs = {"k": "print_pdf", "exp": now + hours_labs * 3600, "labs": 1}
-    payload_csv = {"k": "print_csv", "exp": now + hours_csv * 3600}
+    payload = {
+        **urls,
+        "counts": {
+            "documents": docs_total,
+            "events": events_total,
+            "labs": labs_total,
+        },
+        "documents": doc_items,
+        "notice": notice,
+    }
 
-    token_events = _make_token(payload_events)
-    token_labs = _make_token(payload_labs)
-    token_csv = _make_token(payload_csv)
-
-    qs_events = dict(base_params)
-    qs_events["t"] = token_events
-    events_url = request.build_absolute_uri(pdf_events_path) + "?" + urlencode(qs_events, doseq=True)
-
-    qs_labs = dict(base_params)
-    qs_labs["labs"] = 1
-    qs_labs["t"] = token_labs
-    labs_url = request.build_absolute_uri(pdf_labs_path) + "?" + urlencode(qs_labs, doseq=True)
-
-    qs_csv = dict(base_params)
-    qs_csv["t"] = token_csv
-    csv_url = request.build_absolute_uri(csv_path) + "?" + urlencode(qs_csv, doseq=True)
-
-    return JsonResponse({"pdf_events_url": events_url, "pdf_labs_url": labs_url, "csv_url": csv_url})
+    return JsonResponse(payload)
 
 
 @login_required
@@ -111,7 +241,14 @@ def create_share_token(request: HttpRequest) -> JsonResponse:
 
 
 def share_qr(request: HttpRequest, token=None) -> HttpResponse:
-    url = request.GET.get("url")
+    if request.method == "POST":
+        try:
+            payload = json.loads(request.body or "{}")
+        except Exception:
+            payload = {}
+        url = (payload.get("url") or "").strip()
+    else:
+        url = (request.GET.get("url") or "").strip()
     if not url:
         return HttpResponseBadRequest("missing url")
     img = qrcode.make(url)

@@ -12,7 +12,15 @@
         {% csrf_token %}
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2" for="id_tags">{% trans "Етикети" %}</label>
-          {{ form.tags }}
+          {% if form.tags.help_text %}
+            <p class="text-sm text-gray-500 mb-3">{{ form.tags.help_text }}</p>
+          {% endif %}
+          <div class="bg-white rounded-2xl border border-gray-200 p-4">
+            <div class="flex justify-end mb-3">
+              <button type="button" id="clear-tags" class="px-3 py-1.5 text-sm rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200">{% trans "Изчисти избора" %}</button>
+            </div>
+            {{ form.tags }}
+          </div>
           {% if form.tags.errors %}
             <div class="text-sm text-red-600 mt-1">{% for error in form.tags.errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</div>
           {% endif %}
@@ -25,4 +33,15 @@
     </div>
   </div>
 </main>
+<script>
+  document.addEventListener('DOMContentLoaded', function(){
+    var clearBtn=document.getElementById('clear-tags');
+    if(!clearBtn){return;}
+    clearBtn.addEventListener('click', function(){
+      var box=document.getElementById('id_tags');
+      if(!box){return;}
+      box.querySelectorAll('input[type="checkbox"]').forEach(function(cb){ cb.checked=false; });
+    });
+  });
+</script>
 {% endblock %}
