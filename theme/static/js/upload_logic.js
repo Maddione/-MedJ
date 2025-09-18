@@ -167,8 +167,7 @@ async function suggestIfReady() {
 function cleanOCRText(text) {
   let s = (text || "").replace(/\r\n/g, "\n");
   s = s.replace(/[‐‒–—−]/g, "-");
-  s = s.replace(/- ?%(?=\s*\d)/g, "'");
-  s = s.replace(/- ?96(?=\s*\d)/g, "'");
+  s = s.replace(/-\s?96(?=\s|$)/g, "-%");
   s = s.replace(/[|¦]/g, " ");
   s = s.replace(/\s{2,}/g, " ");
   return s;
@@ -178,12 +177,13 @@ function parseLabs(text) {
   const src = cleanOCRText(text);
   const lines = (src || "").split(/\r?\n/).map(s => s.trim()).filter(Boolean);
   const items = [];
-  const rowRe = /^([A-Za-zА-Яа-я0-9\.\(\)\/\-\s]+?)\s+([\-+]?\d+(?:[\.,]\d+)?)(?:\s*([A-Za-zμ%\/\.\-\^\d×]+))?(?:\s+(\d+(?:[\.,]\d+)?)\s*[-–]\s*(\d+(?:[\.,]\d+)?))?$/;
+  const rowRe = /^([A-Za-zА-Яа-я0-9\.\(\)\/\-\s%]+?)\s+([\-+]?\d+(?:[\.,]\d+)?)(?:\s*([A-Za-zμ%\/\.\-\^\d×GgLl]+))?(?:\s+(\d+(?:[\.,]\d+)?)(?:\s*[%-])?\s*[-–]\s*(\d+(?:[\.,]\d+)?)(?:\s*[%-])?)?$/;
   for (const ln of lines) {
     if (/^(tests|result|flag|units|reference|comp\.|panel)/i.test(ln)) continue;
     const m = ln.match(rowRe);
     if (!m) continue;
-    const name = m[1].replace(/\s{2,}/g, " ").replace(/\s-\s*$/,"").trim();
+    let name = m[1].replace(/\s{2,}/g, " ").replace(/\s-\s*$/,"").trim();
+    name = name.replace(/\s*-\s*(%|бр\.?)\s*$/i, " $1").replace(/\s+/g, " ");
     const val = m[2].replace(",", ".");
     const unit = (m[3] || "").trim() || null;
     const rlo = m[4] ? parseFloat(String(m[4]).replace(",", ".")) : null;
@@ -241,12 +241,12 @@ function renderOCRMeta(meta) {
   const n = stepLabelNode();
   let s = "";
   if (meta && typeof meta === "object") {
-    const eng = meta.engine || meta.ocr_engine || "";
-    const dur = meta.duration_ms || meta.dt_ms || "";
+    const eng = meta.engine || meta.ocr_engine || meta.provider || meta.name || meta.used || "";
+    const dur = meta.duration_ms || meta.dt_ms || meta.time_ms || meta.elapsed_ms || meta.duration || "";
     s = eng ? "OCR: " + eng : "";
     if (dur) s = s ? s + " • " + dur + " ms" : dur + " ms";
   }
-  n ? n.textContent = s : null;
+  if (n) n.textContent = s;
 }
 
 function getWorkText() {
@@ -301,11 +301,12 @@ async function doAnalyze() {
   try {
     const res = await fetch(API.analyze, { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json", "X-CSRFToken": getCSRF() }, body: JSON.stringify({ text, category_id: p.category_id, specialty_id: p.specialty_id, doc_type_id: p.doc_type_id, file_kind: p.file_kind, event_id: p.event_id || "" }) });
     if (!res.ok) throw new Error("analyze_failed");
-    const data = await res.json();
+    let data = {};
+    try { data = await res.json(); } catch(_) { data = {}; }
     ANALYSIS = data || {};
-    const summary = (ANALYSIS.summary || ANALYSIS.data?.summary || "").toString();
+    const summary = (ANALYSIS.summary || ANALYSIS.result?.summary || ANALYSIS.data?.summary || ANALYSIS.summary_text || "").toString();
     renderSummary(summary);
-    const rows = normalizeRows(ANALYSIS.blood_test_results || ANALYSIS.data?.blood_test_results || []);
+    const rows = normalizeRows(ANALYSIS.blood_test_results || ANALYSIS.result?.blood_test_results || ANALYSIS.data?.blood_test_results || []);
     if (rows.length) renderLabTable(rows);
     ANALYZED_READY = true;
     updateButtons();
@@ -320,14 +321,18 @@ async function doConfirm() {
   clearError();
   const text = getWorkText();
   const p = picksPayload();
-  if (!ANALYZED_READY || !requiredTagsReady()) { showError("Анализът не е завършен."); return; }
+  if (!ANАЛYZED_READY || !requiredTagsReady()) { showError("Анализът не е завършен."); return; }
   setBusy(true);
   try {
     const payload = { text, category_id: p.category_id, specialty_id: p.specialty_id, doc_type_id: p.doc_type_id, file_kind: p.file_kind, event_id: p.event_id || "", analysis: ANALYSIS || {} };
     const res = await fetch(API.confirm, { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json", "X-CSRFToken": getCSRF() }, body: JSON.stringify(payload) });
     if (!res.ok) throw new Error("confirm_failed");
-    const data = await res.json();
-    if (data && data.ok) {
+    let ok = res.ok;
+    try {
+      const j = await res.json();
+      ok = ok || !!(j && (j.ok || j.success || j.saved || j.id));
+    } catch(_) {}
+    if (ok) {
       const btn = el("btnConfirm");
       if (btn) { btn.setAttribute("aria-disabled","true"); dis(btn, true); }
     }
