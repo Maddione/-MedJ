@@ -728,52 +728,40 @@ def upload_analyze(request):
             return JsonResponse({"summary": summary, "data": enriched, "meta": meta})
         except Exception:
             pass
-    data = _fallback_extract(txt, specialty_name)
-    summary, enriched = _enrich_analysis(data, txt, specialty_name, doc_type_name)
-    elapsed = int(max((time.monotonic() - started) * 1000, 0))
-    meta = {
-        "engine": "MedJ Analyzer",
-        "provider": "internal",
-        "duration_ms": elapsed,
-    }
-    return JsonResponse({"summary": summary, "data": enriched, "meta": meta})
-            return JsonResponse({"summary": summary, "data": data, "meta": meta})
-        except Exception:
-            pass
-    data = _fallback_extract(clean, specialty_name)
-    summary = data.get("summary","")
-    elapsed = int(max((time.monotonic() - started) * 1000, 0))
-    meta = {
-        "engine": "Правила (fallback)",
-        "provider": "fallback",
-        "duration_ms": elapsed,
-    }
-    return JsonResponse({"summary": summary, "data": data, "meta": meta})
+        data = _fallback_extract(txt, specialty_name)
+        summary, enriched = _enrich_analysis(data, txt, specialty_name, doc_type_name)
+        elapsed = int(max((time.monotonic() - started) * 1000, 0))
+        meta = {
+            "engine": "MedJ Analyzer",
+            "provider": "internal",
+            "duration_ms": elapsed,
+        }
+        return JsonResponse({"summary": summary, "data": enriched, "meta": meta})
 
-@login_required
-@require_http_methods(["POST"])
-def upload_confirm(request):
-    upload_file = request.FILES.get("file")
-    if not upload_file:
-        return HttpResponseBadRequest("Missing file")
+    @login_required
+    @require_http_methods(["POST"])
+    def upload_confirm(request):
+        upload_file = request.FILES.get("file")
+        if not upload_file:
+            return HttpResponseBadRequest("Missing file")
 
-    def _obj_or_400(model, key):
-        value = request.POST.get(key) or request.POST.get(key.replace("_id", ""), "")
-        if not value or not str(value).isdigit():
-            return None
-        return model.objects.filter(id=int(value)).first()
+        def _obj_or_400(model, key):
+            value = request.POST.get(key) or request.POST.get(key.replace("_id", ""), "")
+            if not value or not str(value).isdigit():
+                return None
+            return model.objects.filter(id=int(value)).first()
 
-    category = _obj_or_400(MedicalCategory, "category_id")
-    specialty = _obj_or_400(MedicalSpecialty, "specialty_id")
-    doc_type = _obj_or_400(DocumentType, "doc_type_id")
-    if not (category and specialty and doc_type):
-        return HttpResponseBadRequest("Missing classification")
+        category = _obj_or_400(MedicalCategory, "category_id")
+        specialty = _obj_or_400(MedicalSpecialty, "specialty_id")
+        doc_type = _obj_or_400(DocumentType, "doc_type_id")
+        if not (category and specialty and doc_type):
+            return HttpResponseBadRequest("Missing classification")
 
-    file_kind = (request.POST.get("file_kind") or "").strip().lower()
-    valid_kinds = {"image", "pdf", "other"}
+        file_kind = (request.POST.get("file_kind") or "").strip().lower()
+        valid_kinds = {"image", "pdf", "other"}
 
-    def _guess_file_kind(f):
-        name = (getattr(f, "name", "") or "").lower()
+        def _guess_file_kind(f):
+            name = (getattr(f, "name", "") or "").lower()
         if name.endswith((".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tif", ".tiff", ".webp")):
             return "image"
         if name.endswith(".pdf"):
