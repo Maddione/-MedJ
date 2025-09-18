@@ -8,7 +8,7 @@ from records.models import (
     MedicalCategory,
     MedicalEvent,
 )
-import os, requests, json, re
+import os, requests, json, re, time
 from datetime import datetime
 
 def _safe_name(o):
@@ -50,21 +50,47 @@ def _call_flask_ocr(dj_file, ctx):
     dj_file.seek(0)
     files = {"file": (dj_file.name, dj_file.read(), dj_file.content_type or "application/octet-stream")}
     data = {
-        "event_type": ctx.get("event_type",""),
-        "category_name": ctx.get("category_name",""),
-        "specialty_name": ctx.get("specialty_name","")
+        "event_type": ctx.get("event_type", ""),
+        "category_name": ctx.get("category_name", ""),
+        "specialty_name": ctx.get("specialty_name", ""),
     }
+    started = time.monotonic()
+    base_meta = {"engine": "OCR Service"}
     try:
         r = requests.post(url, files=files, data=data, timeout=timeout)
+        elapsed = int(max((time.monotonic() - started) * 1000, 0))
+        meta = {**base_meta, "duration_ms": elapsed}
         if r.status_code != 200:
-            return ""
-        if "application/json" in r.headers.get("content-type",""):
+            meta["status_code"] = r.status_code
+            return "", meta
+        if "application/json" in r.headers.get("content-type", ""):
             p = r.json()
             if isinstance(p, dict):
-                return (p.get("ocr_text") or p.get("text") or p.get("full_text") or p.get("data",{}).get("raw_text","") or "").strip()
-        return (r.text or "").strip()
+                text = (
+                    p.get("ocr_text")
+                    or p.get("text")
+                    or p.get("full_text")
+                    or p.get("data", {}).get("raw_text", "")
+                    or ""
+                ).strip()
+                resp_meta = p.get("meta") if isinstance(p.get("meta"), dict) else {}
+                if resp_meta:
+                    for k, v in resp_meta.items():
+                        if v is None:
+                            continue
+                        meta.setdefault(k, v)
+                if not meta.get("engine"):
+                    meta["engine"] = (
+                        resp_meta.get("engine")
+                        if isinstance(resp_meta, dict)
+                        else None
+                    ) or p.get("engine") or p.get("provider") or base_meta["engine"]
+                return text, meta
+        text = (r.text or "").strip()
+        return text, meta
     except Exception:
-        return ""
+        base_meta["error"] = "request_failed"
+        return "", base_meta
 
 def _vision_available():
     try:
@@ -79,28 +105,31 @@ def _call_vision_ocr_bytes(blob):
     try:
         from google.cloud import vision
     except Exception:
-        return ""
+        return "", {"engine": "Google Cloud Vision", "error": "unavailable"}
     try:
         client = vision.ImageAnnotatorClient()
         image = vision.Image(content=blob)
+        started = time.monotonic()
         resp = client.document_text_detection(image=image)
+        elapsed = int(max((time.monotonic() - started) * 1000, 0))
+        meta = {"engine": "Google Cloud Vision", "duration_ms": elapsed}
         if getattr(resp, "full_text_annotation", None) and getattr(resp.full_text_annotation, "text", ""):
-            return resp.full_text_annotation.text.strip()
+            return resp.full_text_annotation.text.strip(), meta
         arr = getattr(resp, "text_annotations", None)
         if arr and len(arr) > 0 and getattr(arr[0], "description", ""):
-            return arr[0].description.strip()
-        return ""
+            return arr[0].description.strip(), meta
+        return "", meta
     except Exception:
-        return ""
+        return "", {"engine": "Google Cloud Vision", "error": "failed"}
 
 def _ocr_pipeline(dj_file, ctx):
     dj_file.seek(0)
     vb = dj_file.read()
-    vision_txt = ""
+    vision_txt, vision_meta = "", {}
     if _vision_available():
-        vision_txt = _call_vision_ocr_bytes(vb)
+        vision_txt, vision_meta = _call_vision_ocr_bytes(vb)
     if vision_txt:
-        return vision_txt
+        return vision_txt, vision_meta
     dj_file.seek(0)
     return _call_flask_ocr(dj_file, ctx)
 
@@ -160,10 +189,35 @@ def upload_ocr(request):
     cat_name = _id_to_name(MedicalCategory, cat_id)
     ctx = {"event_type": doc_name, "specialty_name": spec_name, "category_name": cat_name}
     merged = ""
+    meta_list = []
     for f in files:
-        txt = _ocr_pipeline(f, ctx)
+        txt, meta = _ocr_pipeline(f, ctx)
         merged = _merge_lines(merged, txt)
-    return JsonResponse({"ocr_text": merged})
+        if meta:
+            meta_list.append(meta)
+
+    resp = {"ocr_text": merged}
+    if meta_list:
+        if len(meta_list) == 1:
+            resp["meta"] = meta_list[0]
+        else:
+            engines = []
+            total = 0
+            for m in meta_list:
+                eng = m.get("engine") if isinstance(m, dict) else ""
+                if eng and eng not in engines:
+                    engines.append(eng)
+                dur = m.get("duration_ms") if isinstance(m, dict) else None
+                if isinstance(dur, (int, float)):
+                    total += int(dur)
+            meta_combined = {}
+            if engines:
+                meta_combined["engine"] = ", ".join(engines)
+            if total:
+                meta_combined["duration_ms"] = total
+            if meta_combined:
+                resp["meta"] = meta_combined
+    return JsonResponse(resp)
 
 @login_required
 @require_http_methods(["POST"])
