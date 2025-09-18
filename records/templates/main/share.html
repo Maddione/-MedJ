@@ -3,61 +3,61 @@
 {% block title %}{% trans "Споделяне / Експорт" %}{% endblock %}
 {% block app_content %}
 <main class="max-w-6xl mx-auto grid md:grid-cols-12 gap-6">
-  <section class="md:col-span-8 bg-[#FDFEE9] rounded-2xl shadow p-4">
+  <section class="md:col-span-8 bg-blockalt rounded-2xl shadow p-4">
     <h1 class="text-2xl font-bold mb-3" style="color:#0A4E75">{% trans "Филтър" %}</h1>
     <form id="share-filters" class="space-y-4" data-create-links-url="{% url 'medj:create_download_links' %}" data-qr-for-url="{% url 'medj:qr_for_url' %}">
       {% csrf_token %}
       <div class="grid sm:grid-cols-2 gap-4">
         <div>
           <label class="block text-sm font-semibold mb-1" style="color:#0A4E75">{% trans "От дата" %}</label>
-          <input type="date" name="start_date" class="w-full rounded-lg p-2" style="background:#EAEBDA; color:#0A4E75">
+          <input type="date" name="start_date" class="w-full rounded-lg p-2 border border-gray-300 bg-white text-[#0A4E75]">
         </div>
         <div>
           <label class="block text-sm font-semibold mb-1" style="color:#0A4E75">{% trans "До дата" %}</label>
-          <input type="date" name="end_date" class="w-full rounded-lg p-2" style="background:#EAEBDA; color:#0A4E75">
+          <input type="date" name="end_date" class="w-full rounded-lg p-2 border border-gray-300 bg-white text-[#0A4E75]">
         </div>
       </div>
       <div class="grid sm:grid-cols-3 gap-4">
         <div>
           <label class="block text-sm font-semibold mb-1" style="color:#0A4E75">{% trans "Валидност PDF събития (часове)" %}</label>
-          <input type="number" min="1" max="8760" name="hours_events" value="24" class="w-full rounded-lg p-2" style="background:#EAEBDA; color:#0A4E75">
+          <input type="number" min="1" max="8760" name="hours_events" value="24" class="w-full rounded-lg p-2 border border-gray-300 bg-white text-[#0A4E75]">
         </div>
         <div>
           <label class="block text-sm font-semibold mb-1" style="color:#0A4E75">{% trans "Валидност PDF лаборатории (часове)" %}</label>
-          <input type="number" min="1" max="8760" name="hours_labs" value="24" class="w-full rounded-lg p-2" style="background:#EAEBDA; color:#0A4E75">
+          <input type="number" min="1" max="8760" name="hours_labs" value="24" class="w-full rounded-lg p-2 border border-gray-300 bg-white text-[#0A4E75]">
         </div>
         <div>
           <label class="block text-sm font-semibold mb-1" style="color:#0A4E75">{% trans "Валидност CSV (часове)" %}</label>
-          <input type="number" min="1" max="8760" name="hours_csv" value="24" class="w-full rounded-lg p-2" style="background:#EAEBDA; color:#0A4E75">
+          <input type="number" min="1" max="8760" name="hours_csv" value="24" class="w-full rounded-lg p-2 border border-gray-300 bg-white text-[#0A4E75]">
         </div>
       </div>
       <div class="flex items-center gap-6 mt-2">
-        <label class="inline-flex items-center gap-2"><input id="generate-events" type="checkbox" class="w-4 h-4" checked><span>{% trans "PDF събития" %}</span></label>
-        <label class="inline-flex items-center gap-2"><input id="generate-labs" type="checkbox" class="w-4 h-4" checked><span>{% trans "PDF лаборатории" %}</span></label>
-        <label class="inline-flex items-center gap-2"><input id="generate-csv" type="checkbox" class="w-4 h-4" checked><span>CSV</span></label>
+        <label class="inline-flex items-center gap-2"><input id="generate-events" type="checkbox" class="w-4 h-4"><span>{% trans "PDF събития" %}</span></label>
+        <label class="inline-flex items-center gap-2"><input id="generate-labs" type="checkbox" class="w-4 h-4"><span>{% trans "PDF лаборатории" %}</span></label>
+        <label class="inline-flex items-center gap-2"><input id="generate-csv" type="checkbox" class="w-4 h-4"><span>CSV</span></label>
       </div>
       <div class="mt-4">
         <button type="button" id="gen-links" class="px-4 py-2 rounded-xl bg-checkgreen text-white opacity-50 cursor-not-allowed" aria-disabled="true">{% trans "Приложи филтри" %}</button>
       </div>
     </form>
   </section>
-  <section class="md:col-span-4 bg-white rounded-2xl shadow p-4">
+  <section class="md:col-span-4 bg-blockalt rounded-2xl shadow p-4">
     <h2 class="text-xl font-semibold mb-3" style="color:#0A4E75">{% trans "Резултат" %}</h2>
     <div id="results-summary" class="text-sm text-gray-600 mb-4">{% trans "Изберете филтри и натиснете „Приложи филтри“, за да получите линкове." %}</div>
     <div class="space-y-3">
       <div>
         <label class="text-sm font-semibold block mb-1">{% trans "PDF събития" %}</label>
-        <input id="link-pdf-events" type="text" readonly class="w-full rounded-lg p-2 bg-[#EAEBDA] text-[#0A4E75]">
+        <input id="link-pdf-events" type="text" readonly class="w-full rounded-lg p-2 border border-gray-300 bg-white text-[#0A4E75]">
         <a id="btn-pdf-events" class="inline-block mt-2 px-3 py-1 rounded-lg bg-[#0A4E75] text-white opacity-50 pointer-events-none" target="_blank">{% trans "Отвори" %}</a>
       </div>
       <div>
         <label class="text-sm font-semibold block mb-1">{% trans "PDF лаборатории" %}</label>
-        <input id="link-pdf-labs" type="text" readonly class="w-full rounded-lg p-2 bg-[#EAEBDA] text-[#0A4E75]">
+        <input id="link-pdf-labs" type="text" readonly class="w-full rounded-lg p-2 border border-gray-300 bg-white text-[#0A4E75]">
         <a id="btn-pdf-labs" class="inline-block mt-2 px-3 py-1 rounded-lg bg-[#0A4E75] text-white opacity-50 pointer-events-none" target="_blank">{% trans "Отвори" %}</a>
       </div>
       <div>
         <label class="text-sm font-semibold block mb-1">CSV</label>
-        <input id="link-csv" type="text" readonly class="w-full rounded-lg p-2 bg-[#EAEBDA] text-[#0A4E75]">
+        <input id="link-csv" type="text" readonly class="w-full rounded-lg p-2 border border-gray-300 bg-white text-[#0A4E75]">
         <a id="btn-csv" class="inline-block mt-2 px-3 py-1 rounded-lg bg-[#0A4E75] text-white opacity-50 pointer-events-none" target="_blank">{% trans "Отвори" %}</a>
       </div>
       <div class="mt-4">
@@ -75,5 +75,4 @@
 {% load static %}
 {{ block.super }}
 <script src="{% static 'js/share_logic.js' %}?v=2"></script>
-
 {% endblock %}

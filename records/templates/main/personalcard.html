@@ -4,139 +4,114 @@
 {% block title %}{% trans "Лична здравна карта" %}{% endblock %}
 
 {% block app_content %}
-{% trans "Собствено" as ph_first %}
-{% trans "Презиме" as ph_middle %}
-{% trans "Фамилия" as ph_last %}
-<form method="post" id="personalcard-form" class="relative max-w-7xl mx-auto space-y-6" data-initial-locked="{{ profile_locked|yesno:'true,false' }}" data-editing-allowed="{{ editing_allowed|yesno:'true,false' }}">
-  {% csrf_token %}
-  <input type="hidden" name="editing" id="personalcard-editing-flag" value="{% if profile_locked %}0{% else %}1{% endif %}">
+<main class="bg-site-background min-h-screen p-4 md:p-8">
+  <div class="max-w-7xl mx-auto space-y-6">
 
-  <div class="rounded-2xl p-5" style="background:#FFFFF5;box-shadow:0 10px 14px rgba(10,30,74,.10),inset 0 0 0 1px rgba(10,30,74,.08)">
-    <div class="text-2xl font-bold text-[var(--color-primaryDark)] mb-4">{% trans "Основна информация" %}</div>
+    <div class="bg-primaryDark p-6 rounded-3xl shadow-lg mb-8">
+      <h1 class="text-2xl font-bold text-blockbg mb-4">{% trans "Лична здравна карта" %}</h1>
+      <p class="mt-2 text-blockbg">{% trans "Въведете и управлявайте основните си данни." %}</p>
+    </div>
 
-    <div class="grid grid-cols-1 gap-4">
-      <div class="rounded-2xl p-4 md:p-6" style="background:#EBEDE0">
-        <div class="grid grid-cols-12 gap-4 items-start">
-          <div class="col-span-12 md:col-span-7">
-            <div class="text-xl md:text-2xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Име" %}</div>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {% render_field profile_form.first_name_bg class+="h-12 rounded-xl px-4 border-0 bg-white text-[var(--color-primaryDark)] text-lg font-semibold" placeholder=ph_first data-lockable="1" %}
-              {% render_field profile_form.middle_name_bg class+="h-12 rounded-xl px-4 border-0 bg-white text-[var(--color-primaryDark)] text-lg font-semibold" placeholder=ph_middle data-lockable="1" %}
-              {% render_field profile_form.last_name_bg class+="h-12 rounded-xl px-4 border-0 bg-white text-[var(--color-primaryDark)] text-lg font-semibold" placeholder=ph_last data-lockable="1" %}
-            </div>
-          </div>
-          <div class="col-span-12 md:col-span-5 grid grid-cols-2 gap-4">
-            <div>
-              <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Години" %}</div>
-              <div id="pc_age" class="h-12 flex items-center rounded-xl px-4 bg-white text-[var(--color-primaryDark)] text-lg font-semibold">—</div>
-              <div class="mt-2">
-                <label class="text-sm text-[var(--color-primaryDark)] opacity-80 mb-1 block">{% trans "Дата на раждане" %}</label>
-                {% render_field profile_form.date_of_birth class+="h-11 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" type="date" data-lockable="1" %}
+    <form method="post" id="personalcard-form" class="space-y-6" data-initial-locked="{{ profile_locked|yesno:'true,false' }}" data-editing-allowed="{{ editing_allowed|yesno:'true,false' }}">
+      {% csrf_token %}
+      <input type="hidden" name="editing" id="personalcard-editing-flag" value="{% if profile_locked %}0{% else %}1{% endif %}">
+
+      <div class="p-6 rounded-3xl shadow-lg" style="background:#FFFFF5">
+        <div class="text-2xl font-bold text-[var(--color-primaryDark)] mb-4">{% trans "Основна информация" %}</div>
+
+        <div class="grid grid-cols-1 gap-4">
+          <div class="rounded-2xl p-4 md:p-6" style="background:#EBEDE0">
+            <div class="grid grid-cols-12 gap-4 items-start">
+              <div class="col-span-12 md:col-span-7">
+                <div class="text-xl md:text-2xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Име" %}</div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {% trans "Собствено" as ph_first %}
+                  {% trans "Презиме" as ph_middle %}
+                  {% trans "Фамилия" as ph_last %}
+                  {% render_field profile_form.first_name_bg class+="h-12 rounded-xl px-4 border-0 bg-white text-[var(--color-primaryDark)] text-lg font-semibold" placeholder=ph_first data-lockable="1" %}
+                  {% render_field profile_form.middle_name_bg class+="h-12 rounded-xl px-4 border-0 bg-white text-[var(--color-primaryDark)] text-lg font-semibold" placeholder=ph_middle data-lockable="1" %}
+                  {% render_field profile_form.last_name_bg class+="h-12 rounded-xl px-4 border-0 bg-white text-[var(--color-primaryDark)] text-lg font-semibold" placeholder=ph_last data-lockable="1" %}
+                </div>
+              </div>
+              <div class="col-span-12 md:col-span-5 grid grid-cols-2 gap-4">
+                <div>
+                  <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Години" %}</div>
+                  <div id="pc_age" class="h-12 flex items-center rounded-xl px-4 bg-white text-[var(--color-primaryDark)] text-lg font-semibold">—</div>
+                  <div class="mt-2">
+                    <label class="text-sm text-[var(--color-primaryDark)] opacity-80 mb-1 block">{% trans "Дата на раждане" %}</label>
+                    {% render_field profile_form.date_of_birth class+="h-11 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" type="date" data-lockable="1" %}
+                  </div>
+                </div>
+                <div>
+                  <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Пол" %}</div>
+                  {% render_field profile_form.sex class+="h-12 rounded-xl px-4 border-0 bg-white text-[var(--color-primaryDark)] text-lg font-semibold" data-lockable="1" %}
+                </div>
               </div>
             </div>
-            <div>
-              <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Пол" %}</div>
-              {% render_field profile_form.sex class+="h-12 rounded-xl px-4 border-0 bg-white text-[var(--color-primaryDark)] text-lg font-semibold" data-lockable="1" %}
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div class="lg:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="rounded-2xl p-4" style="background:#EBEDE0">
+                <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Височина" %}</div>
+                {% render_field profile_form.height_cm class+="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" placeholder="— см" data-lockable="1" %}
+              </div>
+              <div class="rounded-2xl p-4" style="background:#EBEDE0">
+                <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Тегло" %}</div>
+                {% render_field profile_form.weight_kg class+="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" placeholder="— кг" data-lockable="1" %}
+              </div>
+              <div class="rounded-2xl p-4" style="background:#EBEDE0">
+                <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Кръвна група" %}</div>
+                {% render_field profile_form.blood_type class+="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" data-lockable="1" %}
+              </div>
+            </div>
+            <div class="lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+              <div class="rounded-2xl p-4" style="background:#EBEDE0">
+                <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Телефон" %}</div>
+                {% render_field profile_form.phone class+="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" data-lockable="1" %}
+              </div>
+              <div class="rounded-2xl p-4" style="background:#EBEDE0">
+                <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Адрес" %}</div>
+                {% render_field profile_form.address class+="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" data-lockable="1" %}
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-2xl p-4 md:p-6" style="background:#EBEDE0">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Общопрактикуващ лекар" %}</div>
+                <input name="gp_name" class="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" placeholder="—" data-lockable="1">
+              </div>
+              <div>
+                <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Телефон" %}</div>
+                <input name="gp_phone" class="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" placeholder="—" data-lockable="1">
+              </div>
+              <div>
+                <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Адрес" %}</div>
+                <input name="gp_address" class="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" placeholder="—" data-lockable="1">
+              </div>
+              <div>
+                <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "РЗОК" %}</div>
+                <input name="insurer" class="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" placeholder="—" data-lockable="1">
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <div class="lg:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div class="rounded-2xl p-4" style="background:#EBEDE0">
-            <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Височина" %}</div>
-            {% render_field profile_form.height_cm class+="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" placeholder="— см" data-lockable="1" %}
-          </div>
-          <div class="rounded-2xl p-4" style="background:#EBEDE0">
-            <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Тегло" %}</div>
-            {% render_field profile_form.weight_kg class+="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" placeholder="— кг" data-lockable="1" %}
-          </div>
-          <div class="rounded-2xl p-4" style="background:#EBEDE0">
-            <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Кръвна група" %}</div>
-            {% render_field profile_form.blood_type class+="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" data-lockable="1" %}
-          </div>
-        </div>
-        <div class="lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
-          <div class="rounded-2xl p-4" style="background:#EBEDE0">
-            <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Телефон" %}</div>
-            {% render_field profile_form.phone class+="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" data-lockable="1" %}
-          </div>
-          <div class="rounded-2xl p-4" style="background:#EBEDE0">
-            <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Адрес" %}</div>
-            {% render_field profile_form.address class+="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" data-lockable="1" %}
-          </div>
-        </div>
+      <div class="flex justify-end gap-3">
+        <button type="button" id="personalcard-edit-btn" class="px-6 h-12 rounded-xl text-white font-semibold {% if not profile_locked %}hidden{% endif %}" style="background:#0A4E75">{% trans "Редакция" %}</button>
+        <button type="submit" id="personalcard-save-btn" class="px-6 h-12 rounded-xl text-white font-semibold {% if profile_locked %}hidden{% endif %}" style="background:#15BC11">{% trans "Запази" %}</button>
+        <button type="button" id="personalcard-cancel-btn" class="px-6 h-12 rounded-xl text-white font-semibold {% if profile_locked %}hidden{% endif %}" style="background:#E64D3D">{% trans "Отказ" %}</button>
       </div>
 
-      <div class="rounded-2xl p-4 md:p-6" style="background:#EBEDE0">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Общопрактикуващ лекар" %}</div>
-            <input name="gp_name" class="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" placeholder="—" data-lockable="1">
-          </div>
-          <div>
-            <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Телефон" %}</div>
-            <input name="gp_phone" class="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" placeholder="—" data-lockable="1">
-          </div>
-          <div>
-            <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Адрес" %}</div>
-            <input name="gp_address" class="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" placeholder="—" data-lockable="1">
-          </div>
-          <div>
-            <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "РЗОК" %}</div>
-            <input name="insurer" class="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" placeholder="—" data-lockable="1">
-          </div>
-        </div>
-      </div>
-    </div>
+      <button type="button" id="openShareModal" class="fixed bottom-6 right-6 h-24 w-24 rounded-full shadow-xl flex items-center justify-center" style="background:#E64D3D">
+        <img src="{% static 'images/qr.png' %}" alt="qr" class="h-10 w-10">
+      </button>
+    </form>
   </div>
-
-  <div class="flex justify-end gap-3">
-    <button type="button" id="personalcard-edit-btn" class="px-6 h-12 rounded-xl text-white font-semibold {% if not profile_locked %}hidden{% endif %}" style="background:#0A4E75">{% trans "Редакция" %}</button>
-    <button type="submit" id="personalcard-save-btn" class="px-6 h-12 rounded-xl text-white font-semibold {% if profile_locked %}hidden{% endif %}" style="background:#15BC11">{% trans "Запази" %}</button>
-    <button type="button" id="personalcard-cancel-btn" class="px-6 h-12 rounded-xl text-white font-semibold {% if profile_locked %}hidden{% endif %}" style="background:#E64D3D">{% trans "Отказ" %}</button>
-  </div>
-
-  <button type="button" id="openShareModal" class="fixed bottom-6 right-6 h-24 w-24 rounded-full shadow-xl flex items-center justify-center" style="background:#E64D3D">
-    <img src="{% static 'images/qr.png' %}" alt="qr" class="h-10 w-10">
-  </button>
-</form>
-
-<div id="ob_personalcard" class="hidden fixed inset-0 z-50 bg-black/50 p-4">
-  <div class="bg-white/90 rounded-2xl w-full max-w-xl mx-auto p-6" style="border:4px solid #0A4E75">
-    <h3 class="text-lg font-semibold text-[#0A1E4A] mb-2">{% trans "Стъпка 1: Лична карта" %}</h3>
-    <p class="text-sm mb-4">{% trans "Въведете име, фамилия и дата на раждане. Полетата със * са задължителни. Натиснете „Запази“, след което „Разбрах“." %}</p>
-    <div class="flex justify-end gap-3"><button id="ob1_ok" class="px-4 py-2 rounded-xl text-white" style="background:#0A4E75">{% trans "Разбрах" %}</button></div>
-  </div>
-</div>
-
-<div id="shareModal" class="hidden fixed inset-0 z-50 bg-black/60 items-center justify-center p-4">
-  <div class="bg-white rounded-2xl w-full max-w-lg mx-auto p-6 shadow-xl" id="shareModalContent">
-    <h3 class="text-xl font-semibold text-primaryDark mb-4">{% trans "Споделяне на лична карта" %}</h3>
-    <div id="shareLoader" class="hidden text-center py-8">{% trans "Генериране..." %}</div>
-    <div id="shareError" class="hidden p-3 rounded-lg bg-red-50 text-red-700"></div>
-    <div id="shareDetails" class="space-y-4">
-      <div>
-        <label for="shareLink" class="block text-sm font-medium text-gray-700 mb-1">{% trans "Публичен линк" %}</label>
-        <div class="flex gap-2">
-          <input id="shareLink" type="text" readonly class="w-full rounded-lg p-2 bg-sitebg border-gray-300 text-primaryDark">
-          <button id="copyShareLink" class="px-3 py-2 rounded-lg font-semibold text-white" style="background:#0A4E75">{% trans "Копирай" %}</button>
-        </div>
-      </div>
-      <div class="flex items-center justify-center"><div id="qrCodeContainer" class="p-2 border rounded-lg bg-gray-50"></div></div>
-      <div id="cardPreviewContainer" class="hidden text-center">
-        <div class="text-sm font-medium text-gray-700 mb-2">{% trans "Преглед на картата" %}</div>
-        <img id="cardPreviewImage" class="mx-auto rounded-2xl shadow-lg max-h-80" alt="{% trans 'PNG изображение на личния картон' %}">
-      </div>
-      <div class="flex items-center justify-end gap-3 mt-6">
-        <button id="downloadPngButton" type="button" class="px-4 py-2 rounded-lg font-semibold text-white" style="background:#15BC11">{% trans "Сподели PNG" %}</button>
-        <button id="viewQrButton" type="button" class="px-4 py-2 rounded-lg font-semibold text-white" style="background:#0A4E75">{% trans "Генерирай/Виж QR" %}</button>
-        <button id="closeShareModal" type="button" class="px-4 py-2 rounded-lg font-semibold bg-gray-200 text-gray-800 hover:bg-gray-300">{% trans "Затвори" %}</button>
-      </div>
-    </div>
-  </div>
-</div>
+</main>
 {% endblock %}
 
 {% block scripts_extra %}
