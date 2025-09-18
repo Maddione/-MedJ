@@ -7,7 +7,6 @@ function seth(x, h) { if (x) x.innerHTML = h || ""; }
 function setv(x, v) { if (x) x.value = v || ""; }
 function dis(x, f) { if (!x) return; x.disabled = !!f; x.classList.toggle("opacity-50", !!f); x.classList.toggle("cursor-not-allowed", !!f); }
 function getCSRF() { const t = document.querySelector('input[name="csrfmiddlewaretoken"]'); if (t && t.value) return t.value; const m = document.cookie.match(/(?:^|;)\s*csrftoken=([^;]+)/); return m ? decodeURIComponent(m[1]) : ""; }
-function ensureUXStyles() { if (document.getElementById("uxUploadInject")) return; const s = document.createElement("style"); s.id = "uxUploadInject"; s.textContent = `.btn[aria-disabled="true"]{opacity:.5;cursor:not-allowed;pointer-events:none}.btn.btn-armed:hover{filter:brightness(1.05)}`; document.head.appendChild(s); }
 
 let CURRENT_FILE = null;
 let CURRENT_FILE_KIND = "";
@@ -20,6 +19,14 @@ let CLASS_LOCK = false;
 let DOC_LOCK = false;
 let FILE_KIND_LOCK = false;
 let ANALYZED_READY = false;
+
+function ensureUXStyles() {
+  if (document.getElementById("uxUploadInject")) return;
+  const s = document.createElement("style");
+  s.id = "uxUploadInject";
+  s.textContent = ".btn[aria-disabled=\"true\"]{opacity:.5;cursor:not-allowed;pointer-events:none}.btn.btn-armed:hover{filter:brightness(1.05)}";
+  document.head.appendChild(s);
+}
 
 function picks() {
   return {
@@ -40,15 +47,21 @@ function picksPayload() {
 function requiredTagsReady() { const p = picks(); return !!(p.category && p.specialty && p.docType); }
 function pipelineReady() { const p = picks(); return !!(p.category && p.specialty && p.docType && p.fileKind); }
 
-function currentTags() { const p = picksPayload(); return { category_id: p.category_id, specialty_id: p.specialty_id, doc_type_id: p.doc_type_id, file_kind: p.file_kind }; }
-
 function lockDocType() { DOC_LOCK = true; dis(el("sel_doc_type"), true); }
 function lockClassification() { CLASS_LOCK = true; ["sel_category","sel_specialty","sel_doc_type","file_kind"].forEach(id => dis(el(id), true)); }
 
 function stepLabelNode() {
   let n = document.querySelector('label[for="workText"]');
-  if (!n) n = el("workLabel") || el("ocrLabel") || el("workMeta");
-  if (!n) { const ta = el("workText"); if (ta && ta.parentElement) { n = document.createElement("div"); n.id = "workMeta"; n.className = "text-xs text-gray-600 mb-1"; ta.parentElement.insertBefore(n, ta); } }
+  if (!n) n = el("workMeta");
+  if (!n) {
+    const ta = el("workText");
+    if (ta && ta.parentElement) {
+      n = document.createElement("div");
+      n.id = "workMeta";
+      n.className = "text-xs text-gray-600 mb-1";
+      ta.parentElement.insertBefore(n, ta);
+    }
+  }
   return n;
 }
 
@@ -72,7 +85,7 @@ function updateButtons() {
   if (bCfm) (ANALYZED_READY && requiredTagsReady()) ? show(bCfm) : hide(bCfm);
 }
 
-function setBusy(on) { const o = el("loadingOverlay"); if (on) show(o); else hide(o); }
+function setBusy(on) { const o = el("loadingOverlay"); if (o) { if (on) show(o); else hide(o); } }
 function showError(msg) { const box = el("errorBox"); if (box) { box.textContent = msg || "Грешка."; show(box); } }
 function clearError() { const box = el("errorBox"); if (box) { box.textContent = ""; hide(box); } }
 
@@ -93,7 +106,7 @@ function renderPreview() {
   else if (type === "application/pdf" || name.toLowerCase().endsWith(".pdf")) { if (emb) emb.src = CURRENT_FILE_URL; hide(img); show(pdf); }
   else { hide(img); hide(pdf); }
   show(wrap);
-  if (meta) meta.textContent = `${name} • ${sizeKB} KB • ${type || "unknown"}`;
+  if (meta) meta.textContent = name + " • " + sizeKB + " KB • " + (type || "unknown");
   if (badge) { badge.textContent = name; badge.classList.remove("hidden"); }
 }
 
@@ -145,35 +158,37 @@ async function suggestIfReady() {
     const data = await res.json();
     const items = data.events || [];
     if (!items.length) { if (wrap) hide(wrap); if (select) seth(select, ""); return; }
-    const opts = ['<option value="">—</option>'].concat(items.map(x => { const vid = x.id != null ? String(x.id) : ""; const label = x.title || x.name || x.display_name || vid; return `<option value="${vid}">${label}</option>`; }));
+    const opts = ['<option value="">—</option>'].concat(items.map(x => { const vid = x.id != null ? String(x.id) : ""; const label = x.title || x.name || x.display_name || vid; return "<option value=\"" + vid + "\">" + label + "</option>"; }));
     if (select) seth(select, opts.join(""));
     if (wrap) show(wrap);
   } catch (_) { if (wrap) hide(wrap); if (select) seth(select, ""); }
 }
 
+function cleanOCRText(text) {
+  let s = (text || "").replace(/\r\n/g, "\n");
+  s = s.replace(/[‐‒–—−]/g, "-");
+  s = s.replace(/- ?%(?=\s*\d)/g, "'");
+  s = s.replace(/- ?96(?=\s*\d)/g, "'");
+  s = s.replace(/[|¦]/g, " ");
+  s = s.replace(/\s{2,}/g, " ");
+  return s;
+}
+
 function parseLabs(text) {
-  const lines = (text || "").split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  const src = cleanOCRText(text);
+  const lines = (src || "").split(/\r?\n/).map(s => s.trim()).filter(Boolean);
   const items = [];
-  const kvRe = /^([A-Za-zА-Яа-я0-9\.\(\)\/\-\s]+?)\s+([\-+]?\d+(?:[\.,]\d+)?)(?:\s*([A-Za-zμ%\/\.\-\^\d×]+))?$/;
-  const refRe = /^(\d+(?:[\.,]\d+)?)\s*[-–]\s*(\d+(?:[\.,]\d+)?)/;
-  let refBlock = [];
-  for (let i = 0; i < lines.length; i++) { if (/REFERENCE\s*INTERVAL/i.test(lines[i])) { refBlock = lines.slice(i + 1); break; } }
+  const rowRe = /^([A-Za-zА-Яа-я0-9\.\(\)\/\-\s]+?)\s+([\-+]?\d+(?:[\.,]\d+)?)(?:\s*([A-Za-zμ%\/\.\-\^\d×]+))?(?:\s+(\d+(?:[\.,]\d+)?)\s*[-–]\s*(\d+(?:[\.,]\d+)?))?$/;
   for (const ln of lines) {
     if (/^(tests|result|flag|units|reference|comp\.|panel)/i.test(ln)) continue;
-    const m = ln.match(kvRe);
+    const m = ln.match(rowRe);
     if (!m) continue;
-    const name = m[1].replace(/\s{2,}/g, " ").trim();
+    const name = m[1].replace(/\s{2,}/g, " ").replace(/\s-\s*$/,"").trim();
     const val = m[2].replace(",", ".");
-    const unit = (m[3] || "").trim();
-    items.push({ name, value: parseFloat(val), unit: unit || null, ref_low: null, ref_high: null });
-  }
-  if (refBlock.length) {
-    const refs = refBlock.map(s => s.match(refRe)?.slice(1, 3) || null).filter(Boolean);
-    for (let i = 0; i < items.length && i < refs.length; i++) {
-      const [low, high] = refs[i];
-      items[i].ref_low = parseFloat(String(low).replace(",", "."));
-      items[i].ref_high = parseFloat(String(high).replace(",", "."));
-    }
+    const unit = (m[3] || "").trim() || null;
+    const rlo = m[4] ? parseFloat(String(m[4]).replace(",", ".")) : null;
+    const rhi = m[5] ? parseFloat(String(m[5]).replace(",", ".")) : null;
+    items.push({ name, value: parseFloat(val), unit, ref_low: isFinite(rlo) ? rlo : null, ref_high: isFinite(rhi) ? rhi : null });
   }
   return items;
 }
@@ -189,7 +204,9 @@ function normalizeRows(rows) {
     const ref = (r.reference_range || "").toString().trim();
     let rl = r.reference_low, rh = r.reference_high;
     if ((rl == null || rh == null) && ref && ref.includes("-")) {
-      const [a, b] = ref.split("-").map(s => s.trim().replace(",", "."));
+      const parts = ref.split("-");
+      const a = (parts[0] || "").trim().replace(",", ".");
+      const b = (parts[1] || "").trim().replace(",", ".");
       rl = rl != null ? rl : (isNaN(parseFloat(a)) ? null : parseFloat(a));
       rh = rh != null ? rh : (isNaN(parseFloat(b)) ? null : parseFloat(b));
     }
@@ -200,219 +217,76 @@ function normalizeRows(rows) {
 
 function renderLabTable(items) {
   const wrap = el("labWrap");
-  const slot = el("labTableSlot");
-  const sum = el("labSummary");
+  const slot = el("labTable");
   if (!wrap || !slot) return;
-  if (!items || !items.length) { hide(wrap); seth(slot, ""); if (sum) seth(sum, ""); return; }
-  const rows = items.map(x => {
-    const inRef = (x.ref_low != null && x.ref_high != null && typeof x.value === "number") ? (x.value >= x.ref_low && x.value <= x.ref_high) : null;
-    const warn = inRef === false ? "font-semibold text-danger" : "";
-    const unit = x.unit ? x.unit : "";
-    const ref = (x.ref_low != null && x.ref_high != null) ? `${x.ref_low} - ${x.ref_high}` : "";
-    return `
-      <tr>
-        <td class="border border-primaryDark bg-white px-3 py-2">${x.name}</td>
-        <td class="border border-primaryDark bg-white px-3 py-2 ${warn}">${x.value}</td>
-        <td class="border border-primaryDark bg-white px-3 py-2">${unit}</td>
-        <td class="border border-primaryDark bg-white px-3 py-2">${ref}</td>
-      </tr>`;
+  const rows = (items || []).map((x, i) => {
+    const n = x.name || "";
+    const v = x.value != null ? String(x.value) : "";
+    const u = x.unit || "";
+    const rl = x.ref_low != null ? String(x.ref_low) : "";
+    const rh = x.ref_high != null ? String(x.ref_high) : "";
+    return "<tr data-idx=\"" + i + "\"><td class=\"px-2 py-1\">" + n + "</td><td class=\"px-2 py-1\">" + v + "</td><td class=\"px-2 py-1\">" + u + "</td><td class=\"px-2 py-1\">" + rl + "</td><td class=\"px-2 py-1\">" + rh + "</td></tr>";
   }).join("");
-  const html = `
-    <table class="w-full border-separate border-spacing-0 text-primaryDark">
-      <thead>
-        <tr>
-          <th class="border border-primaryDark bg-white px-3 py-2 text-left">Показател</th>
-          <th class="border border-primaryDark bg-white px-3 py-2 text-left">Стойност</th>
-          <th class="border border-primaryDark bg-white px-3 py-2 text-left">Ед.</th>
-          <th class="border border-primaryDark bg-white px-3 py-2 text-left">Реф.</th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>`;
+  const html = "<table class=\"min-w-full text-sm\"><thead><tr><th class=\"px-2 py-1 text-left\">Показател</th><th class=\"px-2 py-1 text-left\">Стойност</th><th class=\"px-2 py-1 text-left\">Единици</th><th class=\"px-2 py-1 text-left\">Мин</th><th class=\"px-2 py-1 text-left\">Макс</th></tr></thead><tbody>" + rows + "</tbody></table>";
   seth(slot, html);
-  if (sum) seth(sum, `${items.length} показателя`);
   show(wrap);
-  setTableEditable(LAB_EDIT_MODE);
 }
 
-function setTableEditable(on) {
-  const tbl = document.querySelector("#labTableSlot table");
-  if (!tbl) return;
-  const rows = tbl.querySelectorAll("tbody tr");
-  rows.forEach((r) => {
-    [...r.cells].forEach((c, idx) => {
-      if (idx <= 3) {
-        c.contentEditable = on ? "true" : "false";
-        c.classList.toggle("ring", on);
-        c.classList.toggle("ring-1", on);
-        c.classList.toggle("ring-offset-1", on);
-      }
-    });
-  });
+function renderSummary(text) {
+  const box = el("summaryBox");
+  if (box) { box.textContent = text || ""; show(box); }
 }
 
-function getLabTableData() {
-  const tbl = document.querySelector("#labTableSlot table");
-  if (!tbl) return [];
-  const rows = tbl.querySelectorAll("tbody tr");
-  const out = [];
-  rows.forEach((r) => {
-    const name = (r.cells[0]?.innerText || "").trim();
-    const valRaw = (r.cells[1]?.innerText || "").trim().replace(",", ".");
-    const value = valRaw && !isNaN(Number(valRaw)) ? Number(valRaw) : valRaw;
-    const unit = (r.cells[2]?.innerText || "").trim();
-    const ref = (r.cells[3]?.innerText || "").trim();
-    let ref_low = null, ref_high = null;
-    if (ref && /-/.test(ref)) {
-      const [lo, hi] = ref.split("-").map((s) => s.trim().replace(",", "."));
-      const loN = Number(lo), hiN = Number(hi);
-      ref_low = isNaN(loN) ? null : loN;
-      ref_high = isNaN(hiN) ? null : hiN;
-    }
-    out.push({ name, value, unit, ref_low, ref_high });
-  });
-  return out;
-}
-
-function renderSummary(summary, data) {
-  const box = el("analysisSummary") || el("summaryBox") || el("summaryPanel") || el("summarySlot");
-  if (!box) return;
-  const labs = normalizeRows((data && (data.blood_test_results || [])) || []);
-  const tags = (data && data.suggested_tags) || [];
-  const tableStats = labs.length ? `<div class="text-sm">Показатели: ${labs.length}</div>` : "";
-  const tagsLine = tags.length ? `<div class="text-sm">Тагове: ${tags.join(", ")}</div>` : "";
-  const text = (summary || "").trim();
-  const body = text ? `<div class="whitespace-pre-line text-sm leading-6">${text}</div>` : `<div class="text-sm italic text-gray-600">Няма обобщение.</div>`;
-  seth(box, `<div class="space-y-2">${body}${tableStats}${tagsLine}</div>`);
-  show(box);
-}
-
-function refreshTableFromText() {
-  const t = (el("workText")?.value || "");
-  const items = parseLabs(t);
-  renderLabTable(items);
-}
-
-function syncTableToText() {
-  const items = getLabTableData();
-  const lines = items.map((x) => {
-    const v = (typeof x.value === "number" && isFinite(x.value)) ? x.value : (x.value || "");
-    const u = x.unit ? ` ${x.unit}` : "";
-    const ref = (x.ref_low != null && x.ref_high != null) ? ` ${x.ref_low}-${x.ref_high}` : "";
-    return `${x.name} ${v}${u}${ref}`;
-  });
-  const ta = el("workText");
-  if (ta) ta.value = lines.join("\n");
-}
-
-function ensureLabControls() {
-  const wrap = el("labWrap");
-  if (!wrap) return;
-  const cls = "px-4 h-10 rounded-xl text-white bg-primaryDark hover:brightness-105";
-  let bar = el("labControls");
-  if (!bar) {
-    bar = document.createElement("div");
-    bar.id = "labControls";
-    bar.className = "flex gap-2 mb-2";
-    bar.innerHTML = `
-      <button id="btnRefreshTable" class="${cls}">Обнови таблицата</button>
-      <button id="btnEditTable" class="${cls}">Редакция на таблицата</button>
-      <button id="btnSyncToText" class="${cls}">Синхронизирай към текст</button>
-      <button id="btnRevertOCR" class="${cls}">Върни OCR текста</button>
-    `;
-    wrap.insertBefore(bar, wrap.firstChild);
-  } else {
-    ["btnRefreshTable","btnEditTable","btnSyncToText","btnRevertOCR"].forEach(id => { const b = el(id); if (b) b.className = cls; });
+function renderOCRMeta(meta) {
+  const n = stepLabelNode();
+  let s = "";
+  if (meta && typeof meta === "object") {
+    const eng = meta.engine || meta.ocr_engine || "";
+    const dur = meta.duration_ms || meta.dt_ms || "";
+    s = eng ? "OCR: " + eng : "";
+    if (dur) s = s ? s + " • " + dur + " ms" : dur + " ms";
   }
-  el("btnRefreshTable").onclick = (e) => { e.preventDefault(); refreshTableFromText(); ANALYZED_READY = false; updateButtons(); };
-  el("btnEditTable").onclick = (e) => { e.preventDefault(); LAB_EDIT_MODE = !LAB_EDIT_MODE; setTableEditable(LAB_EDIT_MODE); ANALYZED_READY = false; updateButtons(); e.currentTarget.textContent = LAB_EDIT_MODE ? "Изход от редакция" : "Редакция на таблицата"; };
-  el("btnSyncToText").onclick = (e) => { e.preventDefault(); syncTableToText(); ANALYZED_READY = false; updateButtons(); };
-  el("btnRevertOCR").onclick = (e) => { e.preventDefault(); if (!ORIGINAL_OCR_TEXT) return; const ta = el("workText"); setv(ta, ORIGINAL_OCR_TEXT); renderLabTable(parseLabs(ORIGINAL_OCR_TEXT)); ANALYZED_READY = false; updateButtons(); };
+  n ? n.textContent = s : null;
 }
 
-function getSelectedLabel(selId) { const s = el(selId); if (!s) return ""; const o = s.options && s.options[s.selectedIndex]; return o ? (o.text || "").trim() : ""; }
-
-function inferFormatHint() {
-  const label = getSelectedLabel("sel_doc_type").toLowerCase();
-  if (!label) return "";
-  if (label.includes("кръв")) return "table";
-  if (label.includes("епикриз")) return "paragraph";
-  if (label.includes("рецепт")) return "list";
-  return "";
+function getWorkText() {
+  const ta = el("workText");
+  return ta ? ta.value || "" : "";
 }
 
-function anonymizeText(src) {
-  let text = src || "";
-  let count = 0;
-  const repl = (re) => { const before = text; text = text.replace(re, "[REDACTED]"); if (text !== before) count++; };
-  repl(/\b(?:ЕГН|EGN)\s*[:\-]?\s*\d{10}\b/gi);
-  repl(/\b\d{10}\b/g);
-  repl(/\b(?:\+?359|0)\d{8,9}\b/g);
-  repl(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi);
-  repl(/№\s*\d+/g);
-  return { text, meta: { redactions: count } };
-}
-
-function setMetaOCR(meta) {
-  OCR_META = meta || {};
-  const eng = (meta.engine || (meta.engines || [])[0] || "").toString();
-  const method = (meta.method || "").toString();
-  const lang = (meta.lang || (meta.langs || [])[0] || "").toString();
-  const pages = meta.pages_total || meta.pages || "";
-  const parts = [];
-  parts.push("Стъпка 1: OCR сканиране");
-  if (eng) parts.push(eng);
-  if (method) parts.push(method);
-  if (lang) parts.push(lang);
-  if (pages) parts.push(`стр.${pages}`);
-  setStepLabel(parts.join(" • "));
-}
-
-function setMetaAnalyze(data, payloadUsed) {
-  const am = data.analysis_meta || data.meta || {};
-  const provider = (am.provider || data.provider || data.vendor || "").toString();
-  const model = (am.model || am.engine || data.model || data.engine || "").toString();
-  const method = (am.method || am.strategy || "").toString();
-  const lang = (am.lang || am.language || "").toString();
-  const fmt = payloadUsed && payloadUsed.format_hint ? `format:${payloadUsed.format_hint}` : "";
-  const parts = [];
-  parts.push("Стъпка 2: AI Анализ");
-  if (provider && model) parts.push(`${provider}:${model}`);
-  else if (provider) parts.push(provider);
-  else if (model) parts.push(model);
-  if (method) parts.push(method);
-  if (lang) parts.push(lang);
-  if (fmt) parts.push(fmt);
-  parts.push("anon");
-  setStepLabel(parts.filter(Boolean).join(" • "));
+function setWorkText(t) {
+  const ta = el("workText");
+  if (ta) ta.value = t || "";
 }
 
 async function doOCR() {
   clearError();
-  if (!pipelineReady()) { showError("Задайте Категория, Специалност, Вид документ и Вид файл."); return; }
   const p = picks();
-  if (!p.file) { showError("Моля изберете файл."); return; }
-  setBusy(true);
+  if (!p.file || !pipelineReady()) { showError("Липсват задължителни полета."); return; }
   const fd = new FormData();
   fd.append("file", p.file);
-  fd.append("file_kind", p.fileKind || "");
+  fd.append("file_kind", p.fileKind);
+  fd.append("category_id", p.category);
+  fd.append("specialty_id", p.specialty);
+  fd.append("doc_type_id", p.docType);
+  if (p.eventId) fd.append("event_id", p.eventId);
+  setBusy(true);
   try {
-    const res = await fetch(API.ocr, { method: "POST", headers: { "X-CSRFToken": getCSRF() }, credentials: "same-origin", body: fd });
-    const ct = (res.headers.get("content-type") || "").toLowerCase();
-    const data = ct.includes("application/json") ? await res.json() : { error: "invalid_response" };
-    if (data.error) { showError("OCR неуспешен: " + (data.detail || data.error)); return; }
-    const text = (data.ocr_text || data.text || "").toString();
-    if (!text.trim()) { showError("Празен OCR резултат."); return; }
-    const area = el("workText");
-    if (area) area.removeAttribute("disabled");
-    setv(area, text);
-    ORIGINAL_OCR_TEXT = text;
-    setMetaOCR(data.ocr_meta || {});
-    renderLabTable(parseLabs(text));
+    const res = await fetch(API.ocr, { method: "POST", body: fd, credentials: "same-origin", headers: { "X-CSRFToken": getCSRF() } });
+    if (!res.ok) throw new Error("ocr_failed");
+    const data = await res.json();
+    const text = (data && (data.text || data.ocr_text)) || "";
+    const meta = (data && (data.meta || data.ocr_meta)) || {};
+    OCR_META = meta || {};
+    renderOCRMeta(OCR_META);
+    ORIGINAL_OCR_TEXT = text || "";
+    setWorkText(ORIGINAL_OCR_TEXT);
     ANALYZED_READY = false;
     updateButtons();
-  } catch (_) {
-    showError("OCR грешка при заявката.");
+    const labs = parseLabs(ORIGINAL_OCR_TEXT);
+    renderLabTable(labs);
+  } catch (e) {
+    showError("OCR неуспешен.");
   } finally {
     setBusy(false);
   }
@@ -420,97 +294,79 @@ async function doOCR() {
 
 async function doAnalyze() {
   clearError();
-  if (!requiredTagsReady()) { showError("Изберете Категория, Специалност и Вид документ."); return; }
-  const area = el("workText");
-  const raw = (area ? area.value : "") || "";
-  if (!raw.trim()) { showError("Липсва текст за анализ."); return; }
+  const text = getWorkText();
+  const p = picksPayload();
+  if (!text.trim() || !requiredTagsReady()) { showError("Липсват данни за анализ."); return; }
   setBusy(true);
   try {
-    lockClassification();
-    const p = picks();
-    const anon = anonymizeText(raw);
-    const payload = { text: anon.text, anonymized: true, anonymization_meta: anon.meta, ...currentTags() };
-    const fmt = inferFormatHint();
-    if (fmt) payload.format_hint = fmt;
-    if (p.eventId) payload.event_id = p.eventId;
-    const res = await fetch(API.analyze, { method: "POST", headers: { "Content-Type": "application/json", "X-CSRFToken": getCSRF() }, credentials: "same-origin", body: JSON.stringify(payload) });
+    const res = await fetch(API.analyze, { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json", "X-CSRFToken": getCSRF() }, body: JSON.stringify({ text, category_id: p.category_id, specialty_id: p.specialty_id, doc_type_id: p.doc_type_id, file_kind: p.file_kind, event_id: p.event_id || "" }) });
     if (!res.ok) throw new Error("analyze_failed");
     const data = await res.json();
-    const summary = (data.summary || "").toString();
-    ANALYSIS = { summary, data: data.data || { tables: [], blood_test_results: [], suggested_tags: [] } };
-    const tablesA = (ANALYSIS.data.tables || []).flatMap(t => normalizeRows(t.rows || t));
-    const rowsFromBlood = normalizeRows(ANALYSIS.data.blood_test_results || []);
-    const rows = tablesA.length ? tablesA : rowsFromBlood.length ? rowsFromBlood : parseLabs(raw);
-    renderSummary(ANALYSIS.summary, ANALYSIS.data);
-    renderLabTable(rows);
-    setMetaAnalyze(data, payload);
+    ANALYSIS = data || {};
+    const summary = (ANALYSIS.summary || ANALYSIS.data?.summary || "").toString();
+    renderSummary(summary);
+    const rows = normalizeRows(ANALYSIS.blood_test_results || ANALYSIS.data?.blood_test_results || []);
+    if (rows.length) renderLabTable(rows);
     ANALYZED_READY = true;
     updateButtons();
-  } catch (_) { showError("Грешка при анализ."); }
-  finally { setBusy(false); }
+  } catch (e) {
+    showError("Анализът неуспешен.");
+  } finally {
+    setBusy(false);
+  }
 }
 
 async function doConfirm() {
   clearError();
-  if (!requiredTagsReady()) { showError("Изберете Категория, Специалност и Вид документ."); return; }
-  if (!ANALYZED_READY) { showError("Първо стартирайте AI анализ."); return; }
-  const area = el("workText");
-  const text = (area ? area.value : "") || "";
-  if (!text.trim()) { showError("Няма данни за запис."); return; }
+  const text = getWorkText();
+  const p = picksPayload();
+  if (!ANALYZED_READY || !requiredTagsReady()) { showError("Анализът не е завършен."); return; }
   setBusy(true);
   try {
-    lockClassification();
-    const body = { picks: picksPayload(), text, summary: ANALYSIS.summary || "", data: ANALYSIS.data || {}, ocr_meta: OCR_META || {}, suggested_tags: (ANALYSIS.data && ANALYSIS.data.suggested_tags) || [] };
-    const res = await fetch(API.confirm, { method: "POST", headers: { "Content-Type": "application/json", "X-CSRFToken": getCSRF() }, credentials: "same-origin", body: JSON.stringify(body) });
+    const payload = { text, category_id: p.category_id, specialty_id: p.specialty_id, doc_type_id: p.doc_type_id, file_kind: p.file_kind, event_id: p.event_id || "", analysis: ANALYSIS || {} };
+    const res = await fetch(API.confirm, { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json", "X-CSRFToken": getCSRF() }, body: JSON.stringify(payload) });
     if (!res.ok) throw new Error("confirm_failed");
-    const out = await res.json().catch(() => ({}));
-    const msg = el("successBox");
-    if (msg) {
-      const eid = out.event_id ? `Събитие #${out.event_id}` : "";
-      const did = out.document_id ? `Документ #${out.document_id}` : "";
-      const labs = typeof out.labs_saved === "number" ? `Записани показатели: ${out.labs_saved}` : "";
-      const lines = [eid, did, labs].filter(Boolean).join(" • ");
-      msg.textContent = lines || "Записано.";
-      show(msg);
+    const data = await res.json();
+    if (data && data.ok) {
+      const btn = el("btnConfirm");
+      if (btn) { btn.setAttribute("aria-disabled","true"); dis(btn, true); }
     }
-  } catch (_) { showError("Грешка при запис."); }
-  finally { setBusy(false); }
+  } catch (e) {
+    showError("Записът е неуспешен.");
+  } finally {
+    setBusy(false);
+  }
 }
 
-function bindUI() {
+function bindEvents() {
   ensureUXStyles();
-  const form = el("uploadForm");
-  if (form) {
-    form.setAttribute("action", "#");
-    form.setAttribute("method", "post");
-    form.setAttribute("novalidate", "novalidate");
-    form.addEventListener("submit", (e) => { e.preventDefault(); return false; });
-  }
   const cat = el("sel_category");
   const spc = el("sel_specialty");
   const doc = el("sel_doc_type");
   const kind = el("file_kind");
-  const fi = el("file_input");
-  const choose = el("chooseFileBtn");
-  if (cat) cat.addEventListener("change", () => { updateDropdownFlow(); suggestIfReady(); clearError(); });
-  if (spc) spc.addEventListener("change", () => { updateDropdownFlow(); suggestIfReady(); clearError(); });
-  if (doc) doc.addEventListener("change", () => { updateDropdownFlow(); suggestIfReady(); clearError(); });
-  if (kind) kind.addEventListener("change", () => { if (!FILE_KIND_LOCK) { CURRENT_FILE_KIND = kind.value || ""; updateDropdownFlow(); suggestIfReady(); clearError(); } });
-  if (choose) choose.addEventListener("click", (e) => { e.preventDefault(); if (choose.getAttribute("aria-disabled")==="true") return; if (fi) fi.click(); });
-  if (fi) fi.addEventListener("change", handleFileInputChange);
-  const bOCR = el("btnOCR");
-  const bAna = el("btnAnalyze");
-  const bCfm = el("btnConfirm");
-  if (bOCR) bOCR.addEventListener("click", (e) => { e.preventDefault(); doOCR(); });
-  if (bAna) bAna.addEventListener("click", (e) => { e.preventDefault(); doAnalyze(); });
-  if (bCfm) bCfm.addEventListener("click", (e) => { e.preventDefault(); doConfirm(); });
-  ensureLabControls();
-  updateDropdownFlow();
-  updateButtons();
-  suggestIfReady();
+  const file = el("file_input");
+  const btnChoose = el("chooseFileBtn");
+  const btnOCR = el("btnOCR");
+  const btnAnalyze = el("btnAnalyze");
+  const btnConfirm = el("btnConfirm");
+  if (cat) cat.addEventListener("change", () => { updateDropdownFlow(); suggestIfReady(); updateButtons(); });
+  if (spc) spc.addEventListener("change", () => { updateDropdownFlow(); suggestIfReady(); updateButtons(); });
+  if (doc) doc.addEventListener("change", () => { updateDropdownFlow(); suggestIfReady(); updateButtons(); });
+  if (kind) kind.addEventListener("change", () => { if (!FILE_KIND_LOCK) CURRENT_FILE_KIND = kind.value || ""; updateDropdownFlow(); updateButtons(); });
+  if (file) file.addEventListener("change", handleFileInputChange);
+  if (btnChoose) btnChoose.addEventListener("click", () => { if (file && !file.disabled) file.click(); });
+  if (btnOCR) btnOCR.addEventListener("click", doOCR);
+  if (btnAnalyze) btnAnalyze.addEventListener("click", doAnalyze);
+  if (btnConfirm) btnConfirm.addEventListener("click", doConfirm);
   const ta = el("workText");
   if (ta) ta.addEventListener("input", () => { ANALYZED_READY = false; updateButtons(); });
-  setStepLabel("Стъпка 1: OCR сканиране");
 }
 
-document.addEventListener("DOMContentLoaded", bindUI);
+function init() {
+  bindEvents();
+  updateDropdownFlow();
+  updateButtons();
+  renderOCRMeta(OCR_META || {});
+}
+
+document.addEventListener("DOMContentLoaded", init);
