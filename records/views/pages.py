@@ -3,11 +3,16 @@ from django.shortcuts import render
 
 from ..models import Document
 
-@login_required
-def history_view(request):
-    documents = (
-        Document.objects.filter(owner=request.user)
-        .select_related("medical_event")
+
+def _user_documents(user):
+    return (
+        Document.objects.filter(owner=user)
+        .select_related("medical_event", "doc_type")
         .order_by("-uploaded_at")
     )
-    return render(request, "main/history.html", {"documents": documents})
+
+
+@login_required
+def documents_view(request):
+    documents = _user_documents(request.user)
+    return render(request, "main/documents.html", {"documents": documents})

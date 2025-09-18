@@ -26,7 +26,7 @@ from .views.documents import (
 )
 from .views.events import event_list, event_detail, events_by_specialty, tags_autocomplete
 from .views.labs import labtests, labtests_view, labtest_edit, export_lab_csv
-from .views.pages import history_view
+from .views.pages import documents_view
 from .views.personalcard import (
     PersonalCardView,
     personalcard_share_enable_api,
@@ -101,7 +101,7 @@ urlpatterns = [
     path("upload/", login_required(upload_views.upload_preview), name="upload"),
     path("upload/history/", login_required(upload_views.upload_history), name="upload_history"),
 
-    path("documents/", login_required(history_view), name="documents"),
+    path("documents/", login_required(documents_view), name="documents"),
     path("casefiles/", login_required(casefiles), name="casefiles"),
     path("events/", login_required(event_list), name="medical_event_list"),
     path("events/<int:pk>/", login_required(event_detail), name="medical_event_detail"),

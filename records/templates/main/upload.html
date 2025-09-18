@@ -109,5 +109,6 @@
 
 {% block scripts_extra %}
 {{ block.super }}
+{{ lab_index|json_script:"labIndexData" }}
 <script src="{% static 'js/upload_logic.js' %}?v={{ now|date:"U" }}"></script>
 {% endblock %}

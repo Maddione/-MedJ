@@ -16,6 +16,97 @@ const dis = (x, f) => {
   x.classList.toggle("opacity-50", !!f);
   x.classList.toggle("cursor-not-allowed", !!f);
 };
+
+function parseJSONScript(id) {
+  const el = document.getElementById(id);
+  if (!el) return null;
+  try {
+    return JSON.parse(el.textContent || "null");
+  } catch (err) {
+    console.warn("Failed to parse JSON script", id, err);
+    return null;
+  }
+}
+
+function normalizeNameKey(name) {
+  if (!name) return "";
+  let s = String(name).trim();
+  try {
+    s = s.normalize("NFKD");
+  } catch (err) {
+    /* ignore */
+  }
+  s = s.replace(/[\u0300-\u036f]/g, "");
+  return s
+    .toLowerCase()
+    .replace(/[^a-zа-я0-9%]/giu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function safeNumber(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const num = Number(value);
+  return Number.isFinite(num) ? num : null;
+}
+
+const LAB_INDEX = (() => {
+  const data = parseJSONScript("labIndexData");
+  if (!Array.isArray(data)) {
+    return { canonical: {}, meta: {} };
+  }
+  const canonical = {};
+  const meta = {};
+  const store = (label, target) => {
+    const key = normalizeNameKey(label);
+    if (key) canonical[key] = target;
+  };
+  data.forEach((item) => {
+    const main = (item?.name || "").toString().trim();
+    if (!main) return;
+    meta[main] = {
+      unit: (item?.unit || "").toString().trim() || null,
+      ref_low: safeNumber(item?.ref_low),
+      ref_high: safeNumber(item?.ref_high),
+    };
+    store(main, main);
+    const aliases = Array.isArray(item?.aliases) ? item.aliases : [];
+    aliases.forEach((alias) => {
+      const token = (alias || "").toString().trim();
+      if (token) store(token, main);
+    });
+  });
+  return { canonical, meta };
+})();
+
+function canonicalizeIndicatorName(rawName) {
+  const name = (rawName || "").toString().trim();
+  if (!name) {
+    return { name: "", unit: null, ref_low: null, ref_high: null };
+  }
+  const key = normalizeNameKey(name);
+  const canonical = (key && LAB_INDEX.canonical[key]) || name;
+  const meta = LAB_INDEX.meta[canonical] || {};
+  return {
+    name: canonical,
+    unit: meta.unit || null,
+    ref_low: safeNumber(meta.ref_low),
+    ref_high: safeNumber(meta.ref_high),
+  };
+}
+
+function formatNumber(value) {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "number") {
+    if (Number.isInteger(value)) return String(value);
+    const fixed = value.toFixed(2);
+    return fixed.replace(/\.00$/, "").replace(/(\.[0-9]*[1-9])0+$/, "$1");
+  }
+  const asNum = Number(value);
+  if (Number.isFinite(asNum)) return formatNumber(asNum);
+  return String(value);
+}
+
 const clearStatus = () => {
   const box = $("statusBox");
   if (box) {
@@ -30,7 +121,6 @@ const getCSRF = () => {
   return m ? decodeURIComponent(m[1]) : "";
 };
 
-// runtime state
 let FILE = null;
 let FILE_KIND = "";
 let FILE_URL = null;
@@ -112,14 +202,24 @@ function normalizeStepMeta(meta) {
   const engine = meta.engine || meta.ocr_engine || meta.provider || meta.name || meta.used || "";
   const duration = meta.duration_ms ?? meta.duration ?? meta.time_ms ?? meta.dt_ms ?? meta.elapsed_ms;
   const detail = meta.detail || meta.note || meta.status || meta.message || "";
+  const provider = meta.provider || meta.source || meta.vendor || meta.service || "";
+  const status = meta.status_code ?? meta.statusCode ?? meta.http_status ?? null;
+
   const info = {};
   if (engine) info.engine = String(engine);
   if (duration != null && !Number.isNaN(Number(duration))) {
     info.duration_ms = Number(duration);
   }
   if (detail) info.detail = String(detail);
+  if (provider && provider !== engine) info.provider = String(provider);
+  if (status != null && status !== "") info.status_code = status;
+  const docId = meta.document_id ?? meta.documentId ?? meta.id;
+  if (docId != null && docId !== "") info.document_id = docId;
+  const eventId = meta.event_id ?? meta.eventId;
+  if (eventId != null && eventId !== "") info.event_id = eventId;
   if (meta.document_id != null) info.document_id = meta.document_id;
   if (meta.event_id != null) info.event_id = meta.event_id;
+
   return info;
 }
 
@@ -129,6 +229,13 @@ function updateStepDisplay() {
   const info = STEP_CONFIG[CURRENT_STEP] || STEP_CONFIG[1];
   const meta = STEP_META[CURRENT_STEP] || {};
   const baseLabel = info?.label || "";
+  const engineText = meta.engine ? String(meta.engine) : "";
+  const labelText = engineText ? `${baseLabel} : ${engineText}` : `${baseLabel} : —`;
+  if (labelNode) labelNode.textContent = labelText;
+  if (metaNode) {
+    const parts = [];
+    if (engineText) parts.push(engineText);
+    if (meta.provider) parts.push(meta.provider);
   const text = meta.engine ? `${baseLabel} : ${meta.engine}` : baseLabel;
   if (labelNode) labelNode.textContent = text;
   if (metaNode) {
@@ -137,6 +244,11 @@ function updateStepDisplay() {
       parts.push(`${meta.duration_ms} ms`);
     }
     if (meta.detail) parts.push(meta.detail);
+    if (meta.document_id != null && meta.document_id !== "") {
+      parts.push(`Документ №${meta.document_id}`);
+    }
+    if (meta.event_id != null && meta.event_id !== "") {
+      parts.push(`Събитие №${meta.event_id}`);
     if (!parts.length) {
       metaNode.textContent = "";
       metaNode.classList?.add("hidden");
@@ -144,6 +256,31 @@ function updateStepDisplay() {
       metaNode.textContent = parts.join(" • ");
       metaNode.classList?.remove("hidden");
     }
+    if (meta.status_code) {
+      parts.push(`HTTP ${meta.status_code}`);
+    }
+    const unique = [...new Set(parts.filter(Boolean))];
+    if (!unique.length) {
+      metaNode.textContent = "—";
+      metaNode.classList?.remove("hidden");
+    } else {
+      metaNode.textContent = unique.join(" • ");
+      metaNode.classList?.remove("hidden");
+    }
+  }
+}
+
+function applyStepMeta(step, meta, makeCurrent = false) {
+  const idx = Number(step);
+  if (![1, 2, 3].includes(idx)) return;
+  if (meta) {
+    STEP_META[idx] = normalizeStepMeta(meta);
+  }
+  if (makeCurrent) {
+    CURRENT_STEP = idx;
+  }
+  if (makeCurrent || idx === CURRENT_STEP) {
+    updateStepDisplay();
   }
 }
 
@@ -352,7 +489,10 @@ function parseLabs(text) {
   const src = cleanOCRText(text);
   const lines = src.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
   const items = [];
+  const seen = new Map();
+  // Name may include " - % " or " - бр." suffixes. Value can be 1.23 or 4,04. Optional unit. Optional "min - max" at end with optional % signs.
   const rowRe = /^([A-Za-zА-Яа-я0-9\.\(\)\/\-\s%]+?)\s+([\-+]?\d+(?:[\.,]\d+)?)(?:\s*([A-Za-zμ%\/\.\-\^\d×GgLl]+))?(?:\s+(\d+(?:[\.,]\d+)?)(?:\s*[%-])?\s*[-–]\s*(\d+(?:[\.,]\d+)?)(?:\s*[%-])?)?$/u;
+  const toNum = (raw) => safeNumber(String(raw || "").replace(",", "."));
   for (const ln of lines) {
     if (/^(tests|result|flag|units|reference|comp\.|panel)/i.test(ln)) continue;
     const m = ln.match(rowRe);
@@ -360,11 +500,30 @@ function parseLabs(text) {
     let name = m[1].replace(/\s{2,}/g, " ").replace(/\s-\s*$/,"").trim();
     // Convert "Еозинофилни левкоцити-%" -> "Еозинофилни левкоцити %", and "-бр." -> " бр."
     name = name.replace(/\s*-\s*(%|бр\.?)\s*$/i, " $1").replace(/\s+/g, " ");
-    const val = parseFloat(String(m[2]).replace(",", "."));
-    const unit = (m[3] || "").trim() || null;
-    const rlo = m[4] ? parseFloat(String(m[4]).replace(",", ".")) : null;
-    const rhi = m[5] ? parseFloat(String(m[5]).replace(",", ".")) : null;
-    items.push({ name, value: isFinite(val) ? val : null, unit, ref_low: isFinite(rlo) ? rlo : null, ref_high: isFinite(rhi) ? rhi : null });
+    const valNum = toNum(m[2]);
+    const unitRaw = (m[3] || "").trim();
+    const rlo = toNum(m[4]);
+    const rhi = toNum(m[5]);
+    const canon = canonicalizeIndicatorName(name);
+    const keyName = canon.name || name;
+    if (!keyName) continue;
+    const entry = {
+      name: keyName,
+      value: valNum != null ? valNum : String(m[2] || "").trim(),
+      unit: unitRaw || canon.unit || null,
+      ref_low: rlo != null ? rlo : canon.ref_low,
+      ref_high: rhi != null ? rhi : canon.ref_high,
+    };
+    if (seen.has(keyName)) {
+      const prev = seen.get(keyName);
+      if ((prev.value === null || prev.value === "") && entry.value) prev.value = entry.value;
+      if (!prev.unit && entry.unit) prev.unit = entry.unit;
+      if (prev.ref_low == null && entry.ref_low != null) prev.ref_low = entry.ref_low;
+      if (prev.ref_high == null && entry.ref_high != null) prev.ref_high = entry.ref_high;
+    } else {
+      seen.set(keyName, entry);
+      items.push(entry);
+    }
   }
   return items;
 }
@@ -373,18 +532,31 @@ function normalizeRows(rows) {
   const out = [];
   (rows || []).forEach(r => {
     const name = (r.indicator_name || r.name || "").toString().trim();
-    const unit = (r.unit || "").toString().trim() || null;
+    const canon = canonicalizeIndicatorName(name);
+    const unitRaw = (r.unit || "").toString().trim() || null;
     const v = r.value;
     let value = typeof v === "number" ? v : parseFloat(String(v || "").replace(",", "."));
     if (Number.isNaN(value)) value = String(v || "").trim();
     const ref = (r.reference_range || "").toString().trim();
     let rl = r.reference_low, rh = r.reference_high;
+    if (typeof rl === "string") {
+      const num = parseFloat(rl.replace(",", "."));
+      if (!Number.isNaN(num)) rl = num;
+    }
+    if (typeof rh === "string") {
+      const num = parseFloat(rh.replace(",", "."));
+      if (!Number.isNaN(num)) rh = num;
+    }
     if ((rl == null || rh == null) && ref && ref.includes("-")) {
       const [a, b] = ref.split("-").map(s => s.trim().replace(",", "."));
       rl = rl ?? (isNaN(parseFloat(a)) ? null : parseFloat(a));
       rh = rh ?? (isNaN(parseFloat(b)) ? null : parseFloat(b));
     }
-    out.push({ name, value, unit, ref_low: rl ?? null, ref_high: rh ?? null });
+    if (rl == null) rl = canon.ref_low;
+    if (rh == null) rh = canon.ref_high;
+    const finalName = canon.name || name;
+    const unit = unitRaw || canon.unit || null;
+    out.push({ name: finalName, value, unit, ref_low: rl ?? null, ref_high: rh ?? null });
   });
   return out;
 }
@@ -392,24 +564,50 @@ function normalizeRows(rows) {
 function renderLabTable(items) {
   const wrap = $("labWrap");
   const slot = $("labTableSlot");
+  const summary = $("labSummary");
+
   if (!wrap || !slot) return;
   const list = Array.isArray(items) ? items : [];
   if (!list.length) {
     seth(slot, "");
     hide(wrap);
+
+    if (summary) {
+      summary.textContent = "";
+      summary.classList.add("hidden");
+    }
     return;
   }
+  let abnormal = 0;
+    return;
+  }
+
   const rows = list.map((x, i) => {
     const n = x.name || "";
-    const v = x.value != null ? String(x.value) : "";
+    const valueNum = typeof x.value === "number" ? x.value : Number(x.value);
+    const rlNum = typeof x.ref_low === "number" ? x.ref_low : Number(x.ref_low);
+    const rhNum = typeof x.ref_high === "number" ? x.ref_high : Number(x.ref_high);
+    const below = Number.isFinite(valueNum) && Number.isFinite(rlNum) && valueNum < rlNum;
+    const above = Number.isFinite(valueNum) && Number.isFinite(rhNum) && valueNum > rhNum;
+    if (below || above) abnormal += 1;
+    const rowClass = below || above ? " bg-red-50" : "";
+    const valueClass = below || above ? "px-2 py-1 font-semibold text-red-600" : "px-2 py-1";
+    const flag = below ? "↓" : above ? "↑" : "";
+    const v = formatNumber(x.value);
     const u = x.unit || "";
-    const rl = x.ref_low != null ? String(x.ref_low) : "";
-    const rh = x.ref_high != null ? String(x.ref_high) : "";
-    return `<tr data-idx="${i}"><td class="px-2 py-1">${n}</td><td class="px-2 py-1">${v}</td><td class="px-2 py-1">${u}</td><td class="px-2 py-1">${rl}</td><td class="px-2 py-1">${rh}</td></tr>`;
+    const rl = formatNumber(x.ref_low);
+    const rh = formatNumber(x.ref_high);
+    return `<tr data-idx="${i}" class="${rowClass.trim()}"><td class="px-2 py-1">${n}</td><td class="${valueClass}">${v}${flag ? ` <span class="text-xs">${flag}</span>` : ""}</td><td class="px-2 py-1">${u}</td><td class="px-2 py-1">${rl}</td><td class="px-2 py-1">${rh}</td></tr>`;
   }).join("");
   const html = `<table class="min-w-full text-sm"><thead><tr><th class="px-2 py-1 text-left">Показател</th><th class="px-2 py-1 text-left">Стойност</th><th class="px-2 py-1 text-left">Единици</th><th class="px-2 py-1 text-left">Мин</th><th class="px-2 py-1 text-left">Макс</th></tr></thead><tbody>${rows}</tbody></table>`;
   seth(slot, html);
   show(wrap);
+  if (summary) {
+    const bits = [`${list.length} показателя`];
+    if (abnormal > 0) bits.push(`${abnormal} извън норма`);
+    summary.textContent = bits.join(" • ");
+    summary.classList.remove("hidden");
+  }
 }
 
 function renderSummary(text) {
@@ -555,7 +753,6 @@ async function doConfirm() {
       const btn = $("btnConfirm");
       if (btn) { btn.setAttribute("aria-disabled","true"); dis(btn, true); }
       showStatus("Документът е записан успешно.");
-
       applyStepMeta(3, { ...meta, document_id: data?.document_id, event_id: data?.event_id }, true);
     }
   } catch {

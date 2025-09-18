@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
@@ -9,6 +9,7 @@ from records.models import (
     MedicalEvent,
     Document,
     PatientProfile,
+    LabIndicator,
 )
 
 import os, requests, json, re, time, hashlib
@@ -62,6 +63,39 @@ def _merge_lines(a, b):
             if s and s not in seen:
                 seen.add(s); out.append(s)
     return "\n".join(out).strip()
+
+
+def _lab_index_payload():
+    try:
+        indicators = (
+            LabIndicator.objects.filter(is_active=True)
+            .prefetch_related("aliases")
+            .order_by("id")
+        )
+    except Exception:
+        return []
+
+    rows = []
+    seen = set()
+    for indicator in indicators:
+        name = _safe_name(indicator).strip()
+        if not name or name in seen:
+            continue
+        seen.add(name)
+        entry = {
+            "name": name,
+            "unit": (indicator.unit or "").strip(),
+            "ref_low": float(indicator.reference_low) if indicator.reference_low is not None else None,
+            "ref_high": float(indicator.reference_high) if indicator.reference_high is not None else None,
+            "aliases": [],
+        }
+        try:
+            aliases = [a.alias() for a in indicator.aliases.all() if hasattr(a, "alias")]
+            entry["aliases"] = [alias for alias in aliases if alias]
+        except Exception:
+            entry["aliases"] = []
+        rows.append(entry)
+    return rows
 
 def _call_flask_ocr(dj_file, ctx):
     url = os.getenv("OCR_API_URL") or os.getenv("OCR_SERVICE_URL") or "http://ocr:5000/ocr"
@@ -452,17 +486,19 @@ def upload_preview(request):
         "categories": MedicalCategory.objects.order_by("id"),
         "specialties": MedicalSpecialty.objects.order_by("id"),
         "doc_types": DocumentType.objects.order_by("id"),
+        "lab_index": _lab_index_payload(),
     }
     return render(request, "main/upload.html", ctx)
 
 @login_required
 @require_http_methods(["GET"])
 def upload_history(request):
+    return redirect("medj:documents")
+  
     documents = (
         Document.objects.filter(owner=request.user)
         .select_related("medical_event", "doc_type")
-        .order_by("-uploaded_at")
-    )
+        .order_by("-uploaded_at"))
     return render(request, "main/history.html", {"documents": documents})
 
 @login_required
