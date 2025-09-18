@@ -514,7 +514,7 @@ def _lab_index_payload():
     return rows
 
 def _call_flask_ocr(dj_file, ctx):
-    url = os.getenv("OCR_API_URL") or os.getenv("OCR_SERVICE_URL") or "http://ocr:5000/ocr"
+    url = os.getenv("OCR_API_URL") or os.getenv("OCR_SERVICE_URL") or "http://ocrapi:5000/ocr"
     timeout = float(os.getenv("OCR_HTTP_TIMEOUT", "90"))
     dj_file.seek(0)
     files = {"file": (dj_file.name, dj_file.read(), dj_file.content_type or "application/octet-stream")}
