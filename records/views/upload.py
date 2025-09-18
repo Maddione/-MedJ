@@ -10,6 +10,7 @@ from records.models import (
     Document,
     PatientProfile,
 )
+
 import os, requests, json, re, time, hashlib
 from datetime import datetime
 from django.utils import timezone

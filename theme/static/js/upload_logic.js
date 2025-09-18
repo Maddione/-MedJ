@@ -1,5 +1,3 @@
-// MedJ upload logic — aligned to backend contracts from README
-// Flow: Upload → OCR → Analyze → Confirm. Endpoints under /api/upload/*. :contentReference[oaicite:1]{index=1}
 const API = {
   ocr: "/api/upload/ocr/",
   analyze: "/api/upload/analyze/",
@@ -333,7 +331,6 @@ async function suggestIfReady() {
   }
 }
 
-// ---------- OCR parsing fixes ----------
 function cleanOCRText(text) {
   // Normalize dashes and fix OCR artifact where '%' is read as '96' after a '-'
   let s = String(text || "").replace(/\r\n/g, "\n");
@@ -355,7 +352,6 @@ function parseLabs(text) {
   const src = cleanOCRText(text);
   const lines = src.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
   const items = [];
-  // Name may include " - % " or " - бр." suffixes. Value can be 1.23 or 4,04. Optional unit. Optional "min - max" at end with optional % signs.
   const rowRe = /^([A-Za-zА-Яа-я0-9\.\(\)\/\-\s%]+?)\s+([\-+]?\d+(?:[\.,]\d+)?)(?:\s*([A-Za-zμ%\/\.\-\^\d×GgLl]+))?(?:\s+(\d+(?:[\.,]\d+)?)(?:\s*[%-])?\s*[-–]\s*(\d+(?:[\.,]\d+)?)(?:\s*[%-])?)?$/u;
   for (const ln of lines) {
     if (/^(tests|result|flag|units|reference|comp\.|panel)/i.test(ln)) continue;
@@ -460,6 +456,7 @@ async function doOCR() {
     const meta = data?.meta || data?.ocr_meta || {};
     OCR_META = meta || {};
     applyStepMeta(1, OCR_META, true);
+    renderOCRMeta(OCR_META);
     const cleaned = cleanOCRText(text);
     OCR_TEXT_ORIG = cleaned;
     setWorkText(cleaned);
@@ -558,6 +555,7 @@ async function doConfirm() {
       const btn = $("btnConfirm");
       if (btn) { btn.setAttribute("aria-disabled","true"); dis(btn, true); }
       showStatus("Документът е записан успешно.");
+
       applyStepMeta(3, { ...meta, document_id: data?.document_id, event_id: data?.event_id }, true);
     }
   } catch {
