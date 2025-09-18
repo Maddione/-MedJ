@@ -59,7 +59,7 @@
                                         <a href="{{ doc.file.url }}" target="_blank" class="text-checkmark-green hover:underline mr-2">
                                             <i class="fa-solid fa-download"></i> {% trans "Изтегли" %}
                                         </a>
-                                        <a href="{% url 'medj:medical_event_detail' pk=doc.medical_event.id %}" class="text-button-blue hover:underline">
+                                        <a href="{% url 'medj:document_detail' pk=doc.id %}" class="text-button-blue hover:underline">
                                             <i class="fa-solid fa-eye"></i> {% trans "Преглед" %}
                                         </a>
                                     </td>

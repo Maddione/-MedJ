@@ -23,9 +23,10 @@ def event_detail(request: HttpRequest, pk: int) -> HttpResponse:
     patient = require_patient_profile(request.user)
     event = get_object_or_404(
         MedicalEvent.objects.select_related("specialty", "patient").prefetch_related(
-            "documents", "diagnoses", "treatment_plans", "narrative_sections", "medications", "tags"
+            "documents__tags", "diagnoses"
         ),
-        pk=pk, patient=patient,
+        pk=pk,
+        patient=patient,
     )
     measurements = (
         LabTestMeasurement.objects.filter(medical_event=event)

@@ -38,6 +38,7 @@ from .views.personalcard import (
     PersonalCardView,
     personalcard_share_enable_api,
     personalcard_qr,
+    public_personalcard,
 )
 from .views.settings import SettingsView
 from .views.share import share_document_page, create_download_links, qr_for_url
@@ -114,6 +115,7 @@ urlpatterns = [
     path("events/<int:pk>/", login_required(event_detail), name="medical_event_detail"),
 
     path("personalcard/", login_required(PersonalCardView.as_view()), name="personalcard"),
+    path("personalcard/share/<str:token>/", public_personalcard, name="personalcard_public"),
     path("profile/", login_required(SettingsView.as_view()), name="profile"),
     path("doctors/", login_required(doctors_list), name="doctors"),
     path("labtests/", login_required(labtests), name="labtests"),

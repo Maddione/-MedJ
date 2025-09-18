@@ -7,8 +7,9 @@
 {% trans "Собствено" as ph_first %}
 {% trans "Презиме" as ph_middle %}
 {% trans "Фамилия" as ph_last %}
-<form method="post" id="personalcard-form" class="relative max-w-7xl mx-auto space-y-6">
+<form method="post" id="personalcard-form" class="relative max-w-7xl mx-auto space-y-6" data-initial-locked="{{ profile_locked|yesno:'true,false' }}" data-editing-allowed="{{ editing_allowed|yesno:'true,false' }}">
   {% csrf_token %}
+  <input type="hidden" name="editing" id="personalcard-editing-flag" value="{% if profile_locked %}0{% else %}1{% endif %}">
 
   <div class="rounded-2xl p-5" style="background:#FFFFF5;box-shadow:0 10px 14px rgba(10,30,74,.10),inset 0 0 0 1px rgba(10,30,74,.08)">
     <div class="text-2xl font-bold text-[var(--color-primaryDark)] mb-4">{% trans "Основна информация" %}</div>
@@ -19,9 +20,9 @@
           <div class="col-span-12 md:col-span-7">
             <div class="text-xl md:text-2xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Име" %}</div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {% render_field profile_form.first_name_bg class+="h-12 rounded-xl px-4 border-0 bg-white text-[var(--color-primaryDark)] text-lg font-semibold" placeholder=ph_first %}
-              {% render_field profile_form.middle_name_bg class+="h-12 rounded-xl px-4 border-0 bg-white text-[var(--color-primaryDark)] text-lg font-semibold" placeholder=ph_middle %}
-              {% render_field profile_form.last_name_bg class+="h-12 rounded-xl px-4 border-0 bg-white text-[var(--color-primaryDark)] text-lg font-semibold" placeholder=ph_last %}
+              {% render_field profile_form.first_name_bg class+="h-12 rounded-xl px-4 border-0 bg-white text-[var(--color-primaryDark)] text-lg font-semibold" placeholder=ph_first data-lockable="1" %}
+              {% render_field profile_form.middle_name_bg class+="h-12 rounded-xl px-4 border-0 bg-white text-[var(--color-primaryDark)] text-lg font-semibold" placeholder=ph_middle data-lockable="1" %}
+              {% render_field profile_form.last_name_bg class+="h-12 rounded-xl px-4 border-0 bg-white text-[var(--color-primaryDark)] text-lg font-semibold" placeholder=ph_last data-lockable="1" %}
             </div>
           </div>
           <div class="col-span-12 md:col-span-5 grid grid-cols-2 gap-4">
@@ -30,12 +31,12 @@
               <div id="pc_age" class="h-12 flex items-center rounded-xl px-4 bg-white text-[var(--color-primaryDark)] text-lg font-semibold">—</div>
               <div class="mt-2">
                 <label class="text-sm text-[var(--color-primaryDark)] opacity-80 mb-1 block">{% trans "Дата на раждане" %}</label>
-                {% render_field profile_form.date_of_birth class+="h-11 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" type="date" %}
+                {% render_field profile_form.date_of_birth class+="h-11 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" type="date" data-lockable="1" %}
               </div>
             </div>
             <div>
               <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Пол" %}</div>
-              {% render_field profile_form.sex class+="h-12 rounded-xl px-4 border-0 bg-white text-[var(--color-primaryDark)] text-lg font-semibold" %}
+              {% render_field profile_form.sex class+="h-12 rounded-xl px-4 border-0 bg-white text-[var(--color-primaryDark)] text-lg font-semibold" data-lockable="1" %}
             </div>
           </div>
         </div>
@@ -45,25 +46,25 @@
         <div class="lg:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div class="rounded-2xl p-4" style="background:#EBEDE0">
             <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Височина" %}</div>
-            <input name="height_cm" class="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" placeholder="— см">
+            {% render_field profile_form.height_cm class+="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" placeholder="— см" data-lockable="1" %}
           </div>
           <div class="rounded-2xl p-4" style="background:#EBEDE0">
             <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Тегло" %}</div>
-            <input name="weight_kg" class="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" placeholder="— кг">
+            {% render_field profile_form.weight_kg class+="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" placeholder="— кг" data-lockable="1" %}
           </div>
           <div class="rounded-2xl p-4" style="background:#EBEDE0">
             <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Кръвна група" %}</div>
-            {% render_field profile_form.blood_type class+="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" %}
+            {% render_field profile_form.blood_type class+="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" data-lockable="1" %}
           </div>
         </div>
         <div class="lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
           <div class="rounded-2xl p-4" style="background:#EBEDE0">
             <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Телефон" %}</div>
-            {% render_field profile_form.phone class+="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" %}
+            {% render_field profile_form.phone class+="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" data-lockable="1" %}
           </div>
           <div class="rounded-2xl p-4" style="background:#EBEDE0">
             <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Адрес" %}</div>
-            {% render_field profile_form.address class+="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" %}
+            {% render_field profile_form.address class+="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" data-lockable="1" %}
           </div>
         </div>
       </div>
@@ -72,27 +73,29 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Общопрактикуващ лекар" %}</div>
-            <input name="gp_name" class="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" placeholder="—">
+            <input name="gp_name" class="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" placeholder="—" data-lockable="1">
           </div>
           <div>
             <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Телефон" %}</div>
-            <input name="gp_phone" class="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" placeholder="—">
+            <input name="gp_phone" class="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" placeholder="—" data-lockable="1">
           </div>
           <div>
             <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "Адрес" %}</div>
-            <input name="gp_address" class="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" placeholder="—">
+            <input name="gp_address" class="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" placeholder="—" data-lockable="1">
           </div>
           <div>
             <div class="text-xl font-bold text-[var(--color-primaryDark)] mb-2">{% trans "РЗОК" %}</div>
-            <input name="insurer" class="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" placeholder="—">
+            <input name="insurer" class="h-12 w-full rounded-xl px-4 bg-white border-0 text-[var(--color-primaryDark)]" placeholder="—" data-lockable="1">
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="flex justify-end">
-    <button type="submit" class="px-6 h-12 rounded-xl text-white font-semibold" style="background:#15BC11">{% trans "Запази" %}</button>
+  <div class="flex justify-end gap-3">
+    <button type="button" id="personalcard-edit-btn" class="px-6 h-12 rounded-xl text-white font-semibold {% if not profile_locked %}hidden{% endif %}" style="background:#0A4E75">{% trans "Редакция" %}</button>
+    <button type="submit" id="personalcard-save-btn" class="px-6 h-12 rounded-xl text-white font-semibold {% if profile_locked %}hidden{% endif %}" style="background:#15BC11">{% trans "Запази" %}</button>
+    <button type="button" id="personalcard-cancel-btn" class="px-6 h-12 rounded-xl text-white font-semibold {% if profile_locked %}hidden{% endif %}" style="background:#E64D3D">{% trans "Отказ" %}</button>
   </div>
 
   <button type="button" id="openShareModal" class="fixed bottom-6 right-6 h-24 w-24 rounded-full shadow-xl flex items-center justify-center" style="background:#E64D3D">
@@ -122,7 +125,11 @@
         </div>
       </div>
       <div class="flex items-center justify-center"><div id="qrCodeContainer" class="p-2 border rounded-lg bg-gray-50"></div></div>
-      <div class="flex items-center justify-end gap-3 mt-6"><button id="closeShareModal" class="px-4 py-2 rounded-lg font-semibold bg-gray-200 text-gray-800 hover:bg-gray-300">{% trans "Затвори" %}</button></div>
+      <div class="flex items-center justify-end gap-3 mt-6">
+        <button id="downloadQrButton" type="button" class="px-4 py-2 rounded-lg font-semibold text-white" style="background:#15BC11">{% trans "Сподели PNG" %}</button>
+        <button id="viewQrButton" type="button" class="px-4 py-2 rounded-lg font-semibold text-white" style="background:#0A4E75">{% trans "Генерирай QR" %}</button>
+        <button id="closeShareModal" type="button" class="px-4 py-2 rounded-lg font-semibold bg-gray-200 text-gray-800 hover:bg-gray-300">{% trans "Затвори" %}</button>
+      </div>
     </div>
   </div>
 </div>
@@ -145,9 +152,133 @@
     if(dob&&out){ out.textContent=computeAge(dob.value); }
   }
   document.addEventListener("input",function(e){ if(e.target && e.target.id==="id_date_of_birth") updateAge(); });
+  window.personalcardUpdateAge = updateAge;
   updateAge();
 })();
 document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('personalcard-form');
+  const lockableFields = form ? form.querySelectorAll('[data-lockable="1"]') : [];
+  const editBtn = document.getElementById('personalcard-edit-btn');
+  const saveBtn = document.getElementById('personalcard-save-btn');
+  const cancelBtn = document.getElementById('personalcard-cancel-btn');
+  const editingInput = document.getElementById('personalcard-editing-flag');
+  const initialLocked = form ? form.dataset.initialLocked === 'true' : false;
+  const editingAllowed = form ? form.dataset.editingAllowed === 'true' : false;
+
+  let baselineValues = new Map();
+
+  function setDisabled(disabled) {
+    lockableFields.forEach(function(el) {
+      try {
+        el.disabled = disabled;
+      } catch (err) {
+        /* no-op */
+      }
+    });
+  }
+
+  function showLockedState() {
+    setDisabled(true);
+    if (editingInput) {
+      editingInput.value = '0';
+    }
+    if (saveBtn) {
+      saveBtn.classList.add('hidden');
+    }
+    if (cancelBtn) {
+      cancelBtn.classList.add('hidden');
+    }
+    if (editBtn) {
+      if (editingAllowed) {
+        editBtn.classList.remove('hidden');
+      } else {
+        editBtn.classList.add('hidden');
+      }
+    }
+  }
+
+  function showEditingState() {
+    setDisabled(false);
+    if (editingInput) {
+      editingInput.value = '1';
+    }
+    if (editBtn) {
+      editBtn.classList.add('hidden');
+    }
+    if (saveBtn) {
+      saveBtn.classList.remove('hidden');
+    }
+    if (cancelBtn) {
+      cancelBtn.classList.remove('hidden');
+    }
+  }
+
+  function captureBaseline() {
+    baselineValues = new Map();
+    lockableFields.forEach(function(el) {
+      var key = el.name || el.id;
+      if (key) {
+        baselineValues.set(key, el.value);
+      }
+    });
+  }
+
+  function restoreBaseline() {
+    if (!form) {
+      return;
+    }
+    baselineValues.forEach(function(value, key) {
+      var target = form.querySelector('[name="' + key + '"]') || form.querySelector('#' + key);
+      if (target) {
+        target.value = value;
+      }
+    });
+    if (typeof window.personalcardUpdateAge === 'function') {
+      window.personalcardUpdateAge();
+    }
+  }
+
+  if (form) {
+    if (initialLocked) {
+      showLockedState();
+    } else {
+      showEditingState();
+      captureBaseline();
+    }
+
+    form.addEventListener('submit', function() {
+      lockableFields.forEach(function(el) {
+        try {
+          el.disabled = false;
+        } catch (err) {
+          /* no-op */
+        }
+      });
+    });
+  }
+
+  if (editBtn) {
+    editBtn.addEventListener('click', function() {
+      if (!form || !editingAllowed) {
+        return;
+      }
+      captureBaseline();
+      showEditingState();
+    });
+  }
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', function() {
+      restoreBaseline();
+      if (editingAllowed) {
+        showLockedState();
+      } else {
+        showEditingState();
+        captureBaseline();
+      }
+    });
+  }
+
   const openBtn = document.getElementById('openShareModal');
   const closeBtn = document.getElementById('closeShareModal');
   const modal = document.getElementById('shareModal');
@@ -157,24 +288,179 @@ document.addEventListener('DOMContentLoaded', function() {
   const loader = document.getElementById('shareLoader');
   const errorEl = document.getElementById('shareError');
   const shareDetails = document.getElementById('shareDetails');
-  function getCSRFToken(){const el=document.querySelector('input[name="csrfmiddlewaretoken"]');return el?el.value:"";}
-  async function openShareModal(){
-    if(!modal) return;
-    modal.classList.remove('hidden'); modal.classList.add('flex');
-    shareDetails.classList.add('hidden'); errorEl.classList.add('hidden'); loader.classList.remove('hidden');
-    try{
-      const res=await fetch("{% url 'medj:personalcard_share_enable_api' %}",{method:'POST',headers:{'X-CSRFToken':getCSRFToken(),'X-Requested-With':'XMLHttpRequest','Content-Type':'application/json'},body:JSON.stringify({enable:true})});
-      if(!res.ok) throw new Error();
-      const data=await res.json();
-      if(data.url && data.qr_code_svg){ linkEl.value=data.url; qrContainer.innerHTML=data.qr_code_svg; shareDetails.classList.remove('hidden'); } else { throw new Error(); }
-    }catch(e){ errorEl.textContent="{% trans 'Възникна грешка при генерирането на линк. Моля, опитайте отново.' %}"; errorEl.classList.remove('hidden'); }
-    finally{ loader.classList.add('hidden'); }
+  const viewQrBtn = document.getElementById('viewQrButton');
+  const downloadQrBtn = document.getElementById('downloadQrButton');
+  const genericError = "{% trans 'Възникна грешка при генерирането на линк. Моля, опитайте отново.' %}";
+  const missingQrError = "{% trans 'Няма наличен QR код. Моля, опитайте отново.' %}";
+
+  let latestQrUrl = '';
+  let latestShareUrl = '';
+
+  function getCSRFToken() {
+    const el = document.querySelector('input[name="csrfmiddlewaretoken"]');
+    return el ? el.value : '';
   }
-  function closeShareModal(){ if(modal){ modal.classList.add('hidden'); modal.classList.remove('flex'); } }
-  if(openBtn) openBtn.addEventListener('click', openShareModal);
-  if(closeBtn) closeBtn.addEventListener('click', closeShareModal);
-  if(modal) modal.addEventListener('click', e => { if(e.target===modal) closeShareModal(); });
-  if(copyBtn && linkEl){ copyBtn.addEventListener('click', function(){ linkEl.select(); document.execCommand('copy'); copyBtn.textContent="{% trans 'Копирано!' %}"; setTimeout(()=>copyBtn.textContent="{% trans 'Копирай' %}",2000); }); }
+
+  function resetShareError() {
+    if (errorEl) {
+      errorEl.classList.add('hidden');
+      errorEl.textContent = '';
+    }
+  }
+
+  function showShareError(message) {
+    if (errorEl) {
+      errorEl.textContent = message;
+      errorEl.classList.remove('hidden');
+    }
+  }
+
+  async function openShareModal() {
+    if (!modal) {
+      return;
+    }
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    resetShareError();
+    if (shareDetails) {
+      shareDetails.classList.add('hidden');
+    }
+    if (loader) {
+      loader.classList.remove('hidden');
+    }
+    latestQrUrl = '';
+    latestShareUrl = '';
+    if (qrContainer) {
+      qrContainer.innerHTML = '';
+    }
+    if (viewQrBtn) {
+      viewQrBtn.disabled = true;
+    }
+    if (downloadQrBtn) {
+      downloadQrBtn.disabled = true;
+    }
+    try {
+      const res = await fetch("{% url 'medj:personalcard_share_enable_api' %}", {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': getCSRFToken(),
+          'X-Requested-With': 'XMLHttpRequest',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ enable: true })
+      });
+      if (!res.ok) {
+        throw new Error('bad response');
+      }
+      const data = await res.json();
+      if (data.share_url && data.qr_png_url) {
+        latestQrUrl = data.qr_png_url;
+        latestShareUrl = data.share_url;
+        if (linkEl) {
+          linkEl.value = latestShareUrl;
+        }
+        if (qrContainer) {
+          const img = document.createElement('img');
+          img.src = data.qr_png_url + '?v=' + Date.now();
+          img.alt = "{% trans 'QR код за личната карта' %}";
+          img.className = 'rounded-lg shadow-md';
+          img.style.maxWidth = '18rem';
+          img.style.maxHeight = '18rem';
+          qrContainer.appendChild(img);
+        }
+        if (shareDetails) {
+          shareDetails.classList.remove('hidden');
+        }
+        if (viewQrBtn) {
+          viewQrBtn.disabled = false;
+        }
+        if (downloadQrBtn) {
+          downloadQrBtn.disabled = false;
+        }
+      } else {
+        throw new Error('invalid payload');
+      }
+    } catch (e) {
+      showShareError(genericError);
+    } finally {
+      if (loader) {
+        loader.classList.add('hidden');
+      }
+    }
+  }
+
+  function closeShareModal() {
+    if (!modal) {
+      return;
+    }
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+
+  if (openBtn) {
+    openBtn.addEventListener('click', openShareModal);
+  }
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function() {
+      closeShareModal();
+      resetShareError();
+    });
+  }
+  if (modal) {
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        closeShareModal();
+        resetShareError();
+      }
+    });
+  }
+
+  if (copyBtn && linkEl) {
+    copyBtn.addEventListener('click', function() {
+      linkEl.select();
+      document.execCommand('copy');
+      copyBtn.textContent = "{% trans 'Копирано!' %}";
+      setTimeout(function() {
+        copyBtn.textContent = "{% trans 'Копирай' %}";
+      }, 2000);
+    });
+  }
+
+  if (viewQrBtn) {
+    viewQrBtn.addEventListener('click', function() {
+      if (!latestQrUrl) {
+        showShareError(missingQrError);
+        return;
+      }
+      window.open(latestQrUrl, '_blank');
+    });
+  }
+
+  if (downloadQrBtn) {
+    downloadQrBtn.addEventListener('click', async function() {
+      if (!latestQrUrl) {
+        showShareError(missingQrError);
+        return;
+      }
+      try {
+        const res = await fetch(latestQrUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        if (!res.ok) {
+          throw new Error('download failed');
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'personal_card.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        showShareError(genericError);
+      }
+    });
+  }
 });
 </script>
 {% endblock %}
