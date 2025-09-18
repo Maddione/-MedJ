@@ -3,6 +3,7 @@
 @theme {
   --color-sitebg: #EAEBDA;
   --color-blockbg: #FDFEE9;
+  --color-blockalt: #FFFFF5;
   --color-primary: #43B8CF;
   --color-primaryDark: #0A4E75;
   --color-success: #15BC11;
@@ -10,6 +11,7 @@
 }
 .bg-sitebg{background:var(--color-sitebg)}
 .bg-blockbg{background:var(--color-blockbg)}
+.bg-blockalt{background:var(--color-blockalt)}
 .bg-primary{background:var(--color-primary)}
 .bg-primaryDark{background:var(--color-primaryDark)}
 .bg-success{background:var(--color-success)}
