@@ -91,7 +91,7 @@ class ShareExportTests(TestCase):
         documents = data.get("documents", [])
         doc_ids = {doc.get("id") for doc in documents}
         self.assertIn(ids["document_id"], doc_ids)
-        self.assertTrue(all(doc.get("export_pdf_url") for doc in documents))
+        self.assertTrue(all(doc.get("export_pdf_url") for doc in documents)
 
         payload["filters"]["event"] = []
         res2 = self.client.post(url, data=json.dumps(payload), content_type="application/json")
