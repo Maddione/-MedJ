@@ -87,7 +87,11 @@ class UploadFlowTests(TestCase):
         self.assertTrue(data.get("ok"))
         self.assertTrue(MedicalEvent.objects.filter(id=data["event_id"]).exists())
         self.assertTrue(Document.objects.filter(id=data["document_id"]).exists())
-        self.assertTrue(LabTestMeasurement.objects.filter(medical_event_id=data["event_id"]).exists())
+        qs = LabTestMeasurement.objects.filter(medical_event_id=data["event_id"])
+        self.assertTrue(qs.exists())
+        measurement = qs.first()
+        self.assertAlmostEqual(measurement.value, 120.0)
+        self.assertEqual(measurement.measured_at.date().isoformat(), "2025-09-01")
 
     def test_events_suggest(self):
         ev = MedicalEvent.objects.create(patient=self.user.patientprofile, owner=self.user, category=self.cat, specialty=self.spc, doc_type=self.dtype, event_date="2025-09-01")

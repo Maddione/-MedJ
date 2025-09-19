@@ -3,6 +3,8 @@ from django.http import JsonResponse, HttpResponseBadRequest
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.urls import reverse
+from django.core.files.base import ContentFile
+from django.utils.text import slugify
 from records.models import (
     DocumentType,
     MedicalSpecialty,
@@ -11,6 +13,7 @@ from records.models import (
     Document,
     PatientProfile,
     LabIndicator,
+    LabTestMeasurement,
 )
 from records.utils.analysis import (
     compose_analysis_text,
@@ -20,11 +23,13 @@ from records.utils.analysis import (
     word_count,
 )
 
+import base64
+import binascii
 import logging
 from decimal import Decimal
 import math
 import os, requests, json, re, time, hashlib, unicodedata
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.utils import timezone
 from django.db import IntegrityError
 
@@ -197,6 +202,184 @@ def _format_number(value):
             return str(int(value))
         return f"{float(value):.2f}".rstrip("0").rstrip(".")
     return str(value)
+
+
+def _json_load(raw):
+    if isinstance(raw, (dict, list)):
+        return raw
+    if raw in (None, ""):
+        return {}
+    if isinstance(raw, (bytes, bytearray)):
+        try:
+            raw = raw.decode("utf-8")
+        except Exception:
+            raw = str(raw)
+    try:
+        return json.loads(raw)
+    except Exception:
+        return {}
+
+
+def _decode_base64_file(payload):
+    file_b64 = (payload.get("file_b64") or "").strip()
+    if not file_b64:
+        return None, None, "missing_file"
+    try:
+        file_bytes = base64.b64decode(file_b64)
+    except (binascii.Error, ValueError):
+        return None, None, "invalid_file"
+    name = payload.get("file_name") or "document.bin"
+    file_obj = ContentFile(file_bytes, name=name)
+    mime = (payload.get("file_mime") or "").strip()
+    if mime:
+        file_obj.content_type = mime
+    kind = (payload.get("file_kind") or "").strip().lower()
+    return file_obj, (kind or None), None
+
+
+def _lab_slug(row):
+    slug = (row.get("indicator_slug") or "").strip().lower()
+    if slug:
+        return slug
+    name = row.get("indicator_name") or row.get("name") or ""
+    name = str(name).strip()
+    if not name:
+        return ""
+    return slugify(name)
+
+
+def _parse_measured_at(value, fallback_dt):
+    if not value:
+        return fallback_dt
+    if isinstance(value, datetime):
+        dt = value
+    else:
+        try:
+            dt = datetime.fromisoformat(str(value))
+        except Exception:
+            return fallback_dt
+    if timezone.is_naive(dt):
+        try:
+            dt = timezone.make_aware(dt, timezone.get_current_timezone())
+        except Exception:
+            dt = timezone.make_aware(dt)
+    return dt
+
+
+def _event_fallback_dt(event_date):
+    if not event_date:
+        return timezone.now()
+    try:
+        dt = datetime.combine(event_date, datetime.min.time()) + timedelta(hours=12)
+    except Exception:
+        return timezone.now()
+    if timezone.is_naive(dt):
+        try:
+            dt = timezone.make_aware(dt, timezone.get_current_timezone())
+        except Exception:
+            dt = timezone.make_aware(dt)
+    return dt
+
+
+def _lab_rows_from_payload(raw_rows):
+    rows = []
+    for item in raw_rows or []:
+        if not isinstance(item, dict):
+            continue
+        rows.append(item)
+    return rows
+
+
+def _normalize_ref_range(row):
+    low = row.get("ref_low")
+    high = row.get("ref_high")
+    if low in (None, ""):
+        low = row.get("reference_low")
+    if high in (None, ""):
+        high = row.get("reference_high")
+    low_val = _parse_float(low)
+    high_val = _parse_float(high)
+    if (low_val is None or high_val is None) and row.get("reference_range"):
+        rng = str(row.get("reference_range")).replace(",", ".")
+        if "-" in rng:
+            parts = [chunk.strip() for chunk in rng.split("-") if chunk.strip()]
+            if len(parts) >= 1 and low_val is None:
+                low_val = _parse_float(parts[0])
+            if len(parts) >= 2 and high_val is None:
+                high_val = _parse_float(parts[1])
+    return low_val, high_val
+
+
+def _persist_lab_measurements(event, all_rows, fallback_dt):
+    if event is None:
+        return 0
+    rows = []
+    for row in all_rows:
+        if not isinstance(row, dict):
+            continue
+        slug = _lab_slug(row)
+        if not slug:
+            continue
+        value = _parse_float(row.get("value"))
+        if value is None:
+            continue
+        measured_at = _parse_measured_at(row.get("measured_at"), fallback_dt)
+        indicator = LabIndicator.objects.filter(slug=slug).first()
+        name = row.get("indicator_name") or row.get("name") or slug
+        unit = (row.get("unit") or row.get("units") or "").strip()
+        ref_low, ref_high = _normalize_ref_range(row)
+        if indicator is None:
+            indicator = LabIndicator(slug=slug, unit=unit or None, reference_low=ref_low, reference_high=ref_high)
+            try:
+                indicator.set_current_language("bg")
+                indicator.name = name or slug
+            except Exception:
+                pass
+            indicator.save()
+        else:
+            update_fields = []
+            if unit and not indicator.unit:
+                indicator.unit = unit
+                update_fields.append("unit")
+            if ref_low is not None and indicator.reference_low is None:
+                indicator.reference_low = ref_low
+                update_fields.append("reference_low")
+            if ref_high is not None and indicator.reference_high is None:
+                indicator.reference_high = ref_high
+                update_fields.append("reference_high")
+            if update_fields:
+                indicator.save(update_fields=list(set(update_fields)))
+        rows.append({
+            "indicator": indicator,
+            "value": value,
+            "measured_at": measured_at,
+            "slug": slug,
+        })
+    if not rows:
+        return 0
+    slugs = {row["slug"] for row in rows}
+    existing = set(
+        LabTestMeasurement.objects.filter(medical_event=event, indicator__slug__in=slugs)
+        .values_list("indicator__slug", "measured_at")
+    )
+    objs = []
+    for row in rows:
+        key = (row["slug"], row["measured_at"])
+        if key in existing:
+            continue
+        objs.append(
+            LabTestMeasurement(
+                medical_event=event,
+                indicator=row["indicator"],
+                value=row["value"],
+                measured_at=row["measured_at"],
+            )
+        )
+        existing.add(key)
+    if not objs:
+        return 0
+    LabTestMeasurement.objects.bulk_create(objs)
+    return len(objs)
 
 
 def _split_range(text):
@@ -818,23 +1001,47 @@ def upload_analyze(request):
 @login_required
 @require_http_methods(["POST"])
 def upload_confirm(request):
-    upload_file = request.FILES.get("file")
-    if not upload_file:
-        return HttpResponseBadRequest("Missing file")
+    is_json = bool(request.content_type and "application/json" in request.content_type)
+    payload: dict[str, object] = {}
+    file_kind_override = None
+    if is_json:
+        try:
+            payload = json.loads(request.body or "{}")
+        except Exception:
+            return HttpResponseBadRequest("invalid_json")
+        upload_file, file_kind_override, error = _decode_base64_file(payload)
+        if upload_file is None:
+            return HttpResponseBadRequest(error or "invalid_file")
+        data_source = payload
+    else:
+        upload_file = request.FILES.get("file")
+        if not upload_file:
+            return HttpResponseBadRequest("Missing file")
+        data_source = request.POST
 
-    def _obj_or_400(model, key):
-        value = request.POST.get(key) or request.POST.get(key.replace("_id", ""), "")
-        if not value or not str(value).isdigit():
+    def _data_get(key, default=""):
+        if isinstance(data_source, dict):
+            return data_source.get(key, default)
+        return data_source.get(key, default)
+
+    def _obj_or_none(model, key):
+        raw = _data_get(key)
+        if raw in (None, ""):
+            raw = _data_get(key.replace("_id", ""))
+        if raw in (None, ""):
             return None
-        return model.objects.filter(id=int(value)).first()
+        try:
+            ident = int(raw)
+        except (TypeError, ValueError):
+            return None
+        return model.objects.filter(id=ident).first()
 
-    category = _obj_or_400(MedicalCategory, "category_id")
-    specialty = _obj_or_400(MedicalSpecialty, "specialty_id")
-    doc_type = _obj_or_400(DocumentType, "doc_type_id")
+    category = _obj_or_none(MedicalCategory, "category_id")
+    specialty = _obj_or_none(MedicalSpecialty, "specialty_id")
+    doc_type = _obj_or_none(DocumentType, "doc_type_id")
     if not (category and specialty and doc_type):
         return HttpResponseBadRequest("Missing classification")
 
-    file_kind = (request.POST.get("file_kind") or "").strip().lower()
     valid_kinds = {"image", "pdf", "other"}
 
     def _guess_file_kind(f):
@@ -850,55 +1057,64 @@ def upload_confirm(request):
             return "pdf"
         return "other"
 
+    raw_kind = _data_get("file_kind") or ""
+    file_kind = file_kind_override or str(raw_kind).strip().lower()
     if file_kind not in valid_kinds:
         file_kind = _guess_file_kind(upload_file)
 
     event = None
-    event_id = request.POST.get("event_id") or ""
-    if event_id and str(event_id).isdigit():
-        event = MedicalEvent.objects.filter(id=int(event_id), owner=request.user).first()
-
-    ocr_text = request.POST.get("ocr_text") or ""
-    ocr_meta_raw = request.POST.get("ocr_meta") or ""
-    analysis_raw = request.POST.get("analysis") or ""
-    analysis_meta_raw = request.POST.get("analysis_meta") or ""
-    summary = (request.POST.get("summary") or "").strip()
-    document_date = _parse_date(request.POST.get("document_date"))
-
-    def _json_load(raw):
-        if not raw:
-            return {}
+    event_id_raw = _data_get("event_id")
+    if event_id_raw not in (None, ""):
         try:
-            return json.loads(raw)
-        except Exception:
-            return {}
+            event_id = int(event_id_raw)
+        except (TypeError, ValueError):
+            event = None
+        else:
+            event = MedicalEvent.objects.filter(id=event_id, owner=request.user).first()
+
+    ocr_text = (
+        (_data_get("ocr_text") or "")
+        or (_data_get("text") or "")
+        or (_data_get("final_text") or "")
+    )
+    ocr_meta_raw = _data_get("ocr_meta") or {}
+    analysis_raw = _data_get("analysis") or {}
+    analysis_meta_raw = _data_get("analysis_meta") or {}
+    summary_input = (_data_get("summary") or _data_get("final_summary") or "").strip()
+    document_date = _parse_date(_data_get("document_date"))
 
     ocr_meta = _json_load(ocr_meta_raw)
     if not isinstance(ocr_meta, dict):
         ocr_meta = {}
-    analysis_payload = normalize_analysis_payload(_json_load(analysis_raw))
-    analysis_meta = _json_load(analysis_meta_raw)
-    if not isinstance(analysis_meta, dict):
-        analysis_meta = {}
-    if analysis_meta:
-        analysis_payload.setdefault("meta", analysis_meta)
-    if summary:
-        analysis_payload["summary"] = summary
-        if isinstance(analysis_payload.get("data"), dict):
-            analysis_payload["data"]["summary"] = summary
 
-    final_summary = (analysis_payload.get("summary") or summary or "").strip()
+    analysis_payload = normalize_analysis_payload(_json_load(analysis_raw))
+    if not isinstance(analysis_payload, dict):
+        analysis_payload = {}
+    analysis_meta = _json_load(analysis_meta_raw)
+    if isinstance(analysis_meta, dict) and analysis_meta:
+        analysis_payload.setdefault("meta", analysis_meta)
+
+    if summary_input:
+        analysis_payload["summary"] = summary_input
+        if isinstance(analysis_payload.get("data"), dict):
+            analysis_payload["data"]["summary"] = summary_input
+
+    final_summary = (analysis_payload.get("summary") or summary_input or "").strip()
     if final_summary:
         analysis_payload["summary"] = final_summary
+
     summary_word_count = word_count(final_summary)
     analysis_payload["summary_word_count"] = summary_word_count
     analysis_html = render_analysis_tables(analysis_payload)
     analysis_text_compiled = compose_analysis_text(analysis_payload, final_summary)
 
+    data_section = analysis_payload.get("data") if isinstance(analysis_payload, dict) else {}
+    if not isinstance(data_section, dict):
+        data_section = {}
     event_date = (
-        _parse_date(request.POST.get("event_date"))
+        _parse_date(_data_get("event_date"))
         or _parse_date(analysis_payload.get("event_date"))
-        or _parse_date((analysis_payload.get("data") or {}).get("event_date"))
+        or _parse_date(data_section.get("event_date"))
         or timezone.now().date()
     )
 
@@ -906,9 +1122,9 @@ def upload_confirm(request):
         document_date = event_date
 
     creation_date = (
-        _parse_date(request.POST.get("date_created"))
+        _parse_date(_data_get("date_created"))
         or _parse_date(analysis_payload.get("date_created"))
-        or _parse_date((analysis_payload.get("data") or {}).get("date_created"))
+        or _parse_date(data_section.get("date_created"))
     )
 
     hasher = hashlib.sha256()
@@ -916,8 +1132,8 @@ def upload_confirm(request):
         for chunk in upload_file.chunks():
             hasher.update(chunk)
     except Exception:
-        data = upload_file.read()
-        hasher.update(data)
+        data_bytes = upload_file.read()
+        hasher.update(data_bytes)
     digest = hasher.hexdigest()
     try:
         upload_file.seek(0)
@@ -952,7 +1168,7 @@ def upload_confirm(request):
     patient, _ = PatientProfile.objects.get_or_create(user=request.user)
 
     if not event:
-        event_summary = summary[:255] if summary else (_safe_name(doc_type) or "Документ")
+        event_summary = final_summary[:255] if final_summary else (_safe_name(doc_type) or "Документ")
         event = MedicalEvent.objects.create(
             patient=patient,
             owner=request.user,
@@ -988,7 +1204,8 @@ def upload_confirm(request):
         content_hash=digest,
         sha256=digest,
     )
-    doc.file.save(upload_file.name, upload_file, save=False)
+    file_name = getattr(upload_file, "name", "") or "document.bin"
+    doc.file.save(file_name, upload_file, save=False)
     try:
         doc.save()
     except IntegrityError:
@@ -1013,6 +1230,17 @@ def upload_confirm(request):
         doc.date_created = doc.uploaded_at.date()
         doc.save(update_fields=["date_created"])
 
+    lab_rows = []
+    raw_labs = _data_get("blood_test_results")
+    if raw_labs:
+        lab_rows.extend(_lab_rows_from_payload(_json_load(raw_labs)))
+    if isinstance(analysis_payload.get("blood_test_results"), list):
+        lab_rows.extend(_lab_rows_from_payload(analysis_payload.get("blood_test_results")))
+    if isinstance(data_section.get("blood_test_results"), list):
+        lab_rows.extend(_lab_rows_from_payload(data_section.get("blood_test_results")))
+    fallback_dt = _event_fallback_dt(event.event_date if event else None)
+    labs_created = _persist_lab_measurements(event, lab_rows, fallback_dt)
+
     detail_bits = [f"Документ №{doc.id}"]
     if event:
         detail_bits.append(f"Събитие №{event.id}")
@@ -1024,6 +1252,8 @@ def upload_confirm(request):
     }
     if event:
         meta["event_id"] = event.id
+    if labs_created:
+        meta["labs_saved"] = labs_created
 
     return JsonResponse(
         {
