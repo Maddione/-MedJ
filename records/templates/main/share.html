@@ -31,13 +31,67 @@
           <input type="number" min="1" max="8760" name="hours_csv" value="24" class="w-full rounded-lg p-2 border border-gray-300 bg-white text-[#0A4E75]">
         </div>
       </div>
+      {% if specialty_options or category_options %}
+      <div class="grid sm:grid-cols-2 gap-4">
+        {% if specialty_options %}
+        <div>
+          <span class="block text-sm font-semibold mb-2" style="color:#0A4E75">{% trans "Специалности" %}</span>
+          <div class="flex flex-wrap gap-2">
+            {% for item in specialty_options %}
+            <label class="inline-flex items-center gap-2 bg-white border border-gray-200 px-3 py-1 rounded-full text-sm text-[#0A4E75]">
+              <input type="checkbox" name="specialty" value="{{ item.id }}" class="rounded border-gray-300 text-[#0A4E75] focus:ring-[#0A4E75]">
+              <span>{{ item.name }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+        {% if category_options %}
+        <div>
+          <span class="block text-sm font-semibold mb-2" style="color:#0A4E75">{% trans "Категории" %}</span>
+          <div class="flex flex-wrap gap-2">
+            {% for item in category_options %}
+            <label class="inline-flex items-center gap-2 bg-white border border-gray-200 px-3 py-1 rounded-full text-sm text-[#0A4E75]">
+              <input type="checkbox" name="category" value="{{ item.id }}" class="rounded border-gray-300 text-[#0A4E75] focus:ring-[#0A4E75]">
+              <span>{{ item.name }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+      {% if event_options %}
+      <div>
+        <label class="block text-sm font-semibold mb-1" style="color:#0A4E75">{% trans "Събития" %}</label>
+        <select name="event" multiple size="5" class="w-full rounded-lg border border-gray-300 bg-white text-[#0A4E75] p-2">
+          {% for item in event_options %}
+          <option value="{{ item.id }}">{{ item.label }}</option>
+          {% endfor %}
+        </select>
+        <p class="text-xs text-gray-500 mt-1">{% trans "Изберете едно или повече събития (задръжте Ctrl/Command за множество)." %}</p>
+      </div>
+      {% endif %}
+      {% if indicator_options %}
+      <div>
+        <span class="block text-sm font-semibold mb-2" style="color:#0A4E75">{% trans "Лабораторни показатели" %}</span>
+        <div class="flex flex-wrap gap-2">
+          {% for item in indicator_options %}
+          <label class="inline-flex items-center gap-2 bg-white border border-gray-200 px-3 py-1 rounded-full text-sm text-[#0A4E75]">
+            <input type="checkbox" name="indicator" value="{{ item.slug }}" class="rounded border-gray-300 text-[#0A4E75] focus:ring-[#0A4E75]">
+            <span>{{ item.name }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
       <div class="flex items-center gap-6 mt-2">
-        <label class="inline-flex items-center gap-2"><input id="generate-events" type="checkbox" class="w-4 h-4"><span>{% trans "PDF събития" %}</span></label>
-        <label class="inline-flex items-center gap-2"><input id="generate-labs" type="checkbox" class="w-4 h-4"><span>{% trans "PDF лаборатории" %}</span></label>
-        <label class="inline-flex items-center gap-2"><input id="generate-csv" type="checkbox" class="w-4 h-4"><span>CSV</span></label>
+        <label class="inline-flex items-center gap-2"><input id="generate-events" name="generate_events" type="checkbox" class="w-4 h-4" value="1" checked><span>{% trans "PDF събития" %}</span></label>
+        <label class="inline-flex items-center gap-2"><input id="generate-labs" name="generate_labs" type="checkbox" class="w-4 h-4" value="1" checked><span>{% trans "PDF лаборатории" %}</span></label>
+        <label class="inline-flex items-center gap-2"><input id="generate-csv" name="generate_csv" type="checkbox" class="w-4 h-4" value="1" checked><span>CSV</span></label>
       </div>
       <div class="mt-4">
-        <button type="button" id="gen-links" class="px-4 py-2 rounded-xl bg-primary text-blockalt opacity-50 cursor-not-allowed" aria-disabled="true">{% trans "Приложи филтри" %}</button>
+        <button type="button" id="gen-links" class="px-4 py-2 rounded-xl bg-primary text-blockalt">{% trans "Приложи филтри" %}</button>
       </div>
     </form>
   </section>
@@ -74,5 +128,5 @@
 {% block scripts_extra %}
 {% load static %}
 {{ block.super }}
-<script src="{% static 'js/share_logic.js' %}?v=2"></script>
+<script src="{% static 'js/share_logic.js' %}?v=3"></script>
 {% endblock %}

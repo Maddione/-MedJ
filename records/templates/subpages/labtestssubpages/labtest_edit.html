@@ -1,64 +1,43 @@
 {% extends 'basetemplates/base_app.html' %}
-{% load static %}
 {% load i18n %}
 
 {% block app_content %}
-    {% block scripts %}
-        <script src="{% static 'js/labtest_edit_logic.js' %}"></script>
-    {% endblock %}
 <main class="bg-site-background min-h-screen p-4 md:p-8">
-    <div class="container mx-auto max-w-7xl">
-        <div class="bg-block-background p-6 rounded-3xl shadow-lg mb-8">
-            <h1 class="text-3xl font-bold text-gray-800">
-                {% trans "Редакция на кръвни показатели" %}
-            </h1>
-            <p class="mt-2 text-gray-600">
-                {% trans "Преглед и редактиране на стойностите на лабораторните показатели." %}
-            </p>
-        </div>
-
-        <div class="bg-block-background p-6 rounded-3xl shadow-lg">
-            <div class="bg-navbar-button-blue text-white p-4 rounded-t-3xl -mx-6 -mt-6 mb-4 flex justify-between items-center">
-                <h2 class="text-xl font-semibold">{% trans "Стойности на показателите" %}</h2>
-                <button class="px-6 py-3 bg-checkmark-green text-white font-bold rounded-lg shadow-md hover:bg-green-700 transition-colors">
-                    {% trans "ЗАПИШИ" %}
-                </button>
-            </div>
-
-            <div class="overflow-x-auto">
-                <div class="grid grid-cols-[auto_repeat(6,minmax(120px,1fr))] gap-1 min-w-max text-gray-700">
-                    <div class="bg-button-blue text-white py-2 px-3 rounded-tl-lg font-semibold"></div>
-                    {% for i in "xxxxxx" %}
-                        <div class="bg-button-blue text-white py-2 px-3 text-center font-semibold">1{{ i }}.06.2025</div>
-                    {% endfor %}
-
-                    <div class="bg-navbar-button-blue text-white py-2 px-3 font-semibold flex items-center justify-between">TSH</div>
-                    {% for i in "xxxxxx" %}
-                        <input type="text" class="bg-creamy-main-content border border-gray-300 p-2 text-center rounded-sm" value="1.12" />
-                    {% endfor %}
-
-                    <div class="bg-navbar-button-blue text-white py-2 px-3 font-semibold flex items-center justify-between">T4</div>
-                    {% for i in "xxxxxx" %}
-                        <input type="text" class="bg-creamy-main-content border border-gray-300 p-2 text-center rounded-sm" value="15.2" />
-                    {% endfor %}
-
-                    <div class="bg-navbar-button-blue text-white py-2 px-3 font-semibold flex items-center justify-between">{% trans "Хемоглобин" %}</div>
-                    {% for i in "xxxxxx" %}
-                        <input type="text" class="bg-creamy-main-content border border-gray-300 p-2 text-center rounded-sm" value="142" />
-                    {% endfor %}
-
-                    <div class="bg-navbar-button-blue text-white py-2 px-3 font-semibold flex items-center justify-between">{% trans "Триглицериди" %}</div>
-                    {% for i in "xxxxxx" %}
-                        <input type="text" class="bg-creamy-main-content border border-gray-300 p-2 text-center rounded-sm" value="1.78" />
-                    {% endfor %}
-
-                    <div class="bg-navbar-button-blue text-white py-2 px-3 font-semibold flex items-center justify-between">WBC</div>
-                    {% for i in "xxxxxx" %}
-                        <input type="text" class="bg-creamy-main-content border border-gray-300 p-2 text-center rounded-sm" value="6.6" />
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
+  <div class="container mx-auto max-w-3xl space-y-6">
+    <div class="bg-block-background p-6 rounded-3xl shadow-lg">
+      <h1 class="text-3xl font-bold text-gray-800">{% trans "Добавяне на лабораторен резултат" %}</h1>
+      <p class="mt-2 text-gray-600 text-sm">
+        {% blocktrans with event_id=event.id %}Записът ще бъде добавен към събитие №{{ event_id }}.{% endblocktrans %}
+      </p>
     </div>
+
+    <div class="bg-block-background p-6 rounded-3xl shadow-lg">
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for field in form %}
+          <div>
+            <label class="block text-sm font-semibold text-gray-700" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field.as_widget(attrs={"class": "mt-1 w-full rounded-lg border-gray-300 focus:ring-emerald-500 focus:border-emerald-500"}) }}
+            {% if field.help_text %}
+              <p class="mt-1 text-xs text-gray-500">{{ field.help_text }}</p>
+            {% endif %}
+            {% for error in field.errors %}
+              <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+            {% endfor %}
+          </div>
+        {% endfor %}
+
+        <div class="flex items-center justify-between gap-3">
+          <a href="{% url 'medj:labtests_view' event.id %}" class="px-4 py-2 rounded-xl border border-gray-300 text-sm text-gray-700 hover:bg-gray-50">
+            {% trans "Назад" %}
+          </a>
+          <button type="submit" class="px-6 py-2 rounded-xl bg-emerald-600 text-white font-semibold shadow hover:bg-emerald-700 transition">
+            {% trans "Запази" %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </main>
 {% endblock %}

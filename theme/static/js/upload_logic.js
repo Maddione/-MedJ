@@ -57,6 +57,26 @@ function normalizeNameKey(name) {
     .trim();
 }
 
+function slugifyIndicatorName(name) {
+  const key = normalizeNameKey(name);
+  if (!key) return "";
+  return key
+    .replace(/[^a-z0-9а-я%]+/giu, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function defaultMeasuredAt() {
+  const eventDate = (ANALYSIS?.data?.event_date || ANALYSIS?.event_date || "").toString().trim();
+  if (eventDate) {
+    if (eventDate.includes("T")) return eventDate;
+    return `${eventDate}T12:00:00`;
+  }
+  const now = new Date();
+  now.setHours(12, 0, 0, 0);
+  return now.toISOString();
+}
+
 function safeNumber(value) {
   if (value === null || value === undefined || value === "") return null;
   const num = Number(value);
@@ -542,7 +562,7 @@ function parseLabs(text) {
 
 function normalizeRows(rows) {
   const out = [];
-  (rows || []).forEach(r => {
+  (rows || []).forEach((r) => {
     const name = (r.indicator_name || r.name || "").toString().trim();
     const canon = canonicalizeIndicatorName(name);
     const unitRaw = (r.unit || "").toString().trim() || null;
@@ -550,7 +570,8 @@ function normalizeRows(rows) {
     let value = typeof v === "number" ? v : parseFloat(String(v || "").replace(",", "."));
     if (Number.isNaN(value)) value = String(v || "").trim();
     const ref = (r.reference_range || "").toString().trim();
-    let rl = r.reference_low, rh = r.reference_high;
+    let rl = r.reference_low;
+    let rh = r.reference_high;
     if (typeof rl === "string") {
       const num = parseFloat(rl.replace(",", "."));
       if (!Number.isNaN(num)) rl = num;
@@ -560,7 +581,7 @@ function normalizeRows(rows) {
       if (!Number.isNaN(num)) rh = num;
     }
     if ((rl == null || rh == null) && ref && ref.includes("-")) {
-      const [a, b] = ref.split("-").map(s => s.trim().replace(",", "."));
+      const [a, b] = ref.split("-").map((s) => s.trim().replace(",", "."));
       rl = rl ?? (isNaN(parseFloat(a)) ? null : parseFloat(a));
       rh = rh ?? (isNaN(parseFloat(b)) ? null : parseFloat(b));
     }
@@ -574,7 +595,18 @@ function normalizeRows(rows) {
       const highTxt = rh != null ? formatNumber(rh) : "—";
       reference = `${lowTxt}-${highTxt}`;
     }
-    out.push({ name: finalName, value, unit, ref_low: rl ?? null, ref_high: rh ?? null, reference_range: reference });
+    const measuredRaw = (r.measured_at || r.measuredAt || "").toString().trim();
+    const measuredAt = measuredRaw || defaultMeasuredAt();
+    out.push({
+      name: finalName,
+      slug: slugifyIndicatorName(finalName),
+      value,
+      unit,
+      ref_low: rl ?? null,
+      ref_high: rh ?? null,
+      reference_range: reference,
+      measured_at: measuredAt,
+    });
   });
   return out;
 }
@@ -589,11 +621,13 @@ function applyLabResults(rows) {
   if (!ANALYSIS.data) ANALYSIS.data = {};
   ANALYSIS.data.blood_test_results = normalized.map(row => ({
     indicator_name: row.name,
+    indicator_slug: row.slug || slugifyIndicatorName(row.name),
     value: row.value,
     unit: row.unit || "",
     ref_low: row.ref_low,
     ref_high: row.ref_high,
     reference_range: row.reference_range || "",
+    measured_at: row.measured_at || defaultMeasuredAt(),
   }));
   ANALYSIS.blood_test_results = ANALYSIS.data.blood_test_results;
   return normalized;

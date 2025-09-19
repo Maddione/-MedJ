@@ -29,9 +29,9 @@ from .views.documents import (
     document_detail,
     document_edit,
     document_edit_tags,
-    document_export_pdf,
     document_move,
 )
+from .views.exports import document_export_pdf
 from .views.events import event_list, event_detail, events_by_specialty, tags_autocomplete
 from .views.labs import labtests, labtests_view, labtest_edit, export_lab_csv
 from .views.pages import documents_view

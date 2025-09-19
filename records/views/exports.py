@@ -97,29 +97,12 @@ def _font_name():
         return "Helvetica"
 
 def render_template_to_pdf(request, template_name, context):
+    html = render_to_string(template_name, context=context, request=request)
     try:
         from weasyprint import HTML
-        html = render_to_string(template_name, context=context, request=request)
-        return HTML(string=html, base_url=request.build_absolute_uri("/")).write_pdf()
-    except Exception:
-        buf = io.BytesIO()
-        c = canvas.Canvas(buf, pagesize=A4)
-        c.setFont(_font_name(), 14)
-        c.drawString(40, 800, "Export")
-        c.setFont(_font_name(), 10)
-        y = 780
-        for k, v in (context or {}).items():
-            s = f"{k}: {v}"
-            c.drawString(40, y, s[:110])
-            y -= 14
-            if y < 60:
-                c.showPage()
-                c.setFont(_font_name(), 10)
-                y = 800
-        c.showPage()
-        c.save()
-        buf.seek(0)
-        return buf.getvalue()
+    except ImportError as exc:
+        raise RuntimeError("WeasyPrint must be installed to render PDFs.") from exc
+    return HTML(string=html, base_url=request.build_absolute_uri("/")).write_pdf()
 
 def pdf_response(filename: str, pdf_bytes: bytes, inline: bool = True) -> HttpResponse:
     resp = HttpResponse(pdf_bytes, content_type="application/pdf")
