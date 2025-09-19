@@ -148,12 +148,26 @@
         });
         li.appendChild(tagsWrap);
       }
+      const actions = document.createElement("div");
+      actions.className = "mt-2 flex flex-wrap gap-2";
       if (item.detail_url){
         const link = document.createElement("a");
         link.href = item.detail_url;
-        link.className = "mt-2 inline-flex items-center gap-1 text-xs text-[#0A4E75] hover:underline";
+        link.className = "inline-flex items-center gap-1 text-xs text-[#0A4E75] hover:underline";
         link.innerHTML = `${escapeHtml("Виж детайли")} <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>`;
-        li.appendChild(link);
+        actions.appendChild(link);
+      }
+      if (item.export_pdf_url){
+        const pdf = document.createElement("a");
+        pdf.href = item.export_pdf_url;
+        pdf.target = "_blank";
+        pdf.rel = "noopener";
+        pdf.className = "inline-flex items-center gap-1 text-xs text-white bg-[#0A4E75] hover:bg-[#073954] transition-colors px-2 py-1 rounded-lg";
+        pdf.innerHTML = `<i class="fa-solid fa-file-pdf"></i> ${escapeHtml("PDF")}`;
+        actions.appendChild(pdf);
+      }
+      if (actions.children.length){
+        li.appendChild(actions);
       }
       listBox.appendChild(li);
     });

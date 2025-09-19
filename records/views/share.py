@@ -267,13 +267,20 @@ def create_download_links(request: HttpRequest) -> JsonResponse:
     docs_total = docs_qs.count()
     doc_items = []
     for doc in docs_qs[:25]:
+        detail_url = request.build_absolute_uri(
+            reverse("medj:document_detail", args=[doc.id])
+        )
+        export_pdf_url = request.build_absolute_uri(
+            reverse("medj:document_export_pdf", args=[doc.id])
+        )
         doc_items.append(
             {
                 "id": doc.id,
                 "title": doc.display_title,
                 "uploaded_at": timezone.localtime(doc.uploaded_at).strftime("%d.%m.%Y %H:%M") if doc.uploaded_at else "",
                 "document_date": doc.document_date.isoformat() if doc.document_date else "",
-                "detail_url": request.build_absolute_uri(reverse("medj:document_detail", args=[doc.id])),
+                "detail_url": detail_url,
+                "export_pdf_url": export_pdf_url,
                 "tags": [
                     t.safe_translation_getter("name", any_language=True) or getattr(t, "name", "")
                     for t in doc.tags.all()

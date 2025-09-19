@@ -88,13 +88,16 @@ class ShareExportTests(TestCase):
         self.assertTrue(data["pdf_events_url"])
         self.assertTrue(data["pdf_labs_url"])
         self.assertTrue(data["csv_url"])
-        doc_ids = {doc.get("id") for doc in data.get("documents", [])}
+        documents = data.get("documents", [])
+        doc_ids = {doc.get("id") for doc in documents}
         self.assertIn(ids["document_id"], doc_ids)
+        self.assertTrue(all(doc.get("export_pdf_url") for doc in documents)
 
         payload["filters"]["event"] = []
         res2 = self.client.post(url, data=json.dumps(payload), content_type="application/json")
         self.assertEqual(res2.status_code, 200)
         data2 = res2.json()
-        doc_ids2 = {doc.get("id") for doc in data2.get("documents", [])}
+        documents2 = data2.get("documents", [])
+        doc_ids2 = {doc.get("id") for doc in documents2}
         self.assertIn(ids["document_id"], doc_ids2)
         self.assertGreaterEqual(data2["counts"]["labs"], 1)
