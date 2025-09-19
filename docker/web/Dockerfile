@@ -9,9 +9,9 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential curl git gettext libpq-dev \
     libcairo2 libffi-dev libgdk-pixbuf-2.0-0 \
-    libpango-1.0-0 libpangocairo-1.0-0 libpangoft2-1.0-0 \
     libharfbuzz0b libfribidi0 libxml2 libxslt1.1 \
     shared-mime-info fonts-dejavu-core libjpeg62-turbo \
+    libpangocairo-1.0-0 libpangoft2-1.0-0 libharfbuzz0b libfribidi0 \
  && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /app/requirements.txt

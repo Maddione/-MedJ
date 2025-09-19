@@ -61,17 +61,18 @@
       });
     }
     function resizeLangIcon() {
-      const medj = document.getElementById("medjText");
-      const icon = document.getElementById("langIcon");
-      if (medj && icon) {
-        const targetWidth = medj.offsetWidth * 0.8;
-        const targetHeight = targetWidth * 0.79;
-        icon.style.width = targetWidth + "px";
-        icon.style.height = targetHeight + "px";
-      }
+        const medj = document.getElementById("medjText");
+        const icon = document.getElementById("langIcon");
+        if (medj && icon) {
+            const target = medj.offsetWidth * 0.8;
+            const w = Math.max(20, Math.min(28, target)); // clamp 20–28px
+            icon.style.width = w + "px";
+            icon.style.height = w + "px";
+        }
     }
-    window.addEventListener("load", resizeLangIcon);
+    window.addEventListener("DOMContentLoaded", resizeLangIcon);
     window.addEventListener("resize", resizeLangIcon);
+
   </script>
   {% block scripts_extra %}{% endblock %}
 </body>
