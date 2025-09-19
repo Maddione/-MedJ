@@ -305,8 +305,28 @@ def print_pdf(request):
         return resp
     if not request.user.is_authenticated and not _token_ok(request, "print_pdf"):
         return HttpResponseForbidden()
+    labs_requested = bool(request.GET.get("labs"))
     buf = io.StringIO()
-    csv.writer(buf).writerow(["date", "category", "specialty", "summary"])
-    generated = events_csv_to_pdf(io.BytesIO(buf.getvalue().encode("utf-8")))
+    writer = csv.writer(buf)
+    if labs_requested:
+        writer.writerow(
+            [
+                "event_id",
+                "event_date",
+                "indicator_name",
+                "value",
+                "unit",
+                "reference_low",
+                "reference_high",
+                "measured_at",
+                "tags",
+            ]
+        )
+        filename = "labs.pdf"
+        generated = labs_csv_to_pdf(io.BytesIO(buf.getvalue().encode("utf-8")))
+    else:
+        writer.writerow(["date", "category", "specialty", "summary"])
+        filename = "events.pdf"
+        generated = events_csv_to_pdf(io.BytesIO(buf.getvalue().encode("utf-8")))
     pdf_bytes = _overlay_bytes_with_template(generated, _template_pdf_path(request))
-    return pdf_response("events.pdf", pdf_bytes, inline=True)
+    return pdf_response(filename, pdf_bytes, inline=True)

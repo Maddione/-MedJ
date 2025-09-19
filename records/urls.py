@@ -31,7 +31,7 @@ from .views.documents import (
     document_edit_tags,
     document_move,
 )
-from .views.exports import document_export_pdf
+from .views.exports import document_export_pdf, print_csv, print_pdf
 from .views.events import event_list, event_detail, events_by_specialty, tags_autocomplete
 from .views.labs import labtests, labtests_view, labtest_edit, export_lab_csv
 from .views.pages import documents_view
@@ -130,6 +130,8 @@ urlpatterns = [
     path("share/create-links/", login_required(create_download_links), name="create_download_links"),
     path("share/qr/", login_required(qr_for_url), name="qr_for_url"),
     path("share/history/", login_required(share_history_page), name="share_history_page"),
+    path("share/export/pdf/", print_pdf, name="print_pdf"),
+    path("share/export/csv/", print_csv, name="print_csv"),
 
     path("documents/<int:pk>/", login_required(document_detail), name="document_detail"),
     path("documents/<int:pk>/edit/", login_required(document_edit), name="document_edit"),
