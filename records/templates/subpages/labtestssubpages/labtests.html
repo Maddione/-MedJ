@@ -1,95 +1,141 @@
 {% extends 'basetemplates/base_app.html' %}
-{% load static %}
 {% load i18n %}
 
 {% block app_content %}
 <main class="bg-site-background min-h-screen p-4 md:p-8">
-  <div class="container mx-auto max-w-7xl">
-    <div class="bg-block-background p-6 rounded-3xl shadow-lg mb-8">
+  <div class="container mx-auto max-w-7xl space-y-6">
+    <div class="bg-block-background p-6 rounded-3xl shadow-lg">
       <h1 class="text-3xl font-bold text-gray-800">{% trans "Лабораторни показатели" %}</h1>
-      <p class="mt-2 text-gray-600">{% trans "Визуализация на кръвни изследвания и други показатели." %}</p>
+      {% if medical_event %}
+        <p class="mt-2 text-sm text-gray-600">
+          {% trans "Събитие" %}: <span class="font-semibold text-gray-800">№{{ medical_event.id }}</span>
+          {% if medical_event.event_date %} · {{ medical_event.event_date|date:"d.m.Y" }}{% endif %}
+          {% if medical_event.summary %} · {{ medical_event.summary }}{% endif %}
+        </p>
+      {% else %}
+        <p class="mt-2 text-gray-600">{% trans "Преглед на всички запазени лабораторни резултати по събития." %}</p>
+      {% endif %}
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-      <div class="lg:col-span-1 bg-block-background p-6 rounded-3xl shadow-lg">
-        <div class="mb-6">
-          <button id="btnSave" class="w-full px-6 py-3 bg-checkmark-green text-white font-bold rounded-lg shadow-md hover:bg-green-700 transition-colors">
-            {% trans "ЗАПИШИ" %}
-          </button>
-        </div>
-
-        <form id="csvForm" method="get" action="{% url 'medj:export_lab_csv' %}" class="space-y-6">
-          {% if medical_event %}
-            <input type="hidden" name="event" value="{{ medical_event.id }}">
-          {% endif %}
-          <input type="hidden" name="codes" id="codesInput">
-
-          <div class="bg-button-blue text-white p-4 rounded-3xl">
-            <h3 class="text-lg font-semibold mb-3">{% trans "Филтър по дата" %}</h3>
-            <div class="space-y-3">
-              <div>
-                <label class="block text-sm mb-1">{% trans "От" %}</label>
-                <input type="date" name="from" class="w-full p-2 rounded-lg text-gray-900">
-              </div>
-              <div>
-                <label class="block text-sm mb-1">{% trans "До" %}</label>
-                <input type="date" name="to" class="w-full p-2 rounded-lg text-gray-900">
-              </div>
+      <aside class="lg:col-span-1 bg-block-background p-6 rounded-3xl shadow-lg space-y-6">
+        <form method="get" class="space-y-6">
+          <div>
+            <h2 class="text-lg font-semibold text-gray-800">{% trans "Филтър по дата" %}</h2>
+            <div class="mt-3 space-y-3">
+              <label class="block text-sm text-gray-600">
+                {% trans "От дата" %}
+                <input type="date" name="start_date" value="{{ start_date }}" class="mt-1 w-full rounded-lg border-gray-300 focus:ring-emerald-500 focus:border-emerald-500">
+              </label>
+              <label class="block text-sm text-gray-600">
+                {% trans "До дата" %}
+                <input type="date" name="end_date" value="{{ end_date }}" class="mt-1 w-full rounded-lg border-gray-300 focus:ring-emerald-500 focus:border-emerald-500">
+              </label>
             </div>
           </div>
 
           <div>
-            <h3 class="text-lg font-semibold text-gray-700 mb-3">{% trans "Показатели" %}</h3>
-            <div class="space-y-2">
-              <label class="flex items-center space-x-2 text-gray-700">
-                <input type="checkbox" class="form-checkbox indicator" data-code="TSH">
-                <span class="w-4 h-4 rounded-full bg-blue-500 flex-shrink-0"></span>
-                <span>TSH</span>
-              </label>
-              <label class="flex items-center space-x-2 text-gray-700">
-                <input type="checkbox" class="form-checkbox indicator" data-code="T4">
-                <span class="w-4 h-4 rounded-full bg-pink-500 flex-shrink-0"></span>
-                <span>T4</span>
-              </label>
-              <label class="flex items-center space-x-2 text-gray-700">
-                <input type="checkbox" class="form-checkbox indicator" data-code="MCHC">
-                <span class="w-4 h-4 rounded-full bg-yellow-500 flex-shrink-0"></span>
-                <span>MCHC</span>
-              </label>
-              <label class="flex items-center space-x-2 text-gray-700">
-                <input type="checkbox" class="form-checkbox indicator" data-code="INSULIN">
-                <span class="w-4 h-4 rounded-full bg-purple-600 flex-shrink-0"></span>
-                <span>{% trans "Инсулин" %}</span>
-              </label>
-            </div>
+            <h2 class="text-lg font-semibold text-gray-800">{% trans "Показатели" %}</h2>
+            {% if indicators %}
+              <ul class="mt-3 space-y-2 max-h-56 overflow-y-auto pr-1">
+                {% for indicator in indicators %}
+                  <li>
+                    <label class="flex items-center gap-2 text-sm text-gray-700">
+                      <input type="checkbox" name="indicator" value="{{ indicator.slug }}" {% if indicator.checked %}checked{% endif %} class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500">
+                      <span>{{ indicator.label }}</span>
+                    </label>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="mt-2 text-sm text-gray-500">{% trans "Няма налични показатели." %}</p>
+            {% endif %}
           </div>
 
           <div class="space-y-3">
-            <button type="submit" id="btnCsv" class="w-full px-6 py-3 bg-button-blue text-white font-bold rounded-lg shadow-md hover:bg-navbar-button-blue transition-colors">
-              {% trans "Експорт CSV" %}
+            <button type="submit" class="w-full px-4 py-2 rounded-xl bg-emerald-600 text-white font-semibold shadow hover:bg-emerald-700 transition">
+              {% trans "Приложи филтрите" %}
             </button>
+            {% if has_filters %}
+              <a href="{% if medical_event %}{% url 'medj:labtests_view' medical_event.id %}{% else %}{% url 'medj:labtests' %}{% endif %}"
+                 class="block w-full px-4 py-2 text-center rounded-xl border border-gray-300 text-sm text-gray-700 hover:bg-gray-50">
+                {% trans "Изчисти" %}
+              </a>
+            {% endif %}
+            <a href="{{ csv_download_url }}" class="block w-full px-4 py-2 text-center rounded-xl bg-button-blue text-white font-semibold shadow hover:bg-navbar-button-blue transition">
+              {% trans "Изтегли като CSV" %}
+            </a>
           </div>
         </form>
-      </div>
+      </aside>
 
-      <div class="lg:col-span-3 bg-block-background p-6 rounded-3xl shadow-lg">
-        <div class="bg-navbar-button-blue text-white p-4 rounded-t-3xl -mx-6 -mt-6 mb-4">
-          <h2 class="text-xl font-semibold">{% trans "Графика на показателите" %}</h2>
+      <section class="lg:col-span-3 bg-block-background p-6 rounded-3xl shadow-lg">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-semibold text-gray-800">
+            {% if medical_event %}{% trans "Резултати от събитието" %}{% else %}{% trans "Всички резултати" %}{% endif %}
+          </h2>
+          <span class="text-sm text-gray-500">{% blocktrans count total=total_measurements %}{{ total }} запис{% plural %}{{ total }} записа{% endblocktrans %}</span>
         </div>
-        <div class="overflow-x-auto">
-          <div class="w-full h-96 bg-gray-100 rounded-lg shadow-inner flex items-center justify-center text-gray-500 text-center">
-            {% trans "Тук ще се появи интерактивна графика." %}
+
+        {% if measurements %}
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 text-sm">
+              <thead class="bg-gray-50 text-gray-600 uppercase text-xs tracking-wide">
+                <tr>
+                  <th class="px-3 py-2 text-left">{% trans "Показател" %}</th>
+                  <th class="px-3 py-2 text-left">{% trans "Стойност" %}</th>
+                  <th class="px-3 py-2 text-left">{% trans "Единици" %}</th>
+                  <th class="px-3 py-2 text-left">{% trans "Референтен диапазон" %}</th>
+                  <th class="px-3 py-2 text-left">{% trans "Дата" %}</th>
+                  <th class="px-3 py-2 text-left">{% trans "Събитие" %}</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                {% for row in measurements %}
+                  <tr class="{% if row.abnormal_flag %}bg-red-50{% endif %}">
+                    <td class="px-3 py-2 font-medium text-gray-800">
+                      {{ row.indicator_name }}
+                    </td>
+                    <td class="px-3 py-2">
+                      <span class="font-semibold text-gray-900">{{ row.value }}</span>
+                      {% if row.abnormal_flag == 'H' %}
+                        <span class="text-xs text-red-600 ml-1">↑</span>
+                      {% elif row.abnormal_flag == 'L' %}
+                        <span class="text-xs text-red-600 ml-1">↓</span>
+                      {% endif %}
+                    </td>
+                    <td class="px-3 py-2 text-gray-600">{{ row.unit }}</td>
+                    <td class="px-3 py-2 text-gray-600">
+                      {% if row.reference_low or row.reference_high %}
+                        {{ row.reference_low|default:"—" }} – {{ row.reference_high|default:"—" }}
+                      {% else %}
+                        —
+                      {% endif %}
+                    </td>
+                    <td class="px-3 py-2 text-gray-600">
+                      {% if row.measured_at %}{{ row.measured_at|date:"d.m.Y H:i" }}{% else %}—{% endif %}
+                    </td>
+                    <td class="px-3 py-2 text-gray-600">
+                      {% if row.event %}
+                        <a href="{% url 'medj:labtests_view' row.event.id %}" class="text-emerald-700 hover:underline">
+                          №{{ row.event.id }}{% if row.event_summary %} · {{ row.event_summary }}{% endif %}
+                        </a>
+                      {% else %}
+                        —
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
           </div>
-        </div>
-      </div>
+        {% else %}
+          <div class="flex flex-col items-center justify-center py-12 text-gray-500">
+            <p class="text-sm">{% trans "Няма записи за показване." %}</p>
+          </div>
+        {% endif %}
+      </section>
     </div>
   </div>
 </main>
-
-<script>
-document.getElementById('csvForm').addEventListener('submit', function(e){
-  const codes = Array.from(document.querySelectorAll('.indicator:checked')).map(i => i.getAttribute('data-code'));
-  document.getElementById('codesInput').value = codes.join(',');
-});
-</script>
 {% endblock %}

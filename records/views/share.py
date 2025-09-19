@@ -8,14 +8,25 @@ from urllib.parse import urlencode
 import qrcode
 from django.contrib.auth.decorators import login_required
 from django.core import signing
+from django.db.models import Q
 from django.http import HttpRequest, JsonResponse, HttpResponseBadRequest, HttpResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
-from records.models import Document, LabTestMeasurement, MedicalEvent
-from .utils import require_patient_profile, parse_date
+from records.models import (
+    Document,
+    LabIndicator,
+    LabTestMeasurement,
+    MedicalCategory,
+    MedicalEvent,
+    MedicalSpecialty,
+    Tag,
+    TagKind,
+)
+from .utils import require_patient_profile, parse_date, safe_translated
 
 _SIGNER_SALT = "medj.share"
 
@@ -27,7 +38,104 @@ def _make_token(payload: dict) -> str:
 
 
 def share_document_page(request: HttpRequest) -> HttpResponse:
-    return render(request, "main/share.html")
+    patient = require_patient_profile(request.user)
+
+    def _sorted(items):
+        return sorted(
+            items,
+            key=lambda item: (item.get("name") or item.get("label") or "").lower(),
+        )
+
+    specialties_qs = (
+        MedicalSpecialty.objects.filter(
+            Q(events__patient=patient) | Q(documents__owner=request.user)
+        )
+        .distinct()
+    )
+    specialty_options = _sorted(
+        [
+            {
+                "id": spec.id,
+                "name": safe_translated(spec) or getattr(spec, "slug", str(spec.id)),
+            }
+            for spec in specialties_qs
+        ]
+    )
+
+    categories_qs = (
+        MedicalCategory.objects.filter(
+            Q(events__patient=patient) | Q(documents__owner=request.user)
+        )
+        .distinct()
+    )
+    category_options = _sorted(
+        [
+            {
+                "id": cat.id,
+                "name": safe_translated(cat) or getattr(cat, "slug", str(cat.id)),
+            }
+            for cat in categories_qs
+        ]
+    )
+
+    events_qs = (
+        MedicalEvent.objects.filter(patient=patient)
+        .select_related("specialty", "category")
+        .order_by("-event_date", "-id")
+    )
+    event_options = [
+        {
+            "id": ev.id,
+            "label": " — ".join(
+                part
+                for part in [
+                    ev.event_date.strftime("%d.%m.%Y") if ev.event_date else "",
+                    ev.summary
+                    or safe_translated(ev.specialty)
+                    or safe_translated(ev.category)
+                    or _("Събитие #{id}").format(id=ev.id),
+                ]
+                if part
+            ),
+        }
+        for ev in events_qs[:50]
+    ]
+
+    indicator_labels = {}
+    indicator_tag_qs = (
+        Tag.objects.filter(kind=TagKind.INDICATOR, documents__owner=request.user)
+        .distinct()
+    )
+    for tag in indicator_tag_qs:
+        indicator_labels[tag.slug] = safe_translated(tag) or tag.slug
+
+    indicator_qs = (
+        LabIndicator.objects.filter(measurements__medical_event__patient=patient)
+        .distinct()
+    )
+    for indicator in indicator_qs:
+        indicator_labels.setdefault(
+            indicator.slug,
+            safe_translated(indicator) or indicator.slug,
+        )
+
+    indicator_options = _sorted(
+        [
+            {
+                "slug": slug,
+                "name": label,
+            }
+            for slug, label in indicator_labels.items()
+        ]
+    )
+
+    context = {
+        "specialty_options": specialty_options,
+        "category_options": category_options,
+        "event_options": event_options,
+        "indicator_options": indicator_options,
+    }
+    return render(request, "main/share.html", context)
 
 
 def share_view(request: HttpRequest, token: str) -> HttpResponse:
@@ -112,6 +220,17 @@ def create_download_links(request: HttpRequest) -> JsonResponse:
     else:
         indicator_slugs = []
 
+    indicator_event_ids = []
+    if indicator_slugs:
+        indicator_event_ids = list(
+            LabTestMeasurement.objects.filter(
+                medical_event__patient=patient,
+                indicator__slug__in=indicator_slugs,
+            )
+            .values_list("medical_event_id", flat=True)
+            .distinct()
+        )
+
     docs_qs = (
         Document.objects.filter(owner=request.user)
         .select_related("doc_type")
@@ -124,10 +243,26 @@ def create_download_links(request: HttpRequest) -> JsonResponse:
         docs_qs = docs_qs.filter(specialty_id__in=specialty_ids)
     if event_ids:
         docs_qs = docs_qs.filter(medical_event_id__in=event_ids)
+    if indicator_slugs:
+        indicator_filter = Q(tags__slug__in=indicator_slugs) | Q(
+            medical_event__labtests__indicator__slug__in=indicator_slugs
+        )
+        if indicator_event_ids:
+            indicator_filter = indicator_filter | Q(medical_event_id__in=indicator_event_ids)
+        docs_qs = docs_qs.filter(indicator_filter)
     if start_dt:
-        docs_qs = docs_qs.filter(uploaded_at__date__gte=start_dt)
+        docs_qs = docs_qs.filter(
+            Q(uploaded_at__date__gte=start_dt)
+            | Q(document_date__gte=start_dt)
+            | Q(medical_event__event_date__gte=start_dt)
+        )
     if end_dt:
-        docs_qs = docs_qs.filter(uploaded_at__date__lte=end_dt)
+        docs_qs = docs_qs.filter(
+            Q(uploaded_at__date__lte=end_dt)
+            | Q(document_date__lte=end_dt)
+            | Q(medical_event__event_date__lte=end_dt)
+        )
+    docs_qs = docs_qs.distinct()
 
     docs_total = docs_qs.count()
     doc_items = []
@@ -147,6 +282,10 @@ def create_download_links(request: HttpRequest) -> JsonResponse:
         )
 
     lab_qs = LabTestMeasurement.objects.filter(medical_event__patient=patient)
+    if category_ids:
+        lab_qs = lab_qs.filter(medical_event__category_id__in=category_ids)
+    if specialty_ids:
+        lab_qs = lab_qs.filter(medical_event__specialty_id__in=specialty_ids)
     if event_ids:
         lab_qs = lab_qs.filter(medical_event_id__in=event_ids)
     if indicator_slugs:
@@ -158,13 +297,19 @@ def create_download_links(request: HttpRequest) -> JsonResponse:
     labs_total = lab_qs.count()
 
     events_qs = MedicalEvent.objects.filter(patient=patient)
+    if category_ids:
+        events_qs = events_qs.filter(category_id__in=category_ids)
+    if specialty_ids:
+        events_qs = events_qs.filter(specialty_id__in=specialty_ids)
     if event_ids:
         events_qs = events_qs.filter(id__in=event_ids)
+    if indicator_event_ids:
+        events_qs = events_qs.filter(id__in=indicator_event_ids)
     if start_dt:
         events_qs = events_qs.filter(event_date__gte=start_dt)
     if end_dt:
         events_qs = events_qs.filter(event_date__lte=end_dt)
-    events_total = events_qs.count()
+    events_total = events_qs.distinct().count()
 
     base_params = {}
     if start_dt:
