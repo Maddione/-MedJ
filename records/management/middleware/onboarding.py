@@ -7,6 +7,7 @@ ALLOWED_PREFIXES = (
     "/favicon.ico/",
     "/robots.txt",
     "/i18n/",
+    "/admin/",
 )
 
 class OnboardingMiddleware(MiddlewareMixin):

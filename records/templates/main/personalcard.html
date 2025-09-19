@@ -110,6 +110,49 @@
         <img src="{% static 'images/qr.png' %}" alt="qr" class="h-10 w-10">
       </button>
     </form>
+
+    <div id="shareModal" class="hidden fixed inset-0 z-50 items-center justify-center px-4 bg-black/60" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
+      <div class="relative w-full max-w-3xl rounded-3xl bg-white shadow-2xl p-6 md:p-8 text-[var(--color-primaryDark)]">
+        <button type="button" id="closeShareModal" class="absolute top-4 right-4 text-2xl leading-none text-[var(--color-primaryDark)] hover:text-[var(--color-primary)]" aria-label="{% trans 'Затвори' %}">
+          &times;
+        </button>
+
+        <h2 id="shareModalTitle" class="text-2xl font-bold mb-4">{% trans "Споделяне на личната карта" %}</h2>
+
+        <div id="shareLoader" class="hidden py-16 flex flex-col items-center gap-4">
+          <div class="w-12 h-12 border-4 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin"></div>
+          <p class="text-base">{% trans "Генерираме линк за споделяне…" %}</p>
+        </div>
+
+        <div id="shareError" class="hidden mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"></div>
+
+        <div id="shareDetails" class="hidden space-y-6">
+          <div>
+            <label for="shareLink" class="block text-sm font-semibold mb-2">{% trans "Линк за споделяне" %}</label>
+            <div class="flex flex-col sm:flex-row gap-3">
+              <input id="shareLink" type="text" readonly class="flex-1 rounded-2xl border border-gray-200 bg-gray-100 px-4 py-3 focus:outline-none" value="">
+              <button type="button" id="copyShareLink" class="px-6 py-3 rounded-2xl text-white font-semibold" style="background:#0A4E75">{% trans "Копирай" %}</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <div class="text-sm font-semibold mb-2">{% trans "QR код" %}</div>
+              <div id="qrCodeContainer" class="flex items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-6 min-h-[12rem]"></div>
+              <button type="button" id="viewQrButton" class="mt-3 w-full px-4 py-3 rounded-2xl text-white font-semibold disabled:opacity-50" style="background:#0A4E75" disabled>{% trans "Отвори в нов раздел" %}</button>
+            </div>
+
+            <div>
+              <div class="text-sm font-semibold mb-2">{% trans "Преглед на картата" %}</div>
+              <div id="cardPreviewContainer" class="hidden rounded-2xl border border-gray-200 bg-gray-50 p-4 flex items-center justify-center">
+                <img id="cardPreviewImage" alt="{% trans 'Преглед на личния картон' %}" class="max-h-72 w-full object-contain rounded-xl shadow" />
+              </div>
+              <button type="button" id="downloadPngButton" class="mt-3 w-full px-4 py-3 rounded-2xl text-white font-semibold disabled:opacity-50" style="background:#15BC11" disabled>{% trans "Изтегли изображение" %}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </main>
 {% endblock %}
