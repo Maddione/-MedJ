@@ -195,7 +195,11 @@ def document_export_pdf(request, pk: int):
         return pdf_response(f"document_{pk}.pdf", pdf_bytes, inline=True)
     doc = get_object_or_404(Document, pk=pk, owner=request.user)
     context = {"document": doc, "user": request.user}
-    pdf_bytes = render_template_to_pdf(request, "subpages/document_export_pdf.html", context)
+    pdf_bytes = render_template_to_pdf(
+        request,
+        "subpages/documentsubpages/document_export_pdf.html",
+        context,
+    )
     pdf_bytes = _overlay_bytes_with_template(pdf_bytes, _template_pdf_path(request))
     return pdf_response(f"document_{pk}.pdf", pdf_bytes, inline=True)
 
@@ -226,7 +230,11 @@ def event_export_pdf(request, pk: int):
         "documents": list(event.documents.all()) if hasattr(event, "documents") else [],
         "labs": list(labs_qs.select_related("indicator").all()) if hasattr(labs_qs, "all") else [],
     }
-    pdf_bytes = render_template_to_pdf(request, "subpages/event_export_pdf.html", context)
+    pdf_bytes = render_template_to_pdf(
+        request,
+        "subpages/eventsubpages/event_export_pdf.html",
+        context,
+    )
     pdf_bytes = _overlay_bytes_with_template(pdf_bytes, _template_pdf_path(request))
     return pdf_response(f"event_{pk}.pdf", pdf_bytes, inline=True)
 
